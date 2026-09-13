@@ -45,26 +45,26 @@
     'HU-GI-04': { ph: 'Gestor de Incentivos', page: 'incentivo-03-programas.html', role: 'admin',
       title: 'Wizard: parametrizar programa', purpose: 'Definir en pasos guiados el rubro, los tipos de incentivo, el tipo de beneficiario y las condiciones de elegibilidad.',
       steps: [
-        { sel: '#btnCrearPrograma', body: 'Abre el <b>wizard de creación</b>.', click: true },
-        { sel: '#fName', body: '<b>Paso 1 — Datos:</b> nombre, evento, vigencia y cobertura territorial.' },
-        { sel: '#wzRubroTotal', body: '<b>Paso 2 — Rubro:</b> monto total del programa; abajo eliges <b>un solo tipo</b> o <b>varios tipos</b> de incentivo.' },
-        { sel: '#wzBtnNext', body: 'Avanza al <b>Paso 3 — Condiciones</b>: aquí eliges el <b>tipo de beneficiario</b> y la regla (para institución: ranking de medallero).', click: true },
-        { sel: '#wzCondPanels', body: 'Define las <b>condiciones de elegibilidad</b> o la regla institucional. Al final, <b>Activar programa</b>.' }
+        { sel: '#btnCrearPrograma', body: 'Abre el <b>wizard de creación</b> (modal).', click: true },
+        { sel: '#wzStepper', body: 'El wizard te guía por los pasos: <b>Datos</b>, <b>Tipos &amp; rubro</b>, <b>Condiciones</b> (y <b>Códigos</b> si hay bonos).' },
+        { sel: '#fName', body: '<b>Paso 1 — Datos:</b> nombre del programa, evento, vigencia y cobertura territorial.' },
+        { sel: '#wzBtnNext', body: 'Con <b>Continuar</b> avanzas: defines el <b>rubro y los tipos</b> (uno o varios, con montos distintos), luego el <b>tipo de beneficiario</b> y su regla de elegibilidad. En el último paso, <b>Activar programa</b>.' }
       ] },
     'HU-GI-05': { ph: 'Gestor de Incentivos', page: 'incentivo-05-programa-detalle.html', role: 'admin',
       title: 'Detalle del programa', purpose: 'Auditar la ejecución de un programa: información, códigos, asignaciones e historial.',
       steps: [
-        { sel: '#wzTabs, .naowee-tabs', body: 'Pestañas: <b>Resumen, Condiciones, Códigos, Asignaciones e Historial</b>.' },
+        { sel: '.naowee-tab[data-tab="resumen"], #wzTabs', body: 'Pestañas del detalle: <b>Resumen, Condiciones, Códigos, Asignaciones e Historial</b>.' },
         { sel: '.naowee-tab[data-tab="codigos"]', body: 'La pestaña <b>Códigos</b> lista el inventario del programa.', click: true },
         { sel: '#btnCargarCodigos', body: '<b>Cargar códigos</b> abre el modal de carga (HU-GI-06).' }
       ] },
     'HU-GI-06': { ph: 'Gestor de Incentivos', page: 'incentivo-05-programa-detalle.html', role: 'admin',
       title: 'Cargar inventario de códigos', purpose: 'Poblar el inventario del programa de forma masiva (Excel/CSV) o manual, sin salir del detalle.',
       steps: [
+        { sel: '.naowee-tab[data-tab="codigos"]', body: 'En el detalle, abre la pestaña <b>Códigos</b>.', click: true },
         { sel: '#btnCargarCodigos', body: 'Abre el <b>modal de carga de códigos</b>.', click: true },
         { sel: '#ccSeg', body: 'Elige el modo: <b>carga masiva</b> (Excel/CSV) o <b>manual</b> (uno a uno).' },
         { sel: '#ccDropzone', body: 'Arrastra el archivo: el sistema valida columnas y muestra <b>vista previa</b> antes de confirmar.' },
-        { sel: '#btnCcConfirm', body: 'Confirma con <b>Cargar códigos</b>: se suman al inventario del programa.' }
+        { sel: '#btnCcConfirm', body: 'Confirma con <b>Cargar inventario</b>: los códigos se suman al programa.' }
       ] },
     'HU-GI-07': { ph: 'Gestor de Incentivos', page: 'incentivo-07-codigos.html', role: 'admin',
       title: 'Inventario consolidado', purpose: 'Auditar todos los códigos del sistema y filtrar por programa, tipo, estado o beneficiario.',
@@ -269,8 +269,14 @@
     _curEl = el || null;
     if (el) {
       placeSpot(spot, el);
-      try { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) {}
-      setTimeout(function () { if (curHab && _curEl === el && document.body.contains(el)) { placeSpot(spot, el); positionCoach(coach, el); } }, 280);
+      // Solo scrollear si el target está fuera del viewport (evita el reflow que
+      // descoloca el spot al resaltar elementos sticky dentro de un modal).
+      try { var rr0 = el.getBoundingClientRect(); if (rr0.top < 60 || rr0.bottom > window.innerHeight - 20) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) {}
+      // Re-medir en varios ticks: modales con transición scale mienten en el
+      // primer getBoundingClientRect (devuelven la caja escalada).
+      [280, 600, 1100].forEach(function (ms) {
+        setTimeout(function () { if (curHab && _curEl === el && document.body.contains(el)) { placeSpot(spot, el); positionCoach(coach, el); } }, ms);
+      });
       if (step.click) el.addEventListener('click', function onc() { _stepActed = true; }, { once: true });
     } else {
       spot.style.display = 'none';
@@ -302,8 +308,20 @@
     });
   }
   function placeSpot(spot, el) {
-    var box = el.closest('.naowee-searchbox__input-wrap, .naowee-searchbox, .naowee-textfield__input-wrap, .naowee-textfield, .naowee-dropdown') || el;
-    var r = box.getBoundingClientRect(), pad = 4;
+    var box = el.closest('.naowee-searchbox__input-wrap, .naowee-searchbox, .naowee-textfield__input-wrap, .naowee-textfield, .naowee-dropdown, table, .naowee-table-wrap') || el;
+    var r = box.getBoundingClientRect();
+    // Caja degenerada (ej. <tbody> = width 0): sube por padres y toma el
+    // ancestro MÁS ANCHO (la tabla/wrap completa), sin pasarse del viewport.
+    if (r.width < 8) {
+      var p = box.parentElement, guard = 0, best = null, bestW = 8;
+      while (p && guard < 6) {
+        var pr = p.getBoundingClientRect();
+        if (pr.width > bestW && pr.width <= window.innerWidth + 2 && pr.height > 8) { best = p; bestW = pr.width; }
+        p = p.parentElement; guard++;
+      }
+      if (best) { box = best; r = best.getBoundingClientRect(); }
+    }
+    var pad = 4;
     var br = getComputedStyle(box).borderTopLeftRadius || '8px', radius;
     if (br.indexOf('%') >= 0) radius = '50%';
     else { var n = parseFloat(br) || 0; radius = (n > 0 ? n + pad : 8) + 'px'; }
@@ -347,6 +365,9 @@
   window.addEventListener('resize', reposition);
   window.addEventListener('scroll', reposition, true);
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && curHab) endTour(); });
+
+  // Exponer catálogo + findTarget (auditoría / debugging del recorrido)
+  try { window.__incTours = { TOURS: TOURS, ORDER: ORDER, findTarget: findTarget }; } catch (e) {}
 
   // ── Boot ──
   function boot() {
