@@ -97,7 +97,7 @@
 
   /* Quick demo chips */
   .quick-row{display:flex;align-items:center;gap:8px;margin-top:18px;flex-wrap:wrap}
-  .quick-row.is-other-prg .quick-chip:not([data-type="all"]){display:none !important}
+  .quick-chip.off-prg{display:none !important}
   .quick-note{font-size:12px;color:var(--naowee-color-text-secondary,#646587)}
   [hidden]{display:none !important}
   .result-wrap{padding-bottom:72px}
@@ -659,6 +659,7 @@
           <button class="quick-chip" data-type="docente-asistente" style="display:none" onclick="runDemo('eligible-assistant')"><code>1044556677</code> · asistente equipo campeón</button>
           <button class="quick-chip" data-type="institucion" style="display:none" onclick="runDemo('institution')"><code>108001000123</code> · DANE · institución con más oros</button>
           <button class="quick-chip" data-type="organizacion" style="display:none" onclick="runDemo('organization')"><code>900456789</code> · organización con más oros en para deportes</button>
+          <button class="quick-chip" data-type="deportista" data-prg="PRG-2026-003" onclick="runDemo('two-bonos')"><code>1012345678</code> · prejuvenil con dos bonos</button>
           <button class="quick-chip" data-type="all" onclick="resetDemoData()" title="Borra las asignaciones hechas en esta demo (vuelve al estado inicial)">↺ Reiniciar demo</button>
         </div>
       </div>
@@ -688,9 +689,9 @@
   </div>
 </div>
 
-<script src="shared/programs-data.js?v=20260922201316"></script>
-<script src="shared/operador-entregas.js?v=20260922201316"></script>
-<script src="shared/operador-programa.js?v=20260922201316"></script>
+<script src="shared/programs-data.js?v=20260922202606"></script>
+<script src="shared/operador-entregas.js?v=20260922202606"></script>
+<script src="shared/operador-programa.js?v=20260922202606"></script>
 <script>
 /* ═════ Catálogo de incentivos reales · Juegos Intercolegiados 2026 (xlsx requisitos) ═════
    El operador NO ve valores monetarios (feedback Danna). Solo el Bono Deportivo maneja
@@ -698,7 +699,10 @@
 const INCENTIVES = {
   'bono-dep': { name:'Bono Deportivo',                    iconBg:'#fff3e6', iconColor:'#d74009', icon:'award',  hasCodes:true  },
   'credito':  { name:'Crédito Condonable ICETEX',         iconBg:'#eef5ff', iconColor:'#1f78d1', icon:'grad',   hasCodes:false },
-  'kit':      { name:'Kit de implementación deportiva',   iconBg:'#e6f4f1', iconColor:'#0d9488', icon:'bag',    hasCodes:false }
+  'kit':      { name:'Kit de implementación deportiva',   iconBg:'#e6f4f1', iconColor:'#0d9488', icon:'bag',    hasCodes:false },
+  /* Bono transporte intercolegiados (PRG-2026-003): dos bonos, cada uno con su inventario. */
+  'bono-transp': { name:'Bono transporte mensual',          iconBg:'#fff3e6', iconColor:'#d74009', icon:'bus',    hasCodes:true  },
+  'bono-alim':   { name:'Bono alimentación en competencia', iconBg:'#fef6e0', iconColor:'#b45309', icon:'meal',   hasCodes:true  }
 };
 /* conds: índices de p.conditions que aplican a ese incentivo (sin conds = todas). */
 function prog(incId, desc, extra){ return Object.assign({ incId, name: INCENTIVES[incId].name, desc, hasCodes: !!INCENTIVES[incId].hasCodes, iconBg: INCENTIVES[incId].iconBg, iconColor: INCENTIVES[incId].iconColor, icon: INCENTIVES[incId].icon }, extra || {}); }
@@ -828,6 +832,25 @@ const SAMPLE = {
       { label:'Desempate: más deportistas llevados a la final', val:'48 clasificados', ok:true }
     ],
     programs:[ prog('kit', 'Institución educativa con más medallas de oro en deportes convencionales') ]
+  },
+  /* Programa Bono transporte intercolegiados: una deportista con DOS bonos. */
+  'two-bonos':{
+    prg:'PRG-2026-003',
+    role:'athlete', level:'deportista',
+    name:'Luisa Fernanda Castro Ríos', docType:'TI', doc:'1012345678', initials:'LC',
+    grado:'9°', institucion:'I.E. Departamental Pablo VI · Soacha', deporte:'Ciclismo · ruta',
+    categoria:'Prejuvenil', departamento:'Cundinamarca', phone:'310 245 8890', email:'luisa.castro@email.com',
+    medal:'Participante 2026', obs:'',
+    medals:[],
+    conditions:[
+      { label:'Categoría prejuvenil', val:'Prejuvenil', ok:true },
+      { label:'Edad entre 13 y 17 años', val:'15 años', ok:true },
+      { label:'Compite en fechas del calendario 2026', val:'3 fechas', ok:true }
+    ],
+    programs:[
+      prog('bono-transp', 'Recarga TransMilenio/SITP · prejuveniles de Cundinamarca', { conds:[0,1] }),
+      prog('bono-alim',   'Alimentación durante las fechas de competencia', { conds:[0,2] })
+    ]
   },
   'organization':{
     role:'institution', level:'organizacion', docType:'NIT', doc:'900456789', initials:'DS',
@@ -960,7 +983,7 @@ function runDemo(kind, skipLoading, rawDoc){
   const render = () => {
     /* Los perfiles de prueba son de Juegos Intercolegiados 2026: en otro
        programa el mismo documento no tiene incentivos aplicables. */
-    const p = isDemoProgram() ? profileView(kind) : null;
+    const p = inCurrentProgram(kind) ? profileView(kind) : null;
     if(p){ syncTypeRadio(p.level); if(p.docType && p.role !== 'institution') setDocType(p.docType); wrap.innerHTML = renderEligible(p, kind); showStepper(true); return; }
     const inputDoc = rawDoc || (kind === 'not-eligible' ? '1003456789' : kind === 'not-eligible-coach' ? '1067543210' : (document.getElementById('docNumber').value.trim()));
     wrap.innerHTML = renderNoIncentives(inputDoc);
@@ -1155,7 +1178,9 @@ function kvRow(ico, lbl, val, id){
 const PROG_ICONS = {
   award:'<circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>',
   grad:'<path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1 2.7 3 6 3s6-2 6-3v-5"/>',
-  bag:'<rect x="5" y="8" width="14" height="12" rx="2"/><path d="M9 8V5a3 3 0 016 0v3"/>'
+  bag:'<rect x="5" y="8" width="14" height="12" rx="2"/><path d="M9 8V5a3 3 0 016 0v3"/>',
+  bus:'<rect x="3" y="6" width="18" height="11" rx="2"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/>',
+  meal:'<path d="M3 2v7a3 3 0 003 3v10M9 2v7M6 2v7"/><path d="M18 22V2a4 4 0 00-4 4v7h4"/>'
 };
 
 function renderProfileCard(p, kind){
@@ -1341,7 +1366,7 @@ function resetState(){
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
       </div>
       <h4>Ingresa un documento para empezar</h4>
-      <p>La búsqueda se hace <strong>solo entre los ganadores/elegibles</strong> de ${esc(prgName())} (documento para personas, código DANE para instituciones).${isDemoProgram() ? ' Puedes usar los ejemplos de demo arriba.' : ''}</p>
+      <p>La búsqueda se hace <strong>solo entre los ganadores/elegibles</strong> de ${esc(prgName())} (documento para personas, código DANE para instituciones).${hasSamples() ? ' Puedes usar los ejemplos de demo arriba.' : ''}</p>
     </div>
   `;
 }
@@ -1394,6 +1419,9 @@ const DEMO_PRG_ID = 'PRG-2026-010';
 let CUR_PRG = null;
 function prgName(){ return CUR_PRG ? CUR_PRG.name : 'el programa'; }
 function isDemoProgram(){ return !!CUR_PRG && CUR_PRG.id === DEMO_PRG_ID; }
+/* Cada perfil de prueba es de un programa (por defecto JIN 2026): en otro no aparece. */
+function inCurrentProgram(kind){ const s = SAMPLE[kind]; return !!CUR_PRG && !!s && (s.prg || DEMO_PRG_ID) === CUR_PRG.id; }
+function hasSamples(){ return !!CUR_PRG && Object.values(SAMPLE).some(s => (s.prg || DEMO_PRG_ID) === CUR_PRG.id); }
 function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 (function initProgram(){
   CUR_PRG = OperatorProgram.renderBar(document.getElementById('opPrgBar'), () => {
@@ -1419,14 +1447,17 @@ function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&'
       </div>`;
   }
   const hint = document.getElementById('emptyHint');
-  if(hint) hint.innerHTML = `La búsqueda se hace <strong>solo entre los ganadores/elegibles</strong> de ${esc(CUR_PRG.name)} (documento para personas, código DANE para instituciones).${isDemoProgram() ? ' Usa los ejemplos de demo para ver los casos posibles.' : ''}`;
-  if(!isDemoProgram()){
+  if(hint) hint.innerHTML = `La búsqueda se hace <strong>solo entre los ganadores/elegibles</strong> de ${esc(CUR_PRG.name)} (documento para personas, código DANE para instituciones).${hasSamples() ? ' Usa los ejemplos de demo para ver los casos posibles.' : ''}`;
+  /* Ejemplos de demo: solo los del programa elegido. */
+  document.querySelectorAll('.quick-chip[data-type]:not([data-type="all"])').forEach(ch => {
+    ch.classList.toggle('off-prg', (ch.dataset.prg || DEMO_PRG_ID) !== CUR_PRG.id);
+  });
+  if(!hasSamples()){
     const row = document.querySelector('.quick-row');
     if(row){
-      row.classList.add('is-other-prg');
       const note = document.createElement('span');
       note.className = 'quick-note';
-      note.textContent = 'Los ejemplos de demo son de Juegos Intercolegiados 2026. En este programa cualquier documento sale sin incentivos aplicables.';
+      note.textContent = 'Este programa no tiene ejemplos de demo: cualquier documento sale sin incentivos aplicables.';
       row.querySelector('.quick-label')?.after(note);
     }
   }
@@ -1592,10 +1623,10 @@ tryRehydrate();
 })();
 </script>
 
-<script src="shared/profile-switcher.js?v=20260922201316" defer></script>
+<script src="shared/profile-switcher.js?v=20260922202606" defer></script>
 
 <script src="shared/footer-scroll.js" defer></script>
-<script src="shared/tour.js?v=20260922201316" defer></script>
+<script src="shared/tour.js?v=20260922202606" defer></script>
 
 <!-- Footer flotante Naowee -->
 <div class="naowee-floating-footer" role="contentinfo" aria-label="Pie de página Naowee">

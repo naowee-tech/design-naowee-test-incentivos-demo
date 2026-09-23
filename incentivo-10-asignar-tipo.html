@@ -272,6 +272,12 @@
   .inc--done .inc__name{color:#646587}
   .inc__state{display:flex;flex-direction:column;align-items:flex-end;gap:4px;padding-right:30px;text-align:right}
   .inc__state small{font-size:11px;color:#646587}
+  .code-bonos{display:flex;gap:10px;flex-wrap:wrap;margin:-4px 0 14px}
+  .code-bono{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:9px 14px;border:1.5px solid var(--naowee-color-border-default,#e7e9f3);border-radius:10px;background:#fff;cursor:pointer;font-family:inherit;text-align:left}
+  .code-bono__name{font-size:13px;font-weight:700;color:#282834}
+  .code-bono__state{font-size:11.5px;font-weight:600;color:#b45309}
+  .code-bono.is-done .code-bono__state{color:#1f8923}
+  .code-bono.is-active{border-color:var(--naowee-color-text-accent,#d74009);background:#fff3e6}
   .inc__state .inc__hint{color:#b45309;font-weight:600;max-width:180px}
   .flow-section h3 .opt{font-weight:500;color:#9c9ebf;font-size:12px;margin-left:4px}
   .obs-field{width:100%}
@@ -389,6 +395,7 @@
             <h3><span class="step-num">2</span> Código del inventario</h3>
             <p class="desc">Estos son los códigos del <strong id="codeIncName">Bono Deportivo</strong>. Selecciona uno disponible, o escribe un código para <strong>consultar si está disponible o ya asignado</strong> (reunión 22-09, 00:29:22). Al confirmar queda asignado a este beneficiario.</p>
 
+            <div class="code-bonos" id="codeBonos" hidden role="tablist" aria-label="Bono al que le eliges código"></div>
             <div class="code-toolbar">
               <div class="naowee-searchbox naowee-searchbox--small naowee-searchbox--pill">
                 <div class="naowee-searchbox__input-wrap">
@@ -524,7 +531,19 @@ function ledgerPut(rec){ try{ const all = ledgerAll(); all[rec.id] = Object.assi
    para que la consulta muestre ambos estados (reunión 22-09, 00:29:22 – 00:30:59). */
 const MONTHS = ['jul','ago','sep'];
 const HOLDERS = ['Juan S. Rodríguez','Laura V. Mejía','Tomás Restrepo','Mariana Soto','Isabella Gil','Esteban Mora'];
+function makePool(prefix, n, start){
+  const arr = [];
+  for(let i=0; i<n; i++){
+    const taken = i % 4 === 2;
+    arr.push({ code:`${prefix}-${String(start + i).padStart(5,'0')}`, fecha:`${String(((i*5)%27)+1).padStart(2,'0')} ${MONTHS[i%MONTHS.length]} 2026`,
+      estado: taken ? 'asig' : 'disp', holder: taken ? HOLDERS[i % HOLDERS.length] : null, holderDate: taken ? `${String(((i*3)%20)+1).padStart(2,'0')} sep 2026` : null });
+  }
+  return arr;
+}
+/* Cada bono tiene su propio inventario (y su prefijo): un código de un bono no sirve para otro. */
 const CODE_POOLS = {
+  'bono-transp': makePool('2026TR', 40, 120),
+  'bono-alim':   makePool('2026AL', 30, 10),
   'bono-dep': (function(){
     const arr = [];
     for(let i=0; i<60; i++){
@@ -609,8 +628,11 @@ function renderLookup(list){
   box.hidden = false;
   const ico = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>';
   let cls, txt;
-  if(!exact){ cls = 'negative'; txt = `El código <strong>${searchQ.toUpperCase()}</strong> no existe en el inventario del ${selectedInc.name}.`; }
-  else if(exact.estado === 'disp'){ cls = 'positive'; txt = `El código <strong>${exact.code}</strong> está <strong>disponible</strong>. Selecciónalo en la tabla para reservarlo.`; }
+  const other = !exact && selectedIncs.filter(x => x.hasCodes && x.id !== selectedInc.id)
+    .find(x => (CODE_POOLS[x.id] || []).some(c => c.code.toLowerCase() === searchQ));
+  if(other){ cls = 'caution'; txt = `El código <strong>${searchQ.toUpperCase()}</strong> es del <strong>${other.name}</strong>, no del ${selectedInc.name}. Cámbiate a ese bono para usarlo.`; }
+  else if(!exact){ cls = 'negative'; txt = `El código <strong>${searchQ.toUpperCase()}</strong> no existe en el inventario del ${selectedInc.name}.`; }
+  else if(exact.estado === 'disp'){ cls = 'positive'; txt = `El código <strong>${exact.code}</strong> está <strong>disponible</strong>. Selecciónalo en la tabla para asignarlo.`; }
   else { cls = 'caution'; txt = `El código <strong>${exact.code}</strong> ya está <strong>asignado</strong> a ${exact.holder} (${exact.holderDate}). No se puede volver a entregar.`; }
   box.innerHTML = `<div class="naowee-message naowee-message--${cls}"><div class="naowee-message__header"><div class="naowee-message__icon">${ico}</div><div class="naowee-message__text">${txt}</div></div></div>`;
 }
@@ -668,7 +690,9 @@ function selectCode(code){
   const c = pool().find(x => x.code === code);
   if(!c || c.estado !== 'disp') return;
   selectedCode = code;
+  selectedCodes[selectedInc.id] = code;
   renderCodes();
+  renderBonoTabs();
   updateSummary();
 }
 
@@ -676,11 +700,12 @@ function updateSummary(){
   const sumInc = document.getElementById('sumInc');
   if(sumInc) sumInc.querySelector('.val').innerHTML = selectedIncs.length ? selectedIncs.map(x => x.name).join('<br/>') : '—';
   /* Código NO se muestra en el resumen (regla de seguridad: código redimible). */
-  const ready = selectedIncs.length > 0 && (!selectedInc || !!selectedCode);
+  const missing = selectedIncs.filter(x => x.hasCodes && !selectedCodes[x.id]);
+  const ready = selectedIncs.length > 0 && !missing.length;
   document.getElementById('btnNext').disabled = !ready;
   const lbl = document.getElementById('btnNextLbl');
   const n = selectedIncs.length;
-  if(lbl) lbl.textContent = !n ? 'Selecciona un incentivo' : (!ready ? 'Selecciona el código del bono' : (n === 1 ? 'Confirmar entrega' : `Confirmar entrega · ${n} incentivos`));
+  if(lbl) lbl.textContent = !n ? 'Selecciona un incentivo' : (!ready ? (missing.length === 1 && selectedIncs.filter(x => x.hasCodes).length > 1 ? `Falta el código de ${missing[0].name}` : (missing.length > 1 ? `Faltan ${missing.length} códigos` : 'Selecciona el código del bono')) : (n === 1 ? 'Confirmar entrega' : `Confirmar entrega · ${n} incentivos`));
 }
 
 document.getElementById('nowLabel').textContent = new Date().toLocaleString('es-CO', {day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'});
@@ -741,29 +766,56 @@ function toggleInc(incId){
     const on = selectedIncs.some(x => x.id === el.dataset.inc);
     el.classList.toggle('selected', on); el.setAttribute('aria-checked', on ? 'true' : 'false');
   });
-  const codeInc = selectedIncs.find(x => x.hasCodes) || null;
-  if(!codeInc || !selectedInc || codeInc.id !== selectedInc.id){
-    selectedCode = null; searchQ = ''; codePage = 1;
-    const cs = document.getElementById('codeSearch'); if(cs) cs.value = '';
-  }
-  selectedInc = codeInc;
+  const codeIncs = selectedIncs.filter(x => x.hasCodes);
+  Object.keys(selectedCodes).forEach(id => { if(!codeIncs.some(x => x.id === id)) delete selectedCodes[id]; });
+  /* El bono activo en el panel: se mantiene si sigue marcado; si no, el primero sin código. */
+  const keep = selectedInc && codeIncs.find(x => x.id === selectedInc.id);
+  const codeInc = keep || codeIncs.find(x => !selectedCodes[x.id]) || codeIncs[0] || null;
+  setActiveBono(codeInc);
   document.getElementById('codePanel').hidden = !codeInc;
   document.getElementById('noCodePanel').hidden = true;
   document.getElementById('obsPanel').hidden = !selectedIncs.length;
   document.getElementById('obsNum').textContent = codeInc ? '3' : '2';
-  if(codeInc){
-    document.getElementById('codeIncName').textContent = codeInc.name;
-    renderCodes();
-    requestAnimationFrame(() => { const a = document.querySelector('.code-scope .naowee-segment__item--active'); if(a) moveScopePill(a); });
-  }
   updateSummary();
+}
+
+/* Código elegido por cada bono marcado. */
+const selectedCodes = {};
+function setActiveBono(inc){
+  const changed = !inc || !selectedInc || inc.id !== selectedInc.id;
+  selectedInc = inc;
+  if(!inc){ selectedCode = null; renderBonoTabs(); return; }
+  if(changed){
+    selectedCode = selectedCodes[inc.id] || null; searchQ = ''; codePage = 1;
+    const cs = document.getElementById('codeSearch'); if(cs) cs.value = '';
+  }
+  document.getElementById('codeIncName').textContent = inc.name;
+  renderBonoTabs();
+  renderCodes();
+  requestAnimationFrame(() => { const a = document.querySelector('.code-scope .naowee-segment__item--active'); if(a) moveScopePill(a); });
+}
+function switchBono(id){ const inc = selectedIncs.find(x => x.id === id && x.hasCodes); if(inc){ setActiveBono(inc); updateSummary(); } }
+/* Con dos o más bonos, una pestaña por bono con su estado: así se sabe a cuál se le elige el código. */
+function renderBonoTabs(){
+  const box = document.getElementById('codeBonos');
+  const codeIncs = selectedIncs.filter(x => x.hasCodes);
+  if(codeIncs.length < 2){ box.hidden = true; box.innerHTML = ''; return; }
+  box.hidden = false;
+  box.innerHTML = codeIncs.map(x => {
+    const on = selectedInc && selectedInc.id === x.id, done = !!selectedCodes[x.id];
+    return `<button type="button" role="tab" aria-selected="${on}" class="code-bono${on ? ' is-active' : ''}${done ? ' is-done' : ''}" onclick="switchBono('${x.id}')">
+      <span class="code-bono__name">${x.name}</span>
+      <span class="code-bono__state">${done ? '✓ Código elegido' : 'Falta el código'}</span></button>`;
+  }).join('');
 }
 
 /* ── Hidratar beneficiario verificado en el paso 1 ── */
 const INC_STYLE = {
   'bono-dep': { bg:'#fff3e6', fg:'#d74009', path:'<circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>' },
   'credito':  { bg:'#eef5ff', fg:'#1f78d1', path:'<path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1 2.7 3 6 3s6-2 6-3v-5"/>' },
-  'kit':      { bg:'#e6f4f1', fg:'#0d9488', path:'<rect x="5" y="8" width="14" height="12" rx="2"/><path d="M9 8V5a3 3 0 016 0v3"/>' }
+  'kit':      { bg:'#e6f4f1', fg:'#0d9488', path:'<rect x="5" y="8" width="14" height="12" rx="2"/><path d="M9 8V5a3 3 0 016 0v3"/>' },
+  'bono-transp': { bg:'#fff3e6', fg:'#d74009', path:'<rect x="3" y="6" width="18" height="11" rx="2"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/>' },
+  'bono-alim':   { bg:'#fef6e0', fg:'#b45309', path:'<path d="M3 2v7a3 3 0 003 3v10M9 2v7M6 2v7"/><path d="M18 22V2a4 4 0 00-4 4v7h4"/>' }
 };
 function typeLabel(p){ return p.role==='institution' ? (p.level==='organizacion' ? 'Organización' : 'Institución') : p.role==='coach' ? (p.level==='docente-asistente' ? 'Docente asistente' : 'Docente entrenador') : (p.level==='paradeportista' ? 'Paradeportista' : 'Deportista'); }
 function shortName(name){ const w=(name||'').trim().split(/\s+/); return w.length>2 ? w.slice(0,2).join(' ')+' '+w.slice(2).map(x=>x[0]+'.').join('') : (name||''); }
@@ -800,7 +852,7 @@ function benefMetaHTML(p){
 })();
 
 function confirmAssignment(){
-  if(!selectedIncs.length || (selectedInc && !selectedCode)) return;
+  if(!selectedIncs.length || selectedIncs.some(x => x.hasCodes && !selectedCodes[x.id])) return;
   let p = {};
   try{ p = JSON.parse(sessionStorage.getItem('inc-profile') || '{}'); }catch(e){}
   const now = new Date();
@@ -814,7 +866,7 @@ function confirmAssignment(){
     id: 'N-' + (now.getTime() + i).toString(36).toUpperCase(), deliveryId,
     isNew: true, estado: 'asig', evidence: null,
     doc: p.doc, docType: p.docType, name: p.name, initials: p.initials, role: p.role, level: p.level, kind: p.kind,
-    zone: p.departamento || p.zone || '', incId: inc.id, incName: inc.name, code: inc.hasCodes ? selectedCode : null,
+    zone: p.departamento || p.zone || '', incId: inc.id, incName: inc.name, code: inc.hasCodes ? selectedCodes[inc.id] : null,
     obs, operator: 'Juan Rodríguez',
     programId: p.programId || 'PRG-2026-010', programName: p.programName || 'Juegos Intercolegiados 2026',
     fecha, hora, ts: now.getTime() + i
@@ -827,7 +879,7 @@ function confirmAssignment(){
     recId: recs[0].id, recIds: recs.map(r => r.id), deliveryId, obs,
     incentives: selectedIncs.map(x => ({ id: x.id, name: x.name })),
     incentive: { id: selectedIncs[0].id, name: selectedIncs.map(x => x.name).join(' + ') },
-    code: selectedCode || null, pendingEv, assignedAt: `${fecha} · ${hora}`, ts: now.getTime()
+    code: selectedCode || null, codes: Object.assign({}, selectedCodes), pendingEv, assignedAt: `${fecha} · ${hora}`, ts: now.getTime()
   })));
   fadeAndGo('incentivo-09-validar-foto.html');
 }
@@ -911,10 +963,10 @@ function fadeAndGo(url){
   onScroll();
 })();
 </script>
-<script src="shared/profile-switcher.js?v=20260922201316" defer></script>
+<script src="shared/profile-switcher.js?v=20260922202606" defer></script>
 
 <script src="shared/footer-scroll.js" defer></script>
-<script src="shared/tour.js?v=20260922201316" defer></script>
+<script src="shared/tour.js?v=20260922202606" defer></script>
 
 <!-- Footer flotante Naowee -->
 <div class="naowee-floating-footer" role="contentinfo" aria-label="Pie de página Naowee">
