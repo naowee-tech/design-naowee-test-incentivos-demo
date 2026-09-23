@@ -3074,6 +3074,11 @@
      Abre el mismo wizard mostrando solo una sección, con Cancelar / Guardar
      cambios. "incentivos" sigue a las condiciones de los incentivos nuevos. */
   let sectionMode = null;
+  /* Nombre de quien está usando la demo (según el rol activo), para el historial. */
+  function currentUserName(){
+    try { return (window.ROLES && window.currentRole && window.ROLES[window.currentRole()] || {}).name || 'Doug Vargas'; }
+    catch(e){ return 'Doug Vargas'; }
+  }
   let condOnlyNew = null; // tarjetas nuevas cuyas condiciones se piden tras editar incentivos
   const SECTIONS = {
     datos:       { pane: 1, title: 'Editar información general', hist: 'Información general editada' },
@@ -3097,6 +3102,12 @@
     populateWizardFromProgram(prog);
     setWizardTexts();
     document.querySelector('#wzOverlay .wz-modal')?.setAttribute('data-section', section);
+    // Quién edita: el gestor de programa solo asigna operadores, no el gestor
+    const actor = window.currentRole ? window.currentRole() : 'admin';
+    document.querySelector('#wzOverlay .wz-modal')?.setAttribute('data-actor', actor);
+    if(section === 'equipo' && actor === 'programa'){
+      const t = document.getElementById('wzTitle'); if(t) t.textContent = 'Operadores del programa';
+    }
     document.getElementById('wzOverlay').classList.add('open');
     currentStep = SECTIONS[section].pane;
     isDirty = false;
@@ -3107,6 +3118,7 @@
     sectionMode = null;
     condOnlyNew = null;
     document.querySelector('#wzOverlay .wz-modal')?.removeAttribute('data-section');
+    document.querySelector('#wzOverlay .wz-modal')?.removeAttribute('data-actor');
   }
   function sectionNext(){
     if(!validateStep(currentStep)) return;
@@ -3133,9 +3145,11 @@
       const desact = prog.incentives.filter(i => i.active === false && (orig?.incentives || []).find(o => o.name === i.name)?.active !== false).map(i => i.name);
       desc = [nuevos.length && `Nuevos: ${nuevos.join(', ')}.`, quitados.length && `Eliminados: ${quitados.join(', ')}.`, desact.length && `Desactivados: ${desact.join(', ')}.`].filter(Boolean).join(' ') || 'Datos de los incentivos actualizados.';
     } else if(sectionMode === 'equipo'){
-      desc = `Gestor: ${prog.team?.gestor || 'sin asignar'}. Operadores: ${prog.team?.operators?.length || 0}.`;
+      const ops = (prog.team?.operators || []).map(o => o.split(' · ')[0]);
+      desc = (window.currentRole && window.currentRole() === 'programa' ? '' : `Gestor: ${prog.team?.gestor || 'sin asignar'}. `)
+        + `Operadores (${ops.length}): ${ops.join(', ') || 'sin asignar'}.`;
     } else desc = 'Cambios guardados desde el detalle del programa.';
-    prog.history = [...(orig?.history || []), { at: new Date().toISOString(), who: 'Doug Vargas', title: cfg.hist, desc }];
+    prog.history = [...(orig?.history || []), { at: new Date().toISOString(), who: currentUserName(), title: cfg.hist, desc }];
     persistProgram(prog);
     const section = sectionMode;
     document.getElementById('wzOverlay').classList.remove('open');
@@ -3148,7 +3162,9 @@
   function setWizardTexts(){
     const t = document.getElementById('wzTitle');
     const sub = document.querySelector('#wzOverlay .naowee-modal__subtitle');
-    if(t) t.textContent = sectionMode ? SECTIONS[sectionMode].title : editingProgramId ? 'Editar programa de incentivos' : 'Crear programa de incentivos';
+    const actorPG = window.currentRole && window.currentRole() === 'programa';
+    if(t) t.textContent = sectionMode === 'equipo' && actorPG ? 'Operadores del programa'
+      : sectionMode ? SECTIONS[sectionMode].title : editingProgramId ? 'Editar programa de incentivos' : 'Crear programa de incentivos';
     const pname = editingProgram()?.name || '';
     if(sub) sub.textContent = sectionMode ? `${pname} · ${editingProgramId}` : editingProgramId ? `${editingProgramId} · los cambios reemplazan la versión actual.` : 'Completa los datos del programa. Puedes guardar como borrador y retomar después.';
   }
@@ -3294,7 +3310,7 @@
       eventKey: eventoVal,
       coverage,
       coverageKeys: cobCsv ? cobCsv.split(',') : [],
-      responsible: 'Doug Vargas',
+      responsible: currentUserName(),
       rubro,
       exec: 0,
       unit: parseMoney(getBonoUnitInput()) || (cards[0] ? parseMoney(cards[0].querySelector('.wz-inc-card__unit input')) : 0),
