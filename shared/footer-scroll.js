@@ -9,8 +9,8 @@
    ═══════════════════════════════════════════════════════════════ */
 (function(){
   var MODULE_NAME    = 'Incentivos';
-  var MODULE_VERSION = 'v1.6.0';
-  var REPO           = 'naowee-tech/naowee-test-incentivos-demo';
+  var MODULE_VERSION = 'v2.0.0';
+  var REPO           = 'naowee-tech/design-naowee-test-incentivos-demo';
   var RELEASE_URL    = 'https://github.com/' + REPO + '/releases/tag/' + MODULE_VERSION;
 
   /* Inyecta el separador + link de versión en el pill (idempotente). */
