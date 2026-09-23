@@ -166,6 +166,21 @@
     syncTeams(u, []);
     patch(key, { status:'inactive', deactivatedAt: today() });
   }
+  /* Un gestor de programa con programas no se desactiva sin antes darles otro
+     gestor: `map` = { programId: keyDelNuevoGestor } para cada programa no cerrado. */
+  function reassignAndDeactivate(key, map){
+    const u = byKey(key); if(!u) return false;
+    const pending = programsOf(u).filter(p => p.status !== 'closed');
+    if(u.role === 'gestor_programa' && pending.some(p => !map || !map[p.id])) return false;
+    pending.forEach(p => {
+      const nu = map && byKey(map[p.id]);
+      if(!nu) return;
+      const ids = programsOf(nu).map(x => x.id);
+      if(!ids.includes(p.id)) syncTeams(nu, ids.concat(p.id));
+    });
+    deactivate(key);
+    return true;
+  }
   function reactivate(key){ patch(key, { status:'active' }); }
   function resendInvite(key){ patch(key, { invitedAt: today() }); }
   function resetUsers(){ try { localStorage.removeItem(KEY); } catch(e){} }
@@ -294,7 +309,7 @@
 
   window.IncUsers = {
     ROLE_ORDER, ROLE_LABEL, SWITCHER, all, byKey, viewer, visible, canSee, canManage, rolesBelow, rank,
-    programsOf, assignablePrograms, create, update, deactivate, reactivate, resendInvite, resetUsers,
+    programsOf, assignablePrograms, create, update, deactivate, reassignAndDeactivate, reactivate, resendInvite, resetUsers,
     openForm, closeForm, teamLabel
   };
 })();
