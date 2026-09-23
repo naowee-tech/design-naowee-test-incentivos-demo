@@ -425,6 +425,9 @@ window.getProgramCategory = function(p){
   return (p && p.incentives && p.incentives[0] && p.incentives[0].category) || 'Beca';
 };
 
+/* Estado original de cada programa de ejemplo (antes de ediciones guardadas en la demo). */
+window.PROGRAMS_SEED_STATUS = Object.fromEntries(window.PROGRAMS_DATA.map(p => [p.id, p.status]));
+
 /* Entregas por incentivo (demo): los programas de un solo incentivo
    heredan las asignaciones del programa. */
 window.PROGRAMS_DATA.forEach(p => {

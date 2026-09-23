@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.4.0/dist/design-system.css"/>
 <link rel="stylesheet" href="shared/shell.css"/>
-<link rel="stylesheet" href="shared/programa-wizard.css?v=20260922192023"/>
+<link rel="stylesheet" href="shared/programa-wizard.css?v=20260922192454"/>
 <script src="shared/programs-data.js?v=20260922191536"></script>
 
 <style>
@@ -451,6 +451,10 @@
   .team-empty{font-size:13px;font-style:italic;color:var(--naowee-color-text-secondary,#646587)}
   .inc-card--off{opacity:.6}
   .section-edit{text-transform:none;letter-spacing:0}
+  .closed-note{margin:0 0 16px}
+  .status-issues{list-style:none;margin:0;padding:0;text-align:left;display:flex;flex-direction:column;gap:6px}
+  .status-issues li{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border:1px solid var(--naowee-color-border-default,#e7e9f3);border-radius:8px;font-size:13px}
+  .status-ico--ok{background:#e6f4e7 !important;color:#15803d !important}
   /* Asignaciones: incentivo y sin código */
   .asign-inc{max-width:220px;font-size:12.5px}
   .asign-nocode{font-size:12px;color:var(--naowee-color-text-secondary,#646587);font-style:italic}
@@ -571,6 +575,10 @@
           <h1 class="detail-head__title" id="hdTitle">—</h1>
           <div class="detail-head__meta" id="hdMeta"></div>
         </div>
+        <div class="detail-head__actions" id="hdActions"></div>
+      </div>
+      <div class="naowee-message naowee-message--informative closed-note" id="closedNote" hidden>
+        <div class="naowee-message__header"><div class="naowee-message__text" id="closedNoteText"></div></div>
       </div>
 
       <div class="hero-card__divider"></div>
@@ -755,7 +763,7 @@
                     <span class="naowee-searchbox__icon">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                     </span>
-                    <input type="text" class="naowee-searchbox__input" placeholder="Buscar beneficiario, documento o código" id="asignSearch"/>
+                    <input type="text" class="naowee-searchbox__input" placeholder="Buscar beneficiario, documento, código u operador" id="asignSearch"/>
                     <button type="button" class="naowee-searchbox__clear" onclick="clearSearch('asignSearch')" aria-label="Limpiar búsqueda">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                     </button>
@@ -1056,6 +1064,7 @@ window.addEventListener('load', () => {
   seedAsign();
   seedCodigos();
   renderKpis();
+  renderStatusActions(CURRENT_PROGRAM || {});
   renderCodigos();
   renderAsign();
   renderHistorial();
@@ -1128,6 +1137,106 @@ function renderKpis(){
   }
 }
 
+/* ══ Estado del programa: Activar (borrador) y Cerrar (activo) ══
+   - Activar valida que el programa esté completo; si falta algo, lo lista
+     con un acceso a la sección donde se completa.
+   - Cerrar pide confirmación: no se entregan más incentivos y el programa
+     queda en solo lectura (entregas, códigos e historial se conservan).
+   Pausar queda fuera del alcance. */
+const ICO_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+const ICO_WARN  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="17" x2="12" y2="17.01"/></svg>';
+function renderStatusActions(p){
+  const box = document.getElementById('hdActions');
+  if(!box) return;
+  box.innerHTML = p.status === 'draft'
+    ? `<button class="naowee-btn naowee-btn--loud naowee-btn--large" onclick="askActivate()">${ICO_CHECK.replace('<svg ', '<svg width="16" height="16" ')} Activar programa</button>`
+    : p.status === 'active'
+      ? `<button class="naowee-btn naowee-btn--mute naowee-btn--large" onclick="askClose()">Cerrar programa</button>`
+      : '';
+  // Cerrado: solo lectura
+  const closed = p.status === 'closed';
+  document.querySelectorAll('.section-edit, #btnCargarCodigos, [onclick="editSection(\'condiciones\')"]').forEach(el => { el.hidden = closed; });
+  const note = document.getElementById('closedNote');
+  if(note){
+    note.hidden = !closed;
+    const when = (p.history || []).slice().reverse().find(h => h.title === 'Programa cerrado');
+    document.getElementById('closedNoteText').innerHTML = `<strong>Programa cerrado${when ? ' el ' + new Date(when.at).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) : ''}.</strong> Ya no se entregan incentivos. Las entregas, códigos e historial quedan como consulta.`;
+  }
+}
+/* Qué le falta a un programa en borrador para activarse. */
+function activationIssues(p){
+  const out = [];
+  if(!p.name || p.name === 'Programa sin nombre') out.push({ label: 'Nombre del programa', section: 'datos' });
+  if(!p.coverage || p.coverage === '—') out.push({ label: 'Cobertura territorial', section: 'datos' });
+  const active = (p.incentives || []).filter(i => i.active !== false);
+  if(!active.length) out.push({ label: 'Al menos un incentivo activo', section: 'incentivos' });
+  active.forEach(i => {
+    if(!i.category || !i.beneficiary && !(p.incentives.length === 1)) out.push({ label: `Tipo de beneficiario y categoría de "${i.name}"`, section: 'incentivos' });
+    const rules = ((i.conditions && i.conditions.groups) || []).flatMap(g => g.rules || []).filter(r => r.fieldKey !== 'tipoBeneficiario');
+    const progRules = ((p.conditions && p.conditions.groups) || []).flatMap(g => g.rules || []);
+    if(!rules.length && !progRules.length) out.push({ label: `Condiciones de "${i.name}"`, section: 'condiciones' });
+    const isBono = (i.categoryKey || String(i.category).toLowerCase()) === 'bono';
+    if(isBono){
+      const n = (state.all || []).filter(c => c.incName === i.name).length;
+      if(!n) out.push({ label: `Códigos de "${i.name}"`, section: 'codigos' });
+    }
+  });
+  return out;
+}
+function openStatusDialog({ icon, iconClass, title, sub, buttons }){
+  document.getElementById('statusIcon').innerHTML = icon;
+  document.getElementById('statusIcon').className = 'wz-warn-card__icon' + (iconClass ? ' ' + iconClass : '');
+  document.getElementById('statusTitle').textContent = title;
+  document.getElementById('statusSub').innerHTML = sub;
+  document.getElementById('statusFooter').innerHTML = buttons;
+  document.getElementById('statusOverlay').classList.add('open');
+}
+function closeStatusDialog(){ document.getElementById('statusOverlay').classList.remove('open'); }
+function askActivate(){
+  const p = CURRENT_PROGRAM;
+  const issues = activationIssues(p);
+  if(issues.length){
+    openStatusDialog({
+      icon: ICO_WARN, title: 'Falta completar el programa',
+      sub: `<p style="margin:0 0 10px">Para activarlo completa:</p><ul class="status-issues">${issues.map(x => `<li><span>${x.label}</span><button type="button" class="naowee-btn naowee-btn--link naowee-btn--small" onclick="closeStatusDialog();editSection('${x.section}')">Completar</button></li>`).join('')}</ul>`,
+      buttons: `<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--large" onclick="closeStatusDialog()">Entendido</button>`
+    });
+    return;
+  }
+  openStatusDialog({
+    icon: ICO_CHECK, iconClass: 'status-ico--ok', title: '¿Activar el programa?',
+    sub: 'Los operadores asignados podrán empezar a entregar incentivos a quienes cumplan las condiciones.',
+    buttons: `<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--large" onclick="closeStatusDialog()">Cancelar</button>
+              <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--large" onclick="setProgramStatus('active')">Activar</button>`
+  });
+}
+function askClose(){
+  const p = CURRENT_PROGRAM;
+  const avail = (state.all || []).filter(c => c.estado === 'disp').length;
+  openStatusDialog({
+    icon: ICO_WARN, title: '¿Cerrar el programa?',
+    sub: `Los operadores ya no podrán entregar incentivos de <strong>${p.name}</strong>.${avail ? ` Quedarán <strong>${avail} códigos sin entregar</strong>.` : ''} Las entregas, códigos e historial se conservan como consulta. Esta acción no se puede deshacer desde la demo.`,
+    buttons: `<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--large" onclick="closeStatusDialog()">Cancelar</button>
+              <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--large" onclick="setProgramStatus('closed')">Cerrar programa</button>`
+  });
+}
+function setProgramStatus(status){
+  const p = CURRENT_PROGRAM;
+  const prog = { ...p, status };
+  prog.history = [...(p.history || []), {
+    at: new Date().toISOString(), who: 'Doug Vargas',
+    title: status === 'active' ? 'Programa activado' : 'Programa cerrado',
+    desc: status === 'active' ? 'Disponible para los operadores en campo.' : 'Ya no se entregan incentivos.'
+  }];
+  if(typeof window.saveDemoProgram === 'function') window.saveDemoProgram(prog);
+  closeStatusDialog();
+  location.href = `incentivo-05-programa-detalle.html?id=${encodeURIComponent(p.id)}&tab=historial&saved=${status === 'active' ? 'activado' : 'cerrado'}`;
+}
+window.askActivate = askActivate;
+window.askClose = askClose;
+window.closeStatusDialog = closeStatusDialog;
+window.setProgramStatus = setProgramStatus;
+
 /* Una sola forma de editar: cada sección abre el wizard solo con esa sección. */
 function editSection(section){
   if(!CURRENT_PROGRAM || typeof window.openWizardSection !== 'function') return;
@@ -1147,7 +1256,7 @@ function openTabFromUrl(){
   if(btn) switchTab(tab, btn);
   const saved = params.get('saved');
   if(saved){
-    const msg = { datos:'Información general actualizada.', equipo:'Equipo del programa actualizado.', incentivos:'Incentivos actualizados.', condiciones:'Condiciones actualizadas.', codigos:'Códigos agregados al inventario.' }[saved] || 'Cambios guardados.';
+    const msg = { datos:'Información general actualizada.', equipo:'Equipo del programa actualizado.', incentivos:'Incentivos actualizados.', condiciones:'Condiciones actualizadas.', codigos:'Códigos agregados al inventario.', activado:'El programa está activo.', cerrado:'El programa quedó cerrado.' }[saved] || 'Cambios guardados.';
     const wrap = document.createElement('div');
     wrap.className = 'wz-toast-wrap';
     wrap.innerHTML = `<div class="wz-toast naowee-message naowee-message--positive"><div class="naowee-message__header"><div class="naowee-message__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="naowee-message__text"><strong>Cambios guardados.</strong> ${msg} Quedó registrado en el historial.</div></div></div>`;
@@ -1221,9 +1330,13 @@ function renderHistorial(){
       date:`${p.responsible} · ${dateStr}` });
   } else {
     // Programa demo seeded: timeline rico simulado consistente con el seed actual.
+    // Historial de ejemplo, coherente con el estado del programa de ejemplo
+    const seedStatus = ((window.PROGRAMS_SEED_STATUS || {})[p.id]) || p.status;
+    if(seedStatus !== 'draft' && !(p.history || []).some(h => h.title === 'Programa activado')) items.push(
+      { dot:'green',  ico: ICONS.check,  title:'Programa activado',         desc:'El programa quedó disponible para los operadores en campo.', date:`${p.responsible} · hace 3 minutos` });
+    if(p.codes && p.codes.total) items.push(
+      { dot:'orange', ico: ICONS.upload, title:`Cargue masivo de ${p.codes.total} códigos`, desc:'Archivo procesado sin errores.', date:`${p.responsible} · hace 4 minutos` });
     items.push(
-      { dot:'green',  ico: ICONS.check,  title:'Programa activado',         desc:'El programa quedó disponible para los operadores en campo.', date:`${p.responsible} · hace 3 minutos` },
-      { dot:'orange', ico: ICONS.upload, title:`Cargue masivo de ${p.codes.total} códigos`, desc:'Archivo procesado sin errores.', date:`${p.responsible} · hace 4 minutos` },
       { dot:'blue',   ico: ICONS.edit,   title:'Condiciones de elegibilidad editadas', desc:'Reglas de elegibilidad actualizadas.', date:`${p.responsible} · hace 6 minutos` },
       { dot:'gray',   ico: ICONS.plus,   title:'Programa creado',           desc:`Estado inicial: borrador. Rubro asignado: ${formatMoneyShort(p.rubro)}.`, date:`${p.responsible} · hace 8 minutos` }
     );
@@ -1540,7 +1653,7 @@ function filteredAsign(){
     if(asignState.inc !== 'all' && r.incName !== (CURRENT_PROGRAM.incentives[+asignState.inc] || {}).name) return false;
     if(asignState.search){
       const q = asignState.search.toLowerCase();
-      if(!`${r.person} ${r.cc} ${r.code} ${r.incName}`.toLowerCase().includes(q)) return false;
+      if(!`${r.person} ${r.cc} ${r.code} ${r.incName} ${r.op}`.toLowerCase().includes(q)) return false;
     }
     return true;
   });
@@ -1703,6 +1816,18 @@ document.addEventListener('keydown', e => {
   </aside>
 </div>
 
+<!-- ═══ Diálogo: activar o cerrar el programa ═══ -->
+<div class="wz-warn-overlay wz-warn-overlay--top" id="statusOverlay" role="dialog" aria-modal="true" aria-labelledby="statusTitle">
+  <div class="wz-warn-card">
+    <div class="wz-warn-card__body">
+      <div class="wz-warn-card__icon" id="statusIcon"></div>
+      <h2 class="wz-warn-card__title" id="statusTitle">—</h2>
+      <div class="wz-warn-card__sub" id="statusSub"></div>
+    </div>
+    <div class="wz-warn-card__footer" id="statusFooter"></div>
+  </div>
+</div>
+
 <!-- ═══ Lightbox: Evidencia de entrega ═══ -->
 <div class="ev-overlay" id="evOverlay" role="dialog" aria-modal="true" aria-labelledby="evTitle" onclick="if(event.target===this)closeEvidence()">
   <div class="ev-modal" role="document">
@@ -1786,7 +1911,7 @@ function clearSearch(inputId){
 }
 </script>
 
-<script src="shared/programa-wizard.js?v=20260922192023" defer></script>
+<script src="shared/programa-wizard.js?v=20260922192454" defer></script>
 
 <script src="shared/profile-switcher.js?v=role-7" defer></script>
 

@@ -1485,7 +1485,8 @@
     ['Paso 1 · Datos', [
       'Obligatorios: nombre y cobertura territorial.',
       'Vigencia opcional. Si se llenan ambas fechas, "hasta" debe ser posterior a "desde". Sin fechas: sin cierre.',
-      'Gestor de programa y operadores: opcionales.'
+      'Gestor de programa y operadores: opcionales.',
+      'Código del programa: PRG-AAAA-NNN (año de creación + consecutivo del año). Lo asigna el backend y no cambia al editar.'
     ]],
     ['Paso 2 · Incentivos y rubro', [
       'Por incentivo son obligatorios: nombre, tipo de beneficiario y categoría. Mínimo 1 incentivo.',
@@ -3267,11 +3268,17 @@
       operators: operatorKeys.map(k => ddLabel('operadores', k))
     };
 
-    /* === Generar id único === */
-    const taken = new Set(data.map(p => p.id));
-    let n = data.length + 1;
-    let id = 'PRG-2026-' + String(n).padStart(3, '0');
-    while(taken.has(id)){ n++; id = 'PRG-2026-' + String(n).padStart(3, '0'); }
+    /* === Código del programa: PRG-AAAA-NNN ===
+       Año actual + consecutivo dentro de ese año (el siguiente al mayor que
+       exista). En el producto lo asigna el backend (evita choques si dos
+       gestores crean a la vez) y no cambia al editar. */
+    const year = new Date().getFullYear();
+    const yearPrefix = `PRG-${year}-`;
+    const lastN = data.map(p => String(p.id || ''))
+      .filter(x => x.startsWith(yearPrefix))
+      .map(x => parseInt(x.slice(yearPrefix.length), 10) || 0)
+      .reduce((a, b) => Math.max(a, b), 0);
+    let id = yearPrefix + String(lastN + 1).padStart(3, '0');
     const orig = editingProgram();
     if(orig) id = orig.id;
 
