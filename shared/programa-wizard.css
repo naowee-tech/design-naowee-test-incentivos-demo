@@ -1718,3 +1718,7 @@
 .wz-inc-card--inactive .wz-inc-card__grid{ opacity: .55; pointer-events: none; }
 .wz-inc-card__state{ display: inline-flex; align-items: center; gap: 8px; margin-left: auto; }
 .wz-inc-card__head{ display: flex; align-items: center; gap: 8px; }
+
+/* Gestor de programa: en "equipo" solo asigna operadores (el gestor lo define el gestor de incentivos) */
+.wz-modal[data-actor="programa"][data-section="equipo"] [data-wz-name="gestor-programa"]{ display: none; }
+.wz-modal[data-actor="programa"][data-section="equipo"] [data-wz-block="equipo"] .wz-grid{ grid-template-columns: 1fr; }
