@@ -272,6 +272,7 @@
   .inc--done .inc__name{color:#646587}
   .inc__state{display:flex;flex-direction:column;align-items:flex-end;gap:4px;padding-right:30px;text-align:right}
   .inc__state small{font-size:11px;color:#646587}
+  .inc__state .inc__hint{color:#b45309;font-weight:600;max-width:180px}
   .flow-section h3 .opt{font-weight:500;color:#9c9ebf;font-size:12px;margin-left:4px}
   .obs-field{width:100%}
   .obs-field textarea{min-height:56px;resize:vertical;font-family:inherit}
@@ -369,8 +370,9 @@
           <!-- El incentivo se elige aquí, una vez verificados los datos. Cada uno
                muestra las condiciones que cumple y su estado. -->
           <div class="flow-section">
-            <h3><span class="step-num">1</span> Incentivo a entregar</h3>
-            <div class="incentive-list" id="incList" role="radiogroup" aria-label="Incentivo a entregar"></div>
+            <h3><span class="step-num">1</span> Incentivos a entregar</h3>
+            <p class="desc">Marca los que entregas ahora; puedes entregar varios a la vez. Cada uno queda como un registro aparte.</p>
+            <div class="incentive-list" id="incList" role="group" aria-label="Incentivos a entregar"></div>
           </div>
 
           <div class="flow-section" id="noCodePanel" hidden>
@@ -482,7 +484,7 @@
             <span class="val" id="sumPrg">Juegos Intercolegiados 2026</span>
           </div>
           <div class="summary-row" id="sumInc">
-            <span class="lbl">Incentivo</span>
+            <span class="lbl">Incentivos</span>
             <span class="val">—</span>
           </div>
           <!-- Código retirado del resumen por seguridad (feedback Danna): código redimible. La selección del código sigue en la tabla del inventario. -->
@@ -672,12 +674,13 @@ function selectCode(code){
 
 function updateSummary(){
   const sumInc = document.getElementById('sumInc');
-  if(sumInc) sumInc.querySelector('.val').textContent = selectedInc ? selectedInc.name : '—';
+  if(sumInc) sumInc.querySelector('.val').innerHTML = selectedIncs.length ? selectedIncs.map(x => x.name).join('<br/>') : '—';
   /* Código NO se muestra en el resumen (regla de seguridad: código redimible). */
-  const ready = !!(selectedInc && (selectedInc.hasCodes ? selectedCode : true));
+  const ready = selectedIncs.length > 0 && (!selectedInc || !!selectedCode);
   document.getElementById('btnNext').disabled = !ready;
   const lbl = document.getElementById('btnNextLbl');
-  if(lbl) lbl.textContent = !selectedInc ? 'Selecciona un incentivo' : (!ready ? 'Selecciona un código' : 'Confirmar entrega');
+  const n = selectedIncs.length;
+  if(lbl) lbl.textContent = !n ? 'Selecciona un incentivo' : (!ready ? 'Selecciona el código del bono' : (n === 1 ? 'Confirmar entrega' : `Confirmar entrega · ${n} incentivos`));
 }
 
 document.getElementById('nowLabel').textContent = new Date().toLocaleString('es-CO', {day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'});
@@ -719,27 +722,37 @@ function renderIncList(){
       const badge = a.evidencePending
         ? '<span class="naowee-badge naowee-badge--caution naowee-badge--quiet naowee-badge--small">Entregado · falta evidencia</span>'
         : '<span class="naowee-badge naowee-badge--neutral naowee-badge--quiet naowee-badge--small">Ya entregado</span>';
-      return `<div class="inc inc--done" aria-disabled="true">${ico}${body}<div class="inc__state">${badge}<small>${a.operator} · ${a.date}</small></div></div>`;
+      const note = a.evidencePending ? '<small class="inc__hint">Puedes incluir su evidencia en el paso siguiente</small>' : '';
+      return `<div class="inc inc--done" aria-disabled="true">${ico}${body}<div class="inc__state">${badge}<small>${a.operator} · ${a.date}</small>${note}</div></div>`;
     }
-    return `<div class="inc" data-inc="${pr.incId}" role="radio" aria-checked="false" tabindex="0" onclick="selectInc('${pr.incId}')" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();selectInc('${pr.incId}')}">${ico}${body}<div class="inc__state"><span class="naowee-badge naowee-badge--informative naowee-badge--quiet naowee-badge--small">Disponible</span></div></div>`;
+    return `<div class="inc" data-inc="${pr.incId}" role="checkbox" aria-checked="false" tabindex="0" onclick="toggleInc('${pr.incId}')" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();toggleInc('${pr.incId}')}">${ico}${body}<div class="inc__state"><span class="naowee-badge naowee-badge--informative naowee-badge--quiet naowee-badge--small">Disponible</span></div></div>`;
   }).join('');
 }
-function selectInc(incId){
+/* Varios incentivos por entrega. El que maneja códigos (Bono) pide el suyo:
+   `selectedInc` es ese incentivo y alimenta el panel de códigos. */
+let selectedIncs = [];
+function toggleInc(incId){
   const pr = (PROFILE.programs || []).find(x => x.incId === incId && !x.assigned);
   if(!pr) return;
-  selectedInc = { id: pr.incId, name: pr.name, desc: pr.desc || '', hasCodes: !!pr.hasCodes };
-  selectedCode = null; searchQ = ''; codePage = 1;
-  const cs = document.getElementById('codeSearch'); if(cs) cs.value = '';
+  const i = selectedIncs.findIndex(x => x.id === incId);
+  if(i >= 0) selectedIncs.splice(i, 1);
+  else selectedIncs.push({ id: pr.incId, name: pr.name, desc: pr.desc || '', hasCodes: !!pr.hasCodes });
   document.querySelectorAll('#incList .inc[data-inc]').forEach(el => {
-    const on = el.dataset.inc === incId;
+    const on = selectedIncs.some(x => x.id === el.dataset.inc);
     el.classList.toggle('selected', on); el.setAttribute('aria-checked', on ? 'true' : 'false');
   });
-  document.getElementById('codeIncName').textContent = selectedInc.name;
-  document.getElementById('codePanel').hidden = !selectedInc.hasCodes;
+  const codeInc = selectedIncs.find(x => x.hasCodes) || null;
+  if(!codeInc || !selectedInc || codeInc.id !== selectedInc.id){
+    selectedCode = null; searchQ = ''; codePage = 1;
+    const cs = document.getElementById('codeSearch'); if(cs) cs.value = '';
+  }
+  selectedInc = codeInc;
+  document.getElementById('codePanel').hidden = !codeInc;
   document.getElementById('noCodePanel').hidden = true;
-  document.getElementById('obsPanel').hidden = false;
-  document.getElementById('obsNum').textContent = selectedInc.hasCodes ? '3' : '2';
-  if(selectedInc.hasCodes){
+  document.getElementById('obsPanel').hidden = !selectedIncs.length;
+  document.getElementById('obsNum').textContent = codeInc ? '3' : '2';
+  if(codeInc){
+    document.getElementById('codeIncName').textContent = codeInc.name;
     renderCodes();
     requestAnimationFrame(() => { const a = document.querySelector('.code-scope .naowee-segment__item--active'); if(a) moveScopePill(a); });
   }
@@ -775,7 +788,7 @@ function benefMetaHTML(p){
   if(rows[1]){ rows[1].querySelector('.val').textContent = `${p.docType || 'CC'} ${p.doc}`; }
   renderIncList();
   const avail = p.programs.filter(pr => !pr.assigned);
-  if(avail.length === 1) selectInc(avail[0].incId);
+  if(avail.length === 1) toggleInc(avail[0].incId);
   updateSummary();
 })();
 
@@ -787,25 +800,34 @@ function benefMetaHTML(p){
 })();
 
 function confirmAssignment(){
-  if(!selectedInc || (selectedInc.hasCodes && !selectedCode)) return;
+  if(!selectedIncs.length || (selectedInc && !selectedCode)) return;
   let p = {};
   try{ p = JSON.parse(sessionStorage.getItem('inc-profile') || '{}'); }catch(e){}
   const now = new Date();
   const MES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-  const rec = {
-    id: 'N-' + now.getTime().toString(36).toUpperCase(),
+  const fecha = `${String(now.getDate()).padStart(2,'0')} ${MES[now.getMonth()]} ${now.getFullYear()}`;
+  const hora = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const obs = (document.getElementById('deliveryObs').value || '').trim();
+  const deliveryId = 'E-' + now.getTime().toString(36).toUpperCase();
+  /* Un registro por incentivo (se revierten por separado), agrupados por la entrega. */
+  const recs = selectedIncs.map((inc, i) => ({
+    id: 'N-' + (now.getTime() + i).toString(36).toUpperCase(), deliveryId,
     isNew: true, estado: 'asig', evidence: null,
     doc: p.doc, docType: p.docType, name: p.name, initials: p.initials, role: p.role, level: p.level, kind: p.kind,
-    zone: p.departamento || p.zone || '', incId: selectedInc.id, incName: selectedInc.name, code: selectedCode || null,
-    obs: (document.getElementById('deliveryObs').value || '').trim(), operator: 'Juan Rodríguez',
+    zone: p.departamento || p.zone || '', incId: inc.id, incName: inc.name, code: inc.hasCodes ? selectedCode : null,
+    obs, operator: 'Juan Rodríguez',
     programId: p.programId || 'PRG-2026-010', programName: p.programName || 'Juegos Intercolegiados 2026',
-    fecha: `${String(now.getDate()).padStart(2,'0')} ${MES[now.getMonth()]} ${now.getFullYear()}`,
-    hora: `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`,
-    ts: now.getTime()
-  };
-  ledgerPut(rec);
+    fecha, hora, ts: now.getTime() + i
+  }));
+  recs.forEach(ledgerPut);
+  /* Entregas anteriores de esta persona sin evidencia: la foto de ahora puede cubrirlas. */
+  const pendingEv = (p.programs || []).filter(pr => pr.assigned && pr.assigned.evidencePending && pr.assigned.recId)
+    .map(pr => ({ recId: pr.assigned.recId, name: pr.name, date: pr.assigned.date }));
   sessionStorage.setItem('inc-assignment', JSON.stringify(Object.assign({}, p, {
-    recId: rec.id, obs: rec.obs, incentive: selectedInc, code: selectedCode || null, assignedAt: `${rec.fecha} · ${rec.hora}`, ts: rec.ts
+    recId: recs[0].id, recIds: recs.map(r => r.id), deliveryId, obs,
+    incentives: selectedIncs.map(x => ({ id: x.id, name: x.name })),
+    incentive: { id: selectedIncs[0].id, name: selectedIncs.map(x => x.name).join(' + ') },
+    code: selectedCode || null, pendingEv, assignedAt: `${fecha} · ${hora}`, ts: now.getTime()
   })));
   fadeAndGo('incentivo-09-validar-foto.html');
 }

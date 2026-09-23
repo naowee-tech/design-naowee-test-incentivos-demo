@@ -378,7 +378,8 @@ try{
     const na = document.getElementById('btnNewAssignment');
     na.className = 'naowee-btn naowee-btn--mute naowee-btn--large';
   } else if(s.evidence){
-    document.getElementById('receiptEvidence').textContent = s.evidence.replace('Archivo subido · ','');
+    document.getElementById('receiptEvidence').textContent = s.evidence.replace('Archivo subido · ','')
+      + (Array.isArray(s.evidenceAlso) && s.evidenceAlso.length ? ` · también para ${s.evidenceAlso.join(', ')}` : '');
     if(s.evidenceOnly){
       document.getElementById('heroTitle').textContent = 'Evidencia registrada';
       document.getElementById('heroText').innerHTML = 'La evidencia quedó asociada a la entrega. Estado: <strong>Entregado</strong>.';

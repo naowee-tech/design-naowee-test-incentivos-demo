@@ -294,6 +294,10 @@
   .summary-actions{display:flex;flex-direction:column;gap:8px;margin-top:6px}
 
   [hidden]{display:none !important}
+  .also-ev{margin-top:16px;border:1px solid #fde2b8;background:#fffaf2;border-radius:12px;padding:12px 14px}
+  .also-ev__title{font-size:12px;font-weight:700;color:#92400e;margin-bottom:8px}
+  .also-ev__item{display:flex;align-items:center;gap:10px;font-size:13px;color:#282834;cursor:pointer;padding:4px 0}
+  .also-ev__item input{width:16px;height:16px;accent-color:#d74009}
 </style>
 </head>
 <body>
@@ -389,6 +393,12 @@
               <div class="wz-dropzone__fmts">
                 <span class="fmt">Imagen (JPG, PNG, HEIC, WEBP…)</span><span class="fmt">PDF</span><span class="fmt">Máx 10MB</span>
               </div>
+            </div>
+            <!-- Entregas anteriores de esta persona sin evidencia: la misma foto puede cubrirlas
+                 (el beneficiario está presente). Se marca a propósito; por defecto no. -->
+            <div class="also-ev" id="alsoEv" hidden>
+              <div class="also-ev__title">Esta foto también puede servir de evidencia para</div>
+              <div id="alsoEvList"></div>
             </div>
             </div><!-- /.panel__body -->
 
@@ -531,15 +541,22 @@ function ledgerPut(rec){ try{ const all = ledgerAll(); all[rec.id] = Object.assi
 
 function currentAssignment(){ try{ return JSON.parse(sessionStorage.getItem('inc-assignment') || '{}'); }catch(e){ return {}; } }
 
+function alsoChecked(){
+  return Array.from(document.querySelectorAll('#alsoEvList input:checked')).map(el => ({ recId: el.value, name: el.dataset.name }));
+}
 function finish(evidence){
   const s = currentAssignment();
   const obs = s.obs || null;
-  if(s.recId && evidence) ledgerPut({ id: s.recId, evidence, evidenceAt: new Date().toLocaleString('es-CO') });
+  /* La foto aplica a todos los incentivos de esta entrega y a las pendientes que se marcaron. */
+  const also = evidence ? alsoChecked() : [];
+  const ids = (s.recIds || (s.recId ? [s.recId] : [])).concat(also.map(a => a.recId));
+  if(evidence) ids.forEach(id => ledgerPut({ id, evidence, evidenceAt: new Date().toLocaleString('es-CO') }));
   sessionStorage.setItem('inc-assignment-complete', JSON.stringify(Object.assign({}, s, {
     incentive: s.incentive?.name || 'Incentivo',
     observation: obs,
     evidence: evidence ? `Archivo subido · ${evidence}` : null,
     evidencePending: !evidence,
+    evidenceAlso: also.map(a => a.name),
     ts: Date.now()
   })));
   fadeAndGo('incentivo-11-asignar-exito.html');
@@ -575,6 +592,13 @@ function uploadLater(){
     if(s.doc) document.getElementById('recapDoc').innerHTML = `<strong>${s.docType || ''}</strong> ${s.doc}`;
     if(s.incentive?.name) document.getElementById('recapInc').textContent = s.incentive.name;
     /* recapCode (código redimible) retirado del resumen por seguridad (feedback Danna). */
+    const pend = (!s.evidenceOnly && Array.isArray(s.pendingEv)) ? s.pendingEv : [];
+    if(pend.length){
+      document.getElementById('alsoEvList').innerHTML = pend.map(x => `
+        <label class="also-ev__item"><input type="checkbox" value="${x.recId}" data-name="${x.name}"/>
+          <span><strong>${x.name}</strong> · entregado el ${x.date}, sin evidencia</span></label>`).join('');
+      document.getElementById('alsoEv').hidden = false;
+    }
     if(s.evidenceOnly){
       document.getElementById('pageTitle').textContent = 'Subir evidencia pendiente';
       document.getElementById('pageSub').textContent = `Incentivo entregado el ${s.assignedAt || '—'}. Registra la foto o el PDF de la entrega.`;
