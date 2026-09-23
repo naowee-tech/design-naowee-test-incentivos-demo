@@ -7,7 +7,7 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.4.0/dist/design-system.css"/>
-<link rel="stylesheet" href="shared/shell.css"/>
+<link rel="stylesheet" href="shared/shell.css?v=20260922200101"/>
 
 <style>
   .page-header{
@@ -97,6 +97,26 @@
 
   /* Quick demo chips */
   .quick-row{display:flex;align-items:center;gap:8px;margin-top:18px;flex-wrap:wrap}
+  .quick-chip.off-prg{display:none !important}
+  .quick-note{font-size:12px;color:var(--naowee-color-text-secondary,#646587)}
+  [hidden]{display:none !important}
+  .result-wrap{padding-bottom:72px}
+  .pending-banner{margin-bottom:16px}
+  .pending-banner .naowee-message__header{align-items:center}
+  .pending-banner .naowee-message__text{flex:1}
+  .pending-ev{display:flex;flex-direction:column;gap:8px;padding:0 32px 4px}
+  .pending-ev .naowee-message__header{align-items:center}
+  .pending-ev .naowee-message__text{flex:1}
+  .profile-body .contact-section{padding:0}
+  .profile-body .contact-section__head{margin-bottom:12px}
+  .profile-body .contact-section__hint{margin:10px 0 0}
+  .profile-body .contact-fields{grid-template-columns:1fr}
+  .profile-body--single{grid-template-columns:1fr}
+  .profile-body--single::before{display:none}
+  .footer-incs{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .footer-note{font-size:12.5px;color:var(--naowee-color-text-secondary,#646587)}
+  .inc-pill{font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;background:#fff3e6;color:#b45309}
+  .inc-pill--done{background:#f1f1f6;color:#646587}
   .quick-label{font-size:11.5px;color:var(--naowee-color-text-secondary,#646587);font-weight:600}
   .quick-chip{
     font-size:11.5px;font-weight:600;color:var(--naowee-color-text-primary,#282834);
@@ -539,8 +559,8 @@
     <header class="top-header">
       <div class="profile-switcher" id="profileSwitcher">
         <div class="user-chip" onclick="toggleProfileDD(event)">
-          <div class="ava"><div class="ava-ring" id="avaRing" style="background:#ffdfb5;color:#92400e">DV</div><div class="ava-dot"></div></div>
-          <div class="user-info"><span class="user-name">Doug Vargas</span><span class="user-role" id="userRoleLabel">Operador</span></div>
+          <div class="ava"><div class="ava-ring" id="avaRing" style="background:#ffdfb5;color:#92400e">JR</div><div class="ava-dot"></div></div>
+          <div class="user-info"><span class="user-name">Juan Rodríguez</span><span class="user-role" id="userRoleLabel">Operador</span></div>
           <button class="user-chip__chevron" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>
         </div>
       </div>
@@ -551,21 +571,15 @@
       <div class="page-header">
         <div class="page-header__title-group">
           <h1 class="page-title">Asignar incentivo</h1>
-          <p class="page-sub">Busca al beneficiario entre los ganadores/elegibles de los programas activos, selecciona el incentivo a entregar y registra la evidencia (ahora o después).</p>
+          <p class="page-sub">Busca al beneficiario entre los ganadores/elegibles del programa, verifica sus datos y entrega el incentivo.</p>
         </div>
       </div>
 
-      <!-- Stepper sticky con progressive collapse estilo digitación.
-           El .stepper ES el sticky element directamente (patrón .sport-section) -->
-      <div class="stepper" id="stepperWrap">
-        <div class="step active"><span class="n">1</span><span class="step-lbl">Buscar y seleccionar</span></div>
-        <span class="step-sep"></span>
-        <div class="step"><span class="n">2</span><span class="step-lbl">Confirmar asignación</span></div>
-        <span class="step-sep"></span>
-        <div class="step"><span class="n">3</span><span class="step-lbl">Evidencia de entrega</span></div>
-        <span class="step-sep"></span>
-        <div class="step"><span class="n">4</span><span class="step-lbl">Confirmación</span></div>
-      </div>
+      <!-- Programa de trabajo del operador: la búsqueda, los incentivos y los
+           códigos son del programa elegido (shared/operador-programa.js). -->
+      <div id="opPrgBar"></div>
+      <!-- Entregas propias sin evidencia: dónde retomarlas. -->
+      <div id="pendingBanner"></div>
 
       <!-- Search card -->
       <div class="search-card">
@@ -645,8 +659,19 @@
           <button class="quick-chip" data-type="docente-asistente" style="display:none" onclick="runDemo('eligible-assistant')"><code>1044556677</code> · asistente equipo campeón</button>
           <button class="quick-chip" data-type="institucion" style="display:none" onclick="runDemo('institution')"><code>108001000123</code> · DANE · institución con más oros</button>
           <button class="quick-chip" data-type="organizacion" style="display:none" onclick="runDemo('organization')"><code>900456789</code> · organización con más oros en para deportes</button>
+          <button class="quick-chip" data-type="deportista" data-prg="PRG-2026-003" onclick="runDemo('two-bonos')"><code>1012345678</code> · prejuvenil con dos bonos</button>
           <button class="quick-chip" data-type="all" onclick="resetDemoData()" title="Borra las asignaciones hechas en esta demo (vuelve al estado inicial)">↺ Reiniciar demo</button>
         </div>
+      </div>
+
+      <!-- Los pasos empiezan cuando se encuentra al beneficiario: buscar no es un paso.
+           Sticky con progressive collapse (patrón digitación .sport-section). -->
+      <div class="stepper" id="stepperWrap" hidden>
+        <div class="step active"><span class="n">1</span><span class="step-lbl">Verificar datos</span></div>
+        <span class="step-sep"></span>
+        <div class="step"><span class="n">2</span><span class="step-lbl">Entregar</span></div>
+        <span class="step-sep"></span>
+        <div class="step"><span class="n">3</span><span class="step-lbl">Evidencia</span></div>
       </div>
 
       <!-- Result -->
@@ -656,7 +681,7 @@
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
           </div>
           <h4>Ingresa un documento para empezar</h4>
-          <p>La búsqueda se hace <strong>solo entre los ganadores/elegibles</strong> de los programas activos (documento para personas, código DANE para instituciones). Usa los ejemplos de demo para ver los casos posibles.</p>
+          <p id="emptyHint">La búsqueda se hace <strong>solo entre los ganadores/elegibles</strong> del programa (documento para personas, código DANE para instituciones). Usa los ejemplos de demo para ver los casos posibles.</p>
         </div>
       </div>
 
@@ -664,6 +689,9 @@
   </div>
 </div>
 
+<script src="shared/programs-data.js?v=20260922203322"></script>
+<script src="shared/operador-entregas.js?v=20260922203322"></script>
+<script src="shared/operador-programa.js?v=20260922203322"></script>
 <script>
 /* ═════ Catálogo de incentivos reales · Juegos Intercolegiados 2026 (xlsx requisitos) ═════
    El operador NO ve valores monetarios (feedback Danna). Solo el Bono Deportivo maneja
@@ -671,9 +699,13 @@
 const INCENTIVES = {
   'bono-dep': { name:'Bono Deportivo',                    iconBg:'#fff3e6', iconColor:'#d74009', icon:'award',  hasCodes:true  },
   'credito':  { name:'Crédito Condonable ICETEX',         iconBg:'#eef5ff', iconColor:'#1f78d1', icon:'grad',   hasCodes:false },
-  'kit':      { name:'Kit de implementación deportiva',   iconBg:'#e6f4f1', iconColor:'#0d9488', icon:'bag',    hasCodes:false }
+  'kit':      { name:'Kit de implementación deportiva',   iconBg:'#e6f4f1', iconColor:'#0d9488', icon:'bag',    hasCodes:false },
+  /* Bono transporte intercolegiados (PRG-2026-003): dos bonos, cada uno con su inventario. */
+  'bono-transp': { name:'Bono transporte mensual',          iconBg:'#fff3e6', iconColor:'#d74009', icon:'bus',    hasCodes:true  },
+  'bono-alim':   { name:'Bono alimentación en competencia', iconBg:'#fef6e0', iconColor:'#b45309', icon:'meal',   hasCodes:true  }
 };
-function prog(incId, desc, extra){ return Object.assign({ incId, name: INCENTIVES[incId].name, desc, iconBg: INCENTIVES[incId].iconBg, iconColor: INCENTIVES[incId].iconColor, icon: INCENTIVES[incId].icon }, extra || {}); }
+/* conds: índices de p.conditions que aplican a ese incentivo (sin conds = todas). */
+function prog(incId, desc, extra){ return Object.assign({ incId, name: INCENTIVES[incId].name, desc, hasCodes: !!INCENTIVES[incId].hasCodes, iconBg: INCENTIVES[incId].iconBg, iconColor: INCENTIVES[incId].iconColor, icon: INCENTIVES[incId].icon }, extra || {}); }
 
 /* La búsqueda es ENTRE LOS GANADORES/ELEGIBLES (00:28:12), no en toda la plataforma.
    Cualquier documento fuera de esta lista → "no tiene incentivos aplicables". */
@@ -688,11 +720,11 @@ const SAMPLE = {
     conditions:[
       { label:'1er puesto · fase final nacional', val:'Oro · 400 m', ok:true },
       { label:'Grado escolar ≤ 11°', val:'11°', ok:true },
-      { label:'Cursa grado 11° (Crédito Condonable)', val:'11°', ok:true }
+      { label:'Cursa grado 11°', val:'11°', ok:true }
     ],
     programs:[
-      prog('bono-dep', 'Deportista campeón · en individuales, 1 incentivo por deportista'),
-      prog('credito',  'Campeón que cursa grado 11° (o 12° en escuelas normales)')
+      prog('bono-dep', 'Deportista campeón · en individuales, 1 incentivo por deportista', { conds:[0,1] }),
+      prog('credito',  'Campeón que cursa grado 11° (o 12° en escuelas normales)', { conds:[0,2] })
     ]
   },
   'partial-assigned':{
@@ -705,12 +737,12 @@ const SAMPLE = {
     conditions:[
       { label:'1er puesto · fase final nacional', val:'Oro · 200 m libre', ok:true },
       { label:'Grado escolar ≤ 11°', val:'11°', ok:true },
-      { label:'Cursa grado 11° (Crédito Condonable)', val:'11°', ok:true }
+      { label:'Cursa grado 11°', val:'11°', ok:true }
     ],
     programs:[
       prog('bono-dep', 'Deportista campeón · en individuales, 1 incentivo por deportista',
-        { assigned:{ operator:'Laura Meza', operatorRole:'Operador · Indeportes Bolívar', date:'08 sep 2026', time:'10:42' } }),
-      prog('credito',  'Campeón que cursa grado 11° (o 12° en escuelas normales)')
+        { conds:[0,1], assigned:{ operator:'Laura Meza', operatorRole:'Operador · Indeportes Bolívar', date:'08 sep 2026', time:'10:42' } }),
+      prog('credito',  'Campeón que cursa grado 11° (o 12° en escuelas normales)', { conds:[0,2] })
     ]
   },
   'evidence-pending':{
@@ -727,7 +759,7 @@ const SAMPLE = {
     programs:[
       /* recId enlaza con la fila R-0001 de Mis asignaciones (14): subir la evidencia o revertir allí se refleja aquí. */
       prog('bono-dep', 'Deportista campeón · en individuales, 1 incentivo por deportista',
-        { assigned:{ recId:'R-0001', operator:'Doug Vargas', operatorRole:'Operador', date:'15 sep 2026', time:'16:05', evidencePending:true } })
+        { conds:[0,1], assigned:{ recId:'R-0001', operator:'Juan Rodríguez', operatorRole:'Operador', date:'15 sep 2026', time:'16:05', evidencePending:true } })
     ]
   },
   'all-assigned':{
@@ -740,13 +772,13 @@ const SAMPLE = {
     conditions:[
       { label:'1er puesto · fase final nacional', val:'Oro · 73 kg', ok:true },
       { label:'Grado escolar ≤ 11°', val:'11°', ok:true },
-      { label:'Cursa grado 11° (Crédito Condonable)', val:'11°', ok:true }
+      { label:'Cursa grado 11°', val:'11°', ok:true }
     ],
     programs:[
       prog('bono-dep', 'Deportista campeón · en individuales, 1 incentivo por deportista',
-        { assigned:{ recId:'R-0002', operator:'Doug Vargas', operatorRole:'Operador', date:'10 sep 2026', time:'15:18' } }),
+        { conds:[0,1], assigned:{ recId:'R-0002', operator:'Juan Rodríguez', operatorRole:'Operador', date:'10 sep 2026', time:'15:18' } }),
       prog('credito',  'Campeón que cursa grado 11° (o 12° en escuelas normales)',
-        { assigned:{ operator:'Carla Suárez', operatorRole:'Operador · Indeportes Cundinamarca', date:'12 sep 2026', time:'09:05' } })
+        { conds:[0,2], assigned:{ operator:'Carla Suárez', operatorRole:'Operador · Indeportes Cundinamarca', date:'12 sep 2026', time:'09:05' } })
     ]
   },
   'eligible-para':{
@@ -801,6 +833,25 @@ const SAMPLE = {
     ],
     programs:[ prog('kit', 'Institución educativa con más medallas de oro en deportes convencionales') ]
   },
+  /* Programa Bono transporte intercolegiados: una deportista con DOS bonos. */
+  'two-bonos':{
+    prg:'PRG-2026-003',
+    role:'athlete', level:'deportista',
+    name:'Luisa Fernanda Castro Ríos', docType:'TI', doc:'1012345678', initials:'LC',
+    grado:'9°', institucion:'I.E. Departamental Pablo VI · Soacha', deporte:'Ciclismo · ruta',
+    categoria:'Prejuvenil', departamento:'Cundinamarca', phone:'310 245 8890', email:'luisa.castro@email.com',
+    medal:'Participante 2026', obs:'',
+    medals:[],
+    conditions:[
+      { label:'Categoría prejuvenil', val:'Prejuvenil', ok:true },
+      { label:'Edad entre 13 y 17 años', val:'15 años', ok:true },
+      { label:'Compite en fechas del calendario 2026', val:'3 fechas', ok:true }
+    ],
+    programs:[
+      prog('bono-transp', 'Recarga TransMilenio/SITP · prejuveniles de Cundinamarca', { conds:[0,1] }),
+      prog('bono-alim',   'Alimentación durante las fechas de competencia', { conds:[0,2] })
+    ]
+  },
   'organization':{
     role:'institution', level:'organizacion', docType:'NIT', doc:'900456789', initials:'DS',
     name:'Fundación Deporte Sin Límites', zone:'Medellín', departamento:'Antioquia', sede:'Sede Laureles',
@@ -842,7 +893,7 @@ function profileView(kind){
     }
     if(!pr.assigned){
       const rec = Object.values(L).find(r => r.doc === p.doc && r.incId === pr.incId && r.estado === 'asig');
-      if(rec) pr.assigned = { recId: rec.id, operator: rec.operator || 'Doug Vargas', operatorRole:'Operador', date: rec.fecha, time: rec.hora, evidencePending: !rec.evidence };
+      if(rec) pr.assigned = { recId: rec.id, operator: rec.operator || 'Juan Rodríguez', operatorRole:'Operador', date: rec.fecha, time: rec.hora, evidencePending: !rec.evidence };
     }
   });
   return p;
@@ -926,54 +977,36 @@ function doSearch(){
   return runDemo('not-eligible', false, raw);
 }
 
-let selectedIncId = null;
 
 function runDemo(kind, skipLoading, rawDoc){
   const wrap = document.getElementById('stateWrap');
-  selectedIncId = null;
   const render = () => {
-    const p = profileView(kind);
-    if(p){ syncTypeRadio(p.level); if(p.docType && p.role !== 'institution') setDocType(p.docType); wrap.innerHTML = renderEligible(p, kind); autoSelectSingle(); return; }
-    const inputDoc = rawDoc || (kind === 'not-eligible' ? '1003456789' : kind === 'not-eligible-coach' ? '1067543210' : '');
+    /* Los perfiles de prueba son de Juegos Intercolegiados 2026: en otro
+       programa el mismo documento no tiene incentivos aplicables. */
+    const p = inCurrentProgram(kind) ? profileView(kind) : null;
+    if(p){ syncTypeRadio(p.level); if(p.docType && p.role !== 'institution') setDocType(p.docType); wrap.innerHTML = renderEligible(p, kind); showStepper(true); return; }
+    const inputDoc = rawDoc || (kind === 'not-eligible' ? '1003456789' : kind === 'not-eligible-coach' ? '1067543210' : (document.getElementById('docNumber').value.trim()));
     wrap.innerHTML = renderNoIncentives(inputDoc);
+    showStepper(false);
   };
   if(skipLoading){ render(); return; }
-  wrap.innerHTML = `<div class="loading-banner"><div class="spinner"></div> Buscando entre los ganadores y elegibles de los programas activos…</div>`;
+  wrap.innerHTML = `<div class="loading-banner"><div class="spinner"></div> Buscando entre los ganadores y elegibles de ${esc(prgName())}…</div>`;
   setTimeout(render, 500);
 }
 
 /* Selección única del incentivo a entregar (radio). Unifica "incentivos aplicables" + selección (00:23:13). */
-function selectIncentive(incId){
-  selectedIncId = incId;
-  document.querySelectorAll('.prog[data-inc]').forEach(el => {
-    const on = el.dataset.inc === incId;
-    el.classList.toggle('is-selected', on);
-    el.setAttribute('aria-checked', on ? 'true' : 'false');
-    const r = el.querySelector('.naowee-radio'); if(r) r.classList.toggle('naowee-radio--selected', on);
-  });
-  const btn = document.getElementById('btnContinue');
-  if(btn){
-    btn.disabled = !incId;
-    const lbl = btn.querySelector('.btn-lbl');
-    if(lbl) lbl.textContent = incId ? `Continuar con ${INCENTIVES[incId].name}` : 'Selecciona un incentivo';
-  }
-}
-
 function saveProfileAndGo(doc, kind){
-  if(!selectedIncId) return;
-  /* Guarda el beneficiario COMPLETO + el incentivo elegido para que viaje por el flujo (10 → 09 → 11). */
+  /* Datos verificados → "Entregar" (10). Viaja el beneficiario completo con sus incentivos
+     y condiciones; el incentivo, el código y las observaciones se eligen allá. */
   const p = profileView(kind) || {};
-  const obsEl = document.getElementById('fichaObs');
-  const pr = (p.programs || []).find(x => x.incId === selectedIncId) || {};
   sessionStorage.setItem('inc-profile', JSON.stringify({
-    doc: p.doc || doc, kind, ts: Date.now(),
+    doc: p.doc || doc, kind, ts: Date.now(), programId: CUR_PRG.id, programName: CUR_PRG.name,
     role: p.role || 'athlete', level: p.level, coachRole: p.coachRole,
     name: p.name, docType: p.docType, initials: p.initials,
     grado: p.grado, institucion: p.institucion, deporte: p.deporte, disc: p.deporte, categoria: p.categoria,
     departamento: p.departamento, zone: p.zone ? `${p.zone} · ${p.departamento}` : p.departamento,
-    medal: p.medal, oros: p.oros, obs: obsEl ? obsEl.value.trim() : (p.obs || ''),
-    programs: p.programs || [],
-    selectedIncentive: { id: selectedIncId, name: pr.name || INCENTIVES[selectedIncId].name, desc: pr.desc || '', hasCodes: !!INCENTIVES[selectedIncId].hasCodes }
+    medal: p.medal, oros: p.oros, phone: p.phone, email: p.email,
+    programs: p.programs || [], conditions: (p.conditions || []).filter(c => c.ok)
   }));
   fadeAndGo('incentivo-10-asignar-tipo.html?doc=' + encodeURIComponent(p.doc || doc));
 }
@@ -983,7 +1016,7 @@ function goUploadEvidence(kind, incId){
   const p = profileView(kind); if(!p) return;
   const pr = (p.programs || []).find(x => x.incId === incId); if(!pr || !pr.assigned) return;
   sessionStorage.setItem('inc-assignment', JSON.stringify({
-    evidenceOnly: true, recId: pr.assigned.recId, name: p.name, doc: p.doc, docType: p.docType, initials: p.initials,
+    evidenceOnly: true, recId: pr.assigned.recId, programId: CUR_PRG.id, programName: CUR_PRG.name, name: p.name, doc: p.doc, docType: p.docType, initials: p.initials,
     role: p.role, level: p.level, zone: p.departamento, incentive: { id: incId, name: pr.name },
     assignedAt: `${pr.assigned.date} · ${pr.assigned.time}`, from: 'buscar', kind
   }));
@@ -1047,14 +1080,12 @@ function tryRehydrate(){
   try{
     const saved = JSON.parse(sessionStorage.getItem('inc-profile') || '{}');
     if(!saved.doc || !SAMPLE[saved.kind]) return false;
+    if(!CUR_PRG || (saved.programId && saved.programId !== CUR_PRG.id)) return false;
     const lvl = SAMPLE[saved.kind].level;
     if(BENEF_CFG[lvl]) selectBenefType(lvl);
     const inp = document.getElementById('docNumber');
     if(inp) inp.value = saved.doc;
     runDemo(saved.kind, true);
-    /* Re-seleccionar el incentivo elegido si sigue disponible */
-    const incId = saved.selectedIncentive?.id;
-    if(incId && document.querySelector(`.prog[data-inc="${incId}"]`)) selectIncentive(incId);
     return true;
   }catch(e){ return false; }
 }
@@ -1147,14 +1178,15 @@ function kvRow(ico, lbl, val, id){
 const PROG_ICONS = {
   award:'<circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>',
   grad:'<path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1 2.7 3 6 3s6-2 6-3v-5"/>',
-  bag:'<rect x="5" y="8" width="14" height="12" rx="2"/><path d="M9 8V5a3 3 0 016 0v3"/>'
+  bag:'<rect x="5" y="8" width="14" height="12" rx="2"/><path d="M9 8V5a3 3 0 016 0v3"/>',
+  bus:'<rect x="3" y="6" width="18" height="11" rx="2"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/>',
+  meal:'<path d="M3 2v7a3 3 0 003 3v10M9 2v7M6 2v7"/><path d="M18 22V2a4 4 0 00-4 4v7h4"/>'
 };
 
 function renderProfileCard(p, kind){
   const isCoach = p.role === 'coach';
   const isInstitution = p.role === 'institution';
   const isAthlete = !isCoach && !isInstitution;
-  const conds = (p.conditions || []).filter(c => c.ok);
 
   const programsArr = p.programs || [];
   const assignedCount = programsArr.filter(pr => pr.assigned).length;
@@ -1170,146 +1202,74 @@ function renderProfileCard(p, kind){
   const avatarStyle = isCoach
     ? 'background:linear-gradient(135deg,#c4b5fd,#7c3aed);box-shadow:0 0 0 1px var(--naowee-color-border-default,#e7e9f3),0 10px 28px rgba(124,58,237,.32),0 2px 6px rgba(124,58,237,.18)'
     : (isInstitution ? 'background:linear-gradient(135deg,#5eead4,#0d9488);box-shadow:0 0 0 1px var(--naowee-color-border-default,#e7e9f3),0 10px 28px rgba(13,148,136,.30),0 2px 6px rgba(13,148,136,.18)' : '');
-  const dataTitle = isInstitution ? (p.level === 'organizacion' ? 'Datos de la organización' : 'Datos de la institución') : (isCoach ? 'Datos del docente' : (p.level === 'paradeportista' ? 'Datos del paradeportista' : 'Datos del deportista'));
+  const dataTitle = 'Inscripción';
   const dot = '<span class="dot"></span>';
 
+  /* Cabecera: quién es. Lo que ya está aquí no se repite abajo. */
   const subMeta = isInstitution
-    ? `<span><strong>${p.docType}</strong> ${p.doc}</span>${dot}<span>${p.zone} · ${p.departamento}</span>${dot}<span>${p.oros} oros 2026</span>`
+    ? `<span><strong>${p.docType}</strong> ${p.doc}</span>${dot}<span>${p.zone} · ${p.departamento}</span>`
     : isCoach
-      ? `<span><strong>${p.docType}</strong> <span id="headDoc">${p.doc}</span></span>${dot}<span>${p.coachRole}</span>${dot}<span>${p.deporte}</span>${dot}<span>${p.departamento}</span>`
-      : `<span><strong>${p.docType}</strong> <span id="headDoc">${p.doc}</span></span>${dot}<span>Grado ${p.grado}</span>${dot}<span>${p.deporte}</span>${dot}<span>${p.departamento}</span>`;
+      ? `<span><strong>${p.docType}</strong> <span id="headDoc">${p.doc}</span></span>${dot}<span>${p.coachRole}</span>${dot}<span>${p.institucion}</span>${dot}<span>${p.departamento}</span>`
+      : `<span><strong>${p.docType}</strong> <span id="headDoc">${p.doc}</span></span>${dot}<span>${p.institucion}</span>${dot}<span>${p.departamento}</span>`;
 
-  /* Ficha — campos definidos en el xlsx de requisitos (Juegos Intercolegiados 2026) */
+  /* Datos de la inscripción (xlsx requisitos, Juegos Intercolegiados 2026). Solo lectura. */
   const dataRows = isInstitution ? `
     <div class="kv-list">
-      ${kvRow('matricula', p.level === 'organizacion' ? 'Código DANE / NIT' : 'Código DANE', p.doc)}
       ${kvRow('strat', 'Sede', p.sede)}
-      ${kvRow('category', 'Municipio · departamento', `${p.zone} · ${p.departamento}`)}
       ${kvRow('medal', p.level === 'organizacion' ? 'Oros · para deportes' : 'Oros · deportes convencionales', `${p.oros} · puesto #${p.rankPos} de ${p.rankTotal}`)}
       ${kvRow('athlete', 'Deportistas llevados a la final', p.clasificados)}
       ${kvRow('ctName', 'Representante', p.rep)}
     </div>` : isCoach ? `
     <div class="kv-list">
-      ${kvRow('role', 'Rol', p.coachRole)}
-      ${kvRow('strat', 'Institución', p.institucion)}
       ${kvRow('medal', 'Deporte', p.deporte)}
       ${kvRow('category', 'Categoría', p.categoria)}
-      ${kvRow('years', 'Departamento', p.departamento)}
       ${kvRow('athlete', p.level === 'docente-asistente' ? 'Equipo vinculado' : 'Deportista vinculado', `${p.athlete.name}<br/><span style="font-weight:500;color:var(--naowee-color-text-secondary,#646587);font-size:11.5px">${p.athlete.medal}</span>`)}
     </div>` : `
     <div class="kv-list">
       ${kvRow('grado', 'Grado', p.grado)}
-      ${kvRow('strat', 'Institución', p.institucion)}
       ${kvRow('medal', 'Deporte', p.deporte)}
       ${kvRow('category', 'Categoría', p.categoria)}
-      ${kvRow('years', 'Departamento', p.departamento)}
     </div>`;
 
-  const condSection = `
-    <div class="cond-block-head">
-      <span class="cond-block-head__title">Condiciones del programa que cumple</span>
-      <span class="cond-count"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>${conds.length} de ${conds.length}</span>
-    </div>
-    <div class="cond-list">
-      ${conds.map(c => `
-        <div class="cond">
-          <span class="mk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-          <span class="txt">${c.label}</span>
-          <span class="val">${c.val}</span>
-        </div>`).join('')}
-    </div>`;
-
-  const ICON_USER = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
-  const ICON_CALENDAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>';
-  const ICON_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
   const ICON_UP = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>';
+  const ICON_CLOCK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
 
-  const banner = allAssigned
-    ? `<div class="naowee-message naowee-message--positive" style="margin:0 0 14px">
-        <div class="naowee-message__header">
-          <div class="naowee-message__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-          <div class="naowee-message__text">Este beneficiario <strong>ya recibió todos los incentivos aplicables</strong>.${pendingEvidence ? ` Falta subir la evidencia de ${pendingEvidence === 1 ? 'una entrega' : pendingEvidence + ' entregas'}.` : ''}</div>
-        </div>
-      </div>` : '';
+  /* Entregas a esta persona que quedaron sin evidencia: lo primero que se ve. */
+  const pendingList = programsArr.filter(pr => pr.assigned && pr.assigned.evidencePending);
+  const pendingBlock = pendingList.length ? `
+    <div class="pending-ev">
+      ${pendingList.map(pr => `
+        <div class="naowee-message naowee-message--caution">
+          <div class="naowee-message__header">
+            <div class="naowee-message__icon">${ICON_CLOCK}</div>
+            <div class="naowee-message__text"><strong>${pr.name}</strong> se entregó el ${pr.assigned.date} y <strong>falta la foto de evidencia</strong>.</div>
+            <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--small" onclick="goUploadEvidence('${kind}','${pr.incId}')">${ICON_UP} Subir evidencia</button>
+          </div>
+        </div>`).join('')}
+    </div>` : '';
 
-  const programsBlock = programsArr.length ? `
-    <hr class="profile-card__divider"/>
-    <div class="programs-section">
-      <div class="programs-section__head">
-        <h4 id="incListLbl">Incentivos aplicables</h4>
-        <span class="naowee-badge naowee-badge--${allAssigned ? 'positive' : 'caution'} naowee-badge--quiet naowee-badge--small">${allAssigned ? 'Todos entregados' : `${availableCount} disponible${availableCount===1?'':'s'}${assignedCount ? ` · ${assignedCount} entregado${assignedCount===1?'':'s'}` : ''}`}</span>
-      </div>
-      ${allAssigned ? '' : '<p class="programs-section__hint">Selecciona el incentivo que vas a entregar. Los que ya fueron entregados no se pueden volver a seleccionar.</p>'}
-      ${banner}
-      <div class="prog-list" role="radiogroup" aria-labelledby="incListLbl">
-        ${programsArr.map(pr => {
-          const iconSvg = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${PROG_ICONS[pr.icon] || PROG_ICONS.award}</svg>`;
-          /* Valor oculto en la vista del operador (feedback Danna). Código tampoco se muestra aquí (regla de seguridad). */
-          if(pr.assigned){
-            const a = pr.assigned;
-            const stateBadge = a.evidencePending
-              ? '<span class="naowee-badge naowee-badge--caution naowee-badge--quiet naowee-badge--small">Entregado · falta evidencia</span>'
-              : '<span class="naowee-badge naowee-badge--positive naowee-badge--quiet naowee-badge--small">Ya entregado</span>';
-            return `
-              <div class="prog prog--assigned${a.evidencePending ? ' prog--pending-ev' : ''}">
-                <span class="naowee-radio naowee-radio--disabled" aria-hidden="true"><span class="naowee-radio__circle"></span></span>
-                <div class="prog__icon" style="background:${pr.iconBg};color:${pr.iconColor}">${iconSvg}</div>
-                <div class="prog__body">
-                  <div class="prog__name">${pr.name}</div>
-                  <div class="prog__desc">${pr.desc}</div>
-                </div>
-                ${stateBadge}
-                <div class="prog__assignment">
-                  <div class="prog__assignment-meta">
-                    <span class="item">${ICON_USER} Por <strong>${a.operator}</strong>${a.operatorRole ? ` <span style="color:#646587">· ${a.operatorRole}</span>` : ''}</span>
-                    <span class="dot"></span>
-                    <span class="item">${ICON_CALENDAR} <strong>${a.date}</strong>${a.time ? ` · ${a.time}` : ''}</span>
-                  </div>
-                  ${a.evidencePending ? `<button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--small prog__ev-btn" onclick="goUploadEvidence('${kind}','${pr.incId}')">${ICON_UP} Subir evidencia</button>` : ''}
-                </div>
-              </div>`;
-          }
-          return `
-            <div class="prog prog--selectable" data-inc="${pr.incId}" role="radio" aria-checked="false" tabindex="0"
-                 onclick="selectIncentive('${pr.incId}')" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();selectIncentive('${pr.incId}')}">
-              <span class="naowee-radio"><span class="naowee-radio__circle"></span></span>
-              <div class="prog__icon" style="background:${pr.iconBg};color:${pr.iconColor}">${iconSvg}</div>
-              <div class="prog__body">
-                <div class="prog__name">${pr.name}</div>
-                <div class="prog__desc">${pr.desc}</div>
-              </div>
-              <span class="naowee-badge naowee-badge--informative naowee-badge--quiet naowee-badge--small">Disponible</span>
-            </div>`;
-        }).join('')}
-      </div>
-    </div>
-  ` : '';
-
-  /* Datos editables (feedback Danna 00:23:13: la inscripción trae datos mal registrados).
-     Deportista: nombres, documento, teléfonos y correo editables. Docente: nombres y correo editables. */
+  /* Contacto: se corrige aquí mismo (la inscripción a veces trae datos de la institución).
+     Deportista: nombres, documento, teléfonos y correo. Docente: nombres y correo. */
   const editDoc = isAthlete, editPhone = isAthlete;
   const tf = (id, lbl, type, v, mode) => `
     <div class="contact-field">
       <label class="contact-field__lbl" for="${id}">${lbl}</label>
       <div class="naowee-textfield"><div class="naowee-textfield__input-wrap"><input class="naowee-textfield__input" id="${id}" type="${type}"${mode ? ` inputmode="${mode}"` : ''} value="${v || ''}"/></div></div>
     </div>`;
-  const contactBlock = !isInstitution ? `
-    <hr class="profile-card__divider"/>
+  const contactBlock = isInstitution ? '' : `
     <div class="contact-section" id="contactBlock">
       <div class="contact-section__head">
-        <h5>Datos de contacto</h5>
+        <h5>Contacto</h5>
         <button class="naowee-btn naowee-btn--quiet naowee-btn--small contact-edit-btn" onclick="editContact()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4z"/></svg>
-          Editar
+          Corregir datos
         </button>
       </div>
-      <p class="contact-section__hint">Verifica y corrige los datos antes de entregar — a veces la inscripción trae el teléfono o el correo de la institución.${isCoach ? ' En docentes se pueden corregir nombres y correo.' : ''}</p>
       <div class="contact-section__read kv-list">
-        ${kvRow('ctName', 'Nombres', p.name, 'ctName')}
-        ${kvRow('matricula', 'Documento', p.doc, 'ctDoc')}
         ${kvRow('phone', 'Teléfonos', p.phone, 'ctPhone')}
         ${kvRow('mail', 'Correo', p.email, 'ctEmail')}
       </div>
+      <p class="contact-section__hint">Verifica el teléfono y el correo: a veces la inscripción trae los de la institución.${isCoach ? ' En docentes se corrigen nombres y correo.' : ' También se corrigen nombres y documento.'}</p>
       <div class="contact-section__edit">
         <div class="contact-fields">
           ${tf('ctNameInput', 'Nombres completos', 'text', p.name)}
@@ -1328,32 +1288,22 @@ function renderProfileCard(p, kind){
       <div class="contact-saved naowee-message naowee-message--positive" id="ctSaved" hidden>
         <div class="naowee-message__header">
           <div class="naowee-message__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-          <div class="naowee-message__text">Datos de contacto actualizados.</div>
-        </div>
-      </div>
-    </div>
-  ` : '';
-
-  /* Observaciones — campo de la ficha (xlsx requisitos). Viaja con la asignación. */
-  const obsBlock = `
-    <div class="obs-section">
-      <div class="naowee-textfield naowee-textfield--textarea">
-        <label class="naowee-textfield__label" for="fichaObs">Observaciones</label>
-        <div class="naowee-textfield__input-wrap">
-          <textarea class="naowee-textfield__input" id="fichaObs" rows="2" maxlength="400" placeholder="Ej. Se corrigió el teléfono registrado en la inscripción." oninput="if(SAMPLE['${kind}']) SAMPLE['${kind}'].obs = this.value">${p.obs || ''}</textarea>
+          <div class="naowee-message__text">Datos actualizados.</div>
         </div>
       </div>
     </div>`;
 
+  /* El incentivo, sus condiciones, el código y las observaciones se eligen en "Entregar". */
+  const incSummary = programsArr.map(pr => `<span class="inc-pill${pr.assigned ? ' inc-pill--done' : ''}">${pr.name}${pr.assigned ? ' · entregado' : ''}</span>`).join('');
   const footer = allAssigned ? `
     <div class="profile-card__footer">
-      <span style="font-size:12.5px;color:var(--naowee-color-text-secondary,#646587)">Sin incentivos por entregar.</span>
-      <button class="naowee-btn naowee-btn--mute naowee-btn--large" onclick="resetState();document.getElementById('docNumber').focus()">Buscar otro beneficiario</button>
+      <span class="footer-note">Ya recibió todos los incentivos que le aplican en este programa.</span>
+      <button class="naowee-btn naowee-btn--mute naowee-btn--large" onclick="resetState();document.getElementById('docNumber').value='';document.getElementById('docNumber').focus()">Buscar otro beneficiario</button>
     </div>` : `
     <div class="profile-card__footer">
-      <span style="font-size:12.5px;color:var(--naowee-color-text-secondary,#646587)">Al continuar confirmas la entrega y reservas el código.</span>
-      <button class="naowee-btn naowee-btn--loud naowee-btn--large" id="btnContinue" disabled onclick="saveProfileAndGo('${p.doc}','${kind}')">
-        <span class="btn-lbl">Selecciona un incentivo</span>
+      <div class="footer-incs"><span class="footer-note">Le aplica:</span>${incSummary}</div>
+      <button class="naowee-btn naowee-btn--loud naowee-btn--large" id="btnContinue" onclick="saveProfileAndGo('${p.doc}','${kind}')">
+        Datos verificados · Entregar
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
     </div>`;
@@ -1372,13 +1322,11 @@ function renderProfileCard(p, kind){
           ${isAthlete ? renderMedalStrip(p) : ''}
         </div>
       </div>
-      <div class="profile-body">
+      ${pendingBlock}
+      <div class="profile-body${isInstitution ? ' profile-body--single' : ''}">
         <div class="data-block"><h5>${dataTitle}</h5>${dataRows}</div>
-        <div class="data-block">${condSection}</div>
+        ${contactBlock ? `<div class="data-block">${contactBlock}</div>` : ''}
       </div>
-      ${contactBlock}
-      ${obsBlock}
-      ${programsBlock}
       ${footer}
     </div>
   `;
@@ -1388,10 +1336,6 @@ function renderEligible(p, kind){
   return `<div class="result-wrap">${renderProfileCard(p, kind)}</div>`;
 }
 
-function autoSelectSingle(){
-  const avail = document.querySelectorAll('.prog[data-inc]');
-  if(avail.length === 1) selectIncentive(avail[0].dataset.inc);
-}
 
 /* Búsqueda acotada a ganadores/elegibles: si no está, "no tiene incentivos aplicables" (00:27:10, 00:28:12).
    No se muestra la ficha completa de alguien que no aplica (Danna: "mira cómo sale si busca entre todos"). */
@@ -1404,8 +1348,8 @@ function renderNoIncentives(doc){
         <div class="not-found__icon">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
         </div>
-        <h4>${doc ? `El documento <span style="font-family:'SF Mono',monospace">${doc}</span> no tiene` : 'No tiene'} incentivos aplicables</h4>
-        <p>La búsqueda se hace solo entre los <strong>ganadores y elegibles</strong> de los programas activos. ${reason || 'Este documento no cumple las condiciones de ningún incentivo vigente.'}</p>
+        <h4>${doc ? `El documento <span style="font-family:'SF Mono',monospace">${doc}</span> no tiene` : 'No tiene'} incentivos aplicables en ${esc(prgName())}</h4>
+        <p>La búsqueda se hace solo entre los <strong>ganadores y elegibles</strong> de este programa. ${(isDemoProgram() && reason) || 'Este documento no cumple las condiciones de ningún incentivo del programa.'}</p>
         <div class="not-found__actions">
           <button class="naowee-btn naowee-btn--mute naowee-btn--medium" onclick="document.getElementById('docNumber').value='';document.getElementById('docNumber').focus();resetState()">Buscar otro documento</button>
         </div>
@@ -1415,13 +1359,14 @@ function renderNoIncentives(doc){
 }
 
 function resetState(){
+  showStepper(false);
   document.getElementById('stateWrap').innerHTML = `
     <div class="empty-state" id="emptyState">
       <div class="empty-state__icon">
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
       </div>
       <h4>Ingresa un documento para empezar</h4>
-      <p>La búsqueda se hace <strong>solo entre los ganadores/elegibles</strong> de los programas activos (documento para personas, código DANE para instituciones). Puedes usar los ejemplos de demo arriba.</p>
+      <p>La búsqueda se hace <strong>solo entre los ganadores/elegibles</strong> de ${esc(prgName())} (documento para personas, código DANE para instituciones).${hasSamples() ? ' Puedes usar los ejemplos de demo arriba.' : ''}</p>
     </div>
   `;
 }
@@ -1429,7 +1374,7 @@ function resetState(){
 /* Profile switcher */
 const ROLES = {
   admin:    { name:'Doug Vargas', label:'Gestor de incentivos', initials:'DV', bg:'#c4b5fd', fg:'#4c1d95' },
-  operador: { name:'Doug Vargas', label:'Operador', initials:'DV', bg:'#ffdfb5', fg:'#92400e' }
+  operador: { name:'Juan Rodríguez', label:'Operador', initials:'JR', bg:'#ffdfb5', fg:'#92400e' }
 };
 function applyRole(role){
   const r = ROLES[role] || ROLES.operador;
@@ -1460,6 +1405,63 @@ function fadeAndGo(url){
   document.body.style.opacity='0';
   setTimeout(()=>{window.location.href=url},260);
 }
+
+function showStepper(on){
+  const st = document.getElementById('stepperWrap');
+  if(!st) return;
+  const was = !st.hidden;
+  st.hidden = !on;
+  if(on && !was && typeof window.remeasureStepper === 'function') window.remeasureStepper();
+}
+
+/* ═════ Programa de trabajo ═════ */
+const DEMO_PRG_ID = 'PRG-2026-010';
+let CUR_PRG = null;
+function prgName(){ return CUR_PRG ? CUR_PRG.name : 'el programa'; }
+function isDemoProgram(){ return !!CUR_PRG && CUR_PRG.id === DEMO_PRG_ID; }
+/* Cada perfil de prueba es de un programa (por defecto JIN 2026): en otro no aparece. */
+function inCurrentProgram(kind){ const s = SAMPLE[kind]; return !!CUR_PRG && !!s && (s.prg || DEMO_PRG_ID) === CUR_PRG.id; }
+function hasSamples(){ return !!CUR_PRG && Object.values(SAMPLE).some(s => (s.prg || DEMO_PRG_ID) === CUR_PRG.id); }
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+(function initProgram(){
+  CUR_PRG = OperatorProgram.renderBar(document.getElementById('opPrgBar'), () => {
+    /* Cambiar de programa empieza de cero: la búsqueda es de otro programa. */
+    try{ sessionStorage.removeItem('inc-profile'); sessionStorage.removeItem('inc-assignment'); }catch(e){}
+    location.reload();
+  });
+  if(!CUR_PRG){
+    ['stepperWrap', 'stateWrap'].forEach(id => { const el = document.getElementById(id); if(el) el.hidden = true; });
+    document.querySelectorAll('.search-card').forEach(el => el.hidden = true);
+    return;
+  }
+  const nPend = pendingEvidenceCount();
+  const pb = document.getElementById('pendingBanner');
+  if(pb && nPend){
+    pb.innerHTML = `
+      <div class="naowee-message naowee-message--caution pending-banner">
+        <div class="naowee-message__header">
+          <div class="naowee-message__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+          <div class="naowee-message__text">Tienes <strong>${nPend} entrega${nPend === 1 ? '' : 's'} sin foto de evidencia</strong>. Puedes subirlas en cualquier momento.</div>
+          <a class="naowee-btn naowee-btn--quiet naowee-btn--small" href="incentivo-14-mis-asignaciones.html?estado=pend">Ver pendientes</a>
+        </div>
+      </div>`;
+  }
+  const hint = document.getElementById('emptyHint');
+  if(hint) hint.innerHTML = `La búsqueda se hace <strong>solo entre los ganadores/elegibles</strong> de ${esc(CUR_PRG.name)} (documento para personas, código DANE para instituciones).${hasSamples() ? ' Usa los ejemplos de demo para ver los casos posibles.' : ''}`;
+  /* Ejemplos de demo: solo los del programa elegido. */
+  document.querySelectorAll('.quick-chip[data-type]:not([data-type="all"])').forEach(ch => {
+    ch.classList.toggle('off-prg', (ch.dataset.prg || DEMO_PRG_ID) !== CUR_PRG.id);
+  });
+  if(!hasSamples()){
+    const row = document.querySelector('.quick-row');
+    if(row){
+      const note = document.createElement('span');
+      note.className = 'quick-note';
+      note.textContent = 'Este programa no tiene ejemplos de demo: cualquier documento sale sin incentivos aplicables.';
+      row.querySelector('.quick-label')?.after(note);
+    }
+  }
+})();
 
 applyRole('operador');
 tryRehydrate();
@@ -1548,6 +1550,11 @@ tryRehydrate();
     el.style.maxWidth = w + 'px';
     return w;
   });
+  /* El stepper nace oculto (aparece al encontrar al beneficiario): se mide al mostrarse. */
+  window.remeasureStepper = function(){
+    labels.forEach((el, i) => { el.style.maxWidth = 'none'; el.style.marginLeft = '0px'; labelWidths[i] = Math.ceil(el.getBoundingClientRect().width) + 2; el.style.maxWidth = labelWidths[i] + 'px'; });
+    onScroll();
+  };
 
   const lerp = (a, b, t) => a + (b - a) * t;
 
@@ -1616,10 +1623,10 @@ tryRehydrate();
 })();
 </script>
 
-<script src="shared/profile-switcher.js?v=20260922193617" defer></script>
+<script src="shared/profile-switcher.js?v=20260922203322" defer></script>
 
 <script src="shared/footer-scroll.js" defer></script>
-<script src="shared/tour.js" defer></script>
+<script src="shared/tour.js?v=20260922203322" defer></script>
 
 <!-- Footer flotante Naowee -->
 <div class="naowee-floating-footer" role="contentinfo" aria-label="Pie de página Naowee">

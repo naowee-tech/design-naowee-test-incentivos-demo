@@ -7,9 +7,9 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.4.0/dist/design-system.css"/>
-<link rel="stylesheet" href="shared/shell.css"/>
+<link rel="stylesheet" href="shared/shell.css?v=20260922200101"/>
 <link rel="stylesheet" href="shared/programa-wizard.css?v=20260922194132"/>
-<script src="shared/programs-data.js?v=20260922191536"></script>
+<script src="shared/programs-data.js?v=20260922203322"></script>
 
 <style>
   /* Back link wrapper */
@@ -1706,7 +1706,7 @@ function renderAsign(){
   const end = Math.min(start + asignState.pageSize, total);
   const slice = list.slice(start, end);
   const badges = {
-    asig: '<span class="naowee-badge naowee-badge--positive naowee-badge--quiet naowee-badge--small">Asignado</span>',
+    asig: '<span class="naowee-badge naowee-badge--positive naowee-badge--quiet naowee-badge--small">Entregado</span>',
     rev: '<span class="naowee-badge naowee-badge--negative naowee-badge--quiet naowee-badge--small">Revertido</span>'
   };
   tb.innerHTML = slice.length ? slice.map(r => {
@@ -1826,7 +1826,7 @@ function openEvidence(payload){
   document.getElementById('evFecha').textContent = r.fecha;
   document.getElementById('evEstado').innerHTML = r.estado === 'rev'
     ? '<span class="naowee-badge naowee-badge--negative naowee-badge--quiet naowee-badge--small">Revertido</span>'
-    : '<span class="naowee-badge naowee-badge--positive naowee-badge--quiet naowee-badge--small">Asignado</span>';
+    : '<span class="naowee-badge naowee-badge--positive naowee-badge--quiet naowee-badge--small">Entregado</span>';
   overlay.classList.add('is-open');
   document.body.style.overflow = 'hidden';
 }
@@ -1950,10 +1950,10 @@ function clearSearch(inputId){
 
 <script src="shared/programa-wizard.js?v=20260922194132" defer></script>
 
-<script src="shared/profile-switcher.js?v=20260922193617" defer></script>
+<script src="shared/profile-switcher.js?v=20260922203322" defer></script>
 
 <script src="shared/footer-scroll.js" defer></script>
-<script src="shared/tour.js" defer></script>
+<script src="shared/tour.js?v=20260922203322" defer></script>
 
 <!-- Footer flotante Naowee -->
 <div class="naowee-floating-footer" role="contentinfo" aria-label="Pie de página Naowee">

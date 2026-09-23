@@ -191,15 +191,26 @@ window.PROGRAMS_DATA = [
     exec: 14160000,
     unit: 120000,
     codes: { total: 500, avail: 382, asig: 118, rev: 0 },
+    /* Dos bonos, cada uno con su inventario y su prefijo: el operador no puede
+       usar un código de un bono en el otro. */
+    codePrefix: '2026TR',
+    codesByIncentive: [
+      { name: 'Bono transporte mensual', count: 400 },
+      { name: 'Bono alimentación en competencia', count: 100 }
+    ],
     from: '15 feb 2026',
     to: '30 jun 2026',
     actoAdmin: 'Acuerdo 2026-CUN-042',
     fuente: 'Gobernación Cundinamarca · 2026',
     incentives: [
-      { name: 'Bono transporte mensual', category: 'Bono',
-        detail: 'Recarga TransMilenio/SITP · 500 cupos',
+      { name: 'Bono transporte mensual', category: 'Bono', categoryKey: 'bono', beneficiary: 'deportista', beneficiaryLabel: 'Deportista', delivered: 118,
+        detail: 'Recarga TransMilenio/SITP · 400 cupos',
         value: 120000, valueLabel: '$120.000', valueFoot: 'por mes',
-        badges: [{ text: 'Bono', variant: 'informative' }, { text: 'Transporte', variant: 'positive' }] }
+        badges: [{ text: 'Bono', variant: 'informative' }, { text: 'Transporte', variant: 'positive' }] },
+      { name: 'Bono alimentación en competencia', category: 'Bono', categoryKey: 'bono', beneficiary: 'deportista', beneficiaryLabel: 'Deportista', delivered: 0,
+        detail: 'Bono de alimentación durante las fechas de competencia · 100 cupos',
+        value: 60000, valueLabel: '$60.000', valueFoot: 'por competencia',
+        badges: [{ text: 'Bono', variant: 'informative' }, { text: 'Alimentación', variant: 'positive' }] }
     ],
     conditions: {
       groups: [

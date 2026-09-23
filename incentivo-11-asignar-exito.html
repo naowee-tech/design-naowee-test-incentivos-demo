@@ -10,7 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.4.0/dist/design-system.css"/>
-<link rel="stylesheet" href="shared/shell.css"/>
+<link rel="stylesheet" href="shared/shell.css?v=20260922200101"/>
 
 <style>
   .success-wrap{
@@ -190,8 +190,8 @@
     <header class="top-header">
       <div class="profile-switcher" id="profileSwitcher">
         <div class="user-chip" onclick="toggleProfileDD(event)">
-          <div class="ava"><div class="ava-ring" style="background:#ffdfb5;color:#92400e">DV</div><div class="ava-dot"></div></div>
-          <div class="user-info"><span class="user-name">Doug Vargas</span><span class="user-role">Operador</span></div>
+          <div class="ava"><div class="ava-ring" style="background:#ffdfb5;color:#92400e">JR</div><div class="ava-dot"></div></div>
+          <div class="user-info"><span class="user-name">Juan Rodríguez</span><span class="user-role">Operador</span></div>
           <button class="user-chip__chevron" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>
         </div>
       </div>
@@ -265,7 +265,7 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
               </span>
               <span class="kv-row__lbl">Operador</span>
-              <span class="kv-row__val">Doug Vargas</span>
+              <span class="kv-row__val">Juan Rodríguez</span>
             </div>
             <div class="kv-row">
               <span class="kv-row__ico">
@@ -296,10 +296,6 @@
           <button id="btnNewAssignment" class="naowee-btn naowee-btn--loud naowee-btn--large" onclick="newAssignment()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Nueva asignación
-          </button>
-          <button class="naowee-btn naowee-btn--mute naowee-btn--large" onclick="window.print()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>
-            Imprimir
           </button>
           <button class="naowee-btn naowee-btn--mute naowee-btn--large" onclick="fadeAndGo('incentivo-14-mis-asignaciones.html')">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7h13M8 12h13M8 17h13"/><circle cx="4" cy="7" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="17" r="1"/></svg>
@@ -358,6 +354,7 @@ try{
       : `${s.grado ? ' · Grado ' + s.grado : ''}${s.deporte ? ' · ' + s.deporte : ''}`;
   }
   if(s.incentive) document.getElementById('receiptInc').textContent = s.incentive;
+  if(s.programName) document.getElementById('receiptProgram').textContent = s.programName;
   /* Código retirado del comprobante por seguridad (feedback Danna): el código redimible no se muestra en resúmenes. */
   /* receiptValue retirado (feedback Danna): valor oculto en la vista del operador. */
   /* Evidencia pendiente (validar → entregar → evidencia después, reunión 22-09 00:27:10). */
@@ -366,18 +363,19 @@ try{
     const chk = document.getElementById('heroCheck');
     chk.classList.add('success-check--pending');
     chk.innerHTML = '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
-    document.getElementById('heroTitle').textContent = 'Incentivo asignado · evidencia pendiente';
-    document.getElementById('heroText').innerHTML = 'La entrega quedó registrada y el código reservado. Falta subir la <strong>foto de evidencia</strong>: puedes hacerlo ahora o después desde <strong>Mis asignaciones</strong>.';
+    document.getElementById('heroTitle').textContent = 'Entregado · falta la evidencia';
+    document.getElementById('heroText').innerHTML = 'La entrega quedó registrada y el código asignado. Falta la <strong>foto de evidencia</strong>: súbela ahora o después, desde <strong>Mis asignaciones</strong> o buscando de nuevo al beneficiario.';
     const now = document.getElementById('stateNow');
     now.className = 'naowee-badge naowee-badge--caution naowee-badge--quiet naowee-badge--small';
-    now.textContent = 'Asignado · evidencia pendiente';
+    now.textContent = 'Entregado · evidencia pendiente';
     const ev = document.getElementById('receiptEvidence');
     ev.innerHTML = '<span class="naowee-badge naowee-badge--caution naowee-badge--quiet naowee-badge--small">Pendiente</span>';
     document.getElementById('btnUploadNow').hidden = false;
     const na = document.getElementById('btnNewAssignment');
     na.className = 'naowee-btn naowee-btn--mute naowee-btn--large';
   } else if(s.evidence){
-    document.getElementById('receiptEvidence').textContent = s.evidence.replace('Archivo subido · ','');
+    document.getElementById('receiptEvidence').textContent = s.evidence.replace('Archivo subido · ','')
+      + (Array.isArray(s.evidenceAlso) && s.evidenceAlso.length ? ` · también para ${s.evidenceAlso.join(', ')}` : '');
     if(s.evidenceOnly){
       document.getElementById('heroTitle').textContent = 'Evidencia registrada';
       document.getElementById('heroText').innerHTML = 'La evidencia quedó asociada a la entrega. Estado: <strong>Entregado</strong>.';
@@ -424,10 +422,10 @@ document.addEventListener('click', (e) => { const sw = document.getElementById('
 
 </script>
 
-<script src="shared/profile-switcher.js?v=20260922193617" defer></script>
+<script src="shared/profile-switcher.js?v=20260922203322" defer></script>
 
 <script src="shared/footer-scroll.js" defer></script>
-<script src="shared/tour.js" defer></script>
+<script src="shared/tour.js?v=20260922203322" defer></script>
 
 <!-- Footer flotante Naowee -->
 <div class="naowee-floating-footer" role="contentinfo" aria-label="Pie de página Naowee">

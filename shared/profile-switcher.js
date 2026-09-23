@@ -23,7 +23,7 @@
   const ROLES = {
     superadmin: { name:'Doug Vargas',   label:'Superadmin',           initials:'DV', bg:'#fecaca', fg:'#7f1d1d', meta:'Módulo global · acceso total' },
     admin:    { name:'Doug Vargas',     label:'Gestor de incentivos', initials:'DV', bg:'#c4b5fd', fg:'#4c1d95', meta:'Parametriza y audita' },
-    operador: { name:'Doug Vargas',     label:'Operador',             initials:'DV', bg:'#ffdfb5', fg:'#92400e', meta:'Asigna incentivos en campo' },
+    operador: { name:'Juan Rodríguez',  label:'Operador',             initials:'JR', bg:'#ffdfb5', fg:'#92400e', meta:'Entrega en campo en sus programas', operatorKey:'juan.rodriguez' },
     gestor:   { name:'Doug Vargas',     label:'Gestor',               initials:'DV', bg:'#ffdfb5', fg:'#92400e', meta:'Asigna y revierte incentivos' },
     // Gestor de programa: ve los programas donde figura como gestor en el
     // equipo del programa (team.gestorKey). Elkin Ávila gestiona varios en
@@ -53,21 +53,13 @@
       ring.style.background = r.bg;
       ring.style.color = r.fg;
     });
-    // Actualiza la etiqueta del rol en el chip
-    const assigned = getRoleAssignments(role);
-    const scopeLabel = r.scopeLabel || (assigned ? `${assigned.length} programa${assigned.length === 1 ? '' : 's'} a cargo` : '');
+    // Actualiza la etiqueta del rol en el chip. Solo nombre y rol: el
+    // alcance (qué programas) se ve en cada pantalla, no en el chip.
     document.querySelectorAll('.user-chip .user-role').forEach(lbl => {
       lbl.textContent = r.label;
-      lbl.title = scopeLabel ? `${r.label} · ${scopeLabel}` : r.label;
+      lbl.title = r.label;
     });
-    // Alcance del rol (ej: programa asignado) como 3a línea del chip.
-    document.querySelectorAll('.user-chip .user-info').forEach(info => {
-      let sc = info.querySelector('.user-scope');
-      if(scopeLabel){
-        if(!sc){ sc = document.createElement('span'); sc.className = 'user-scope'; info.appendChild(sc); }
-        sc.textContent = scopeLabel;
-      } else if(sc){ sc.remove(); }
-    });
+    document.querySelectorAll('.user-chip .user-info .user-scope').forEach(sc => sc.remove());
     // Actualiza el nombre del usuario (varía entre Doug y Camila según rol)
     document.querySelectorAll('.user-chip .user-name').forEach(lbl => {
       lbl.textContent = r.name;
@@ -140,6 +132,10 @@
     if(r.gestorKey){
       const data = window.PROGRAMS_DATA || [];
       return data.filter(p => p.team && p.team.gestorKey === r.gestorKey).map(p => p.id);
+    }
+    if(r.operatorKey){
+      const data = window.PROGRAMS_DATA || [];
+      return data.filter(p => p.team && (p.team.operatorKeys || []).includes(r.operatorKey)).map(p => p.id);
     }
     return Array.isArray(r.assignedPrograms) ? r.assignedPrograms.slice() : null;
   }
