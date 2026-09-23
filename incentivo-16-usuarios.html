@@ -278,6 +278,8 @@
   .us-toast{position:fixed;left:50%;bottom:84px;transform:translate(-50%,20px);background:#282834;color:#fff;font-size:13px;font-weight:600;padding:12px 18px;border-radius:12px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:13000;max-width:min(560px,calc(100vw - 32px))}
   .us-toast.show{opacity:1;transform:translate(-50%,0)}
   [hidden]{display:none !important}
+  .reassign{display:flex;flex-direction:column;gap:12px;margin-top:12px}
+  .us-btn-loud:disabled{opacity:.45;cursor:not-allowed}
 </style>
 </head>
 <body>
@@ -410,7 +412,7 @@
 <div class="us-toast" id="usToast" role="status" aria-live="polite"></div>
 
 <script src="shared/programs-data.js?v=20260923080917"></script>
-<script src="shared/usuarios.js?v=20260923080917"></script>
+<script src="shared/usuarios.js?v=20260923091419"></script>
 <script>
 /* ═══════════════════════════════════════════════════════════════
    USUARIOS — jerarquía del módulo (shared/usuarios.js).
@@ -524,17 +526,47 @@ function askDeactivate(k){
   const prgs = U.programsOf(u).filter(p => p.status !== 'closed');
   document.getElementById('deactSub').textContent = `${u.name} · ${U.ROLE_LABEL[u.role]}`;
   let body = 'No podrá entrar al módulo. Lo que hizo (entregas, cambios e historial) se conserva.';
-  if(prgs.length && u.role === 'gestor_programa')
-    body += `<br/><br/><strong>${prgs.length === 1 ? 'Este programa queda' : 'Estos programas quedan'} sin gestor</strong> hasta que asignes otro: ${prgs.map(p => esc(p.name)).join(', ')}.`;
-  else if(prgs.length)
+  const btn = document.getElementById('deactConfirm');
+  btn.disabled = false;
+  if(prgs.length && u.role === 'gestor_programa'){
+    /* Un programa no queda sin gestor: se elige el nuevo de cada uno antes de desactivar. */
+    const others = U.all().filter(x => x.role === 'gestor_programa' && x.key !== u.key && x.status !== 'inactive');
+    if(!others.length){
+      body += `<br/><br/><strong>No hay otro gestor de programa</strong> a quien pasarle ${prgs.length === 1 ? 'su programa' : 'sus programas'}. Crea uno primero.`;
+      btn.disabled = true;
+    } else {
+      body += `<br/><br/>Antes, elige quién gestiona ${prgs.length === 1 ? 'su programa' : 'cada uno de sus programas'}:`
+        + `<div class="reassign">${prgs.map(p => `
+          <div class="us-fld"><label for="ra-${esc(p.id)}">${esc(p.name)} <span class="opt">${esc(p.id)}</span></label>
+            <select id="ra-${esc(p.id)}" data-prg="${esc(p.id)}" onchange="syncDeactBtn()">
+              <option value="">Elige el nuevo gestor</option>
+              ${others.map(o => `<option value="${esc(o.key)}">${esc(o.name)}${o.status === 'invited' ? ' (invitado)' : ''}</option>`).join('')}
+            </select></div>`).join('')}</div>`;
+      btn.disabled = true;
+    }
+  } else if(prgs.length){
     body += `<br/><br/>Sale del equipo de: ${prgs.map(p => esc(p.name)).join(', ')}.`;
+  }
   document.getElementById('deactBody').innerHTML = body;
   document.getElementById('deactOverlay').classList.add('open');
+}
+function reassignMap(){
+  const map = {};
+  document.querySelectorAll('#deactBody select[data-prg]').forEach(s => { if(s.value) map[s.dataset.prg] = s.value; });
+  return map;
+}
+function syncDeactBtn(){
+  const sels = document.querySelectorAll('#deactBody select[data-prg]');
+  document.getElementById('deactConfirm').disabled = Array.from(sels).some(s => !s.value);
 }
 function closeDeact(){ document.getElementById('deactOverlay').classList.remove('open'); deactKey = null; }
 document.getElementById('deactConfirm').addEventListener('click', () => {
   const u = U.byKey(deactKey); if(!u) return closeDeact();
-  U.deactivate(deactKey); closeDeact(); buildFilters(); render(); toast(`Cuenta desactivada: ${u.name}.`);
+  const map = reassignMap();
+  if(!U.reassignAndDeactivate(deactKey, map)) return;
+  const n = Object.keys(map).length;
+  closeDeact(); buildFilters(); render();
+  toast(`Cuenta desactivada: ${u.name}.${n ? ` ${n === 1 ? 'Su programa tiene' : 'Sus programas tienen'} nuevo gestor.` : ''}`);
 });
 document.getElementById('deactOverlay').addEventListener('click', e => { if(e.target.id === 'deactOverlay') closeDeact(); });
 
