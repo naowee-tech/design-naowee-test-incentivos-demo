@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Naowee Incentivos — Reversión exitosa</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.4.0/dist/design-system.css"/>
+<link rel="stylesheet" href="shared/shell.css?v=20260922200101"/>
+
+<style>
+  .success-wrap{max-width:720px;margin:28px auto;padding:0 20px;animation:fadeInUp .4s cubic-bezier(.4,0,.2,1)}
+  @keyframes fadeInUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+  .breadcrumb{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-secondary);margin-bottom:16px}
+  .breadcrumb a{cursor:pointer}
+  .breadcrumb a:hover{color:var(--accent)}
+
+  .success-hero{
+    background:linear-gradient(180deg,#fff 0%,#fafbfd 100%);
+    border:1px solid var(--border);border-radius:var(--radius-xl);
+    box-shadow:var(--shadow-card);padding:36px 32px;text-align:center;
+    margin-bottom:18px;position:relative;overflow:hidden;
+  }
+  .success-hero::before{
+    content:"";position:absolute;top:-40px;left:50%;transform:translateX(-50%);
+    width:280px;height:280px;border-radius:50%;
+    background:radial-gradient(circle, rgba(180,35,24,.08) 0%, transparent 70%);
+    pointer-events:none;
+  }
+  .success-check{
+    width:76px;height:76px;border-radius:50%;
+    background:linear-gradient(135deg,#c4302b,#b42318);
+    display:inline-flex;align-items:center;justify-content:center;color:#fff;
+    margin-bottom:16px;box-shadow:0 8px 24px rgba(180,35,24,.32);
+    animation:pop .5s cubic-bezier(.34,1.56,.64,1);
+    position:relative;z-index:1;
+  }
+  @keyframes pop{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
+  .success-hero h1{font-size:24px;font-weight:800;letter-spacing:-.02em;margin-bottom:6px;position:relative;z-index:1}
+  .success-hero p{font-size:13.5px;color:var(--text-secondary);line-height:1.5;max-width:460px;margin:0 auto;position:relative;z-index:1}
+  .success-stamp{
+    display:inline-flex;align-items:center;gap:6px;margin-top:14px;
+    font-family:'SF Mono',monospace;font-size:11.5px;font-weight:700;
+    color:var(--text-secondary);padding:5px 12px;background:#fff;
+    border:1px solid var(--border);border-radius:var(--radius-full);
+    position:relative;z-index:1;
+  }
+
+  /* State transition */
+  .status-banner{
+    background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);
+    padding:14px 20px;display:flex;gap:14px;align-items:center;margin-bottom:18px;
+    box-shadow:var(--shadow-card);
+  }
+  .status-banner__ico{width:40px;height:40px;border-radius:var(--radius-md);background:var(--red-bg);color:#b42318;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .status-banner__body{flex:1;min-width:0}
+  .status-banner__title{font-size:13px;font-weight:700;margin-bottom:2px}
+  .status-banner__sub{font-size:11.5px;color:var(--text-secondary)}
+  .status-transition{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700}
+  .status-chip{padding:3px 10px;border-radius:var(--radius-full);font-family:'Inter',sans-serif}
+  .status-chip.prev{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);text-decoration:line-through;opacity:.7}
+  .status-chip.now{background:var(--red-bg);color:#b42318;border:1px solid var(--red-border)}
+
+  /* Receipt */
+  .receipt{
+    background:#fff;border:1px solid var(--border);border-radius:var(--radius-xl);
+    box-shadow:var(--shadow-card);overflow:hidden;margin-bottom:18px;
+  }
+  .receipt__head{padding:18px 26px;border-bottom:1px dashed var(--border);display:flex;justify-content:space-between;align-items:center}
+  .receipt__head h3{font-size:12.5px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.6px}
+  .receipt__id{font-family:'SF Mono',monospace;font-size:12px;font-weight:700;color:#b42318;background:var(--red-bg);padding:4px 10px;border-radius:var(--radius-md)}
+
+  .receipt__body{padding:20px 26px;display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center}
+  .receipt__ava{
+    width:68px;height:68px;border-radius:50%;
+    background:linear-gradient(135deg,#ffbf75,#d74009);
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;font-size:24px;font-weight:800;
+    border:3px solid #fff;
+    box-shadow:
+      0 0 0 1px var(--border),
+      0 8px 22px rgba(215,64,9,.30),
+      0 2px 6px rgba(215,64,9,.17);
+  }
+  .receipt__person{display:flex;flex-direction:column;gap:3px;min-width:0}
+  .receipt__person-name{font-size:17px;font-weight:800;letter-spacing:-.01em}
+  .receipt__person-meta{font-size:12px;color:var(--text-secondary)}
+
+  .receipt__details{padding:0 26px 20px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:560px){.receipt__details{grid-template-columns:1fr}}
+  .detail{display:flex;flex-direction:column;gap:2px;padding:10px 14px;background:#fafbfd;border:1px solid var(--border);border-radius:var(--radius-md)}
+  .detail dt{font-size:10px;font-weight:700;letter-spacing:.4px;color:#b5b9d4;text-transform:uppercase}
+  .detail dd{font-size:13px;color:var(--text-primary);font-weight:700}
+  .detail code{font-family:'SF Mono',monospace;font-size:11.5px;color:var(--accent)}
+  .detail.reason{grid-column:1/-1;background:var(--red-bg);border-color:var(--red-border)}
+  .detail.reason dd{color:#7a271a}
+
+  .receipt__footer{padding:16px 26px;border-top:1px dashed var(--border);display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;font-size:11.5px;color:var(--text-secondary);background:#fafbfd}
+  .receipt__footer strong{color:var(--text-primary)}
+
+  /* What happens */
+  .next-steps{
+    background:#eef5ff;border:1px solid #d6e6fb;border-radius:var(--radius-lg);
+    padding:18px 22px;margin-bottom:18px;
+  }
+  .next-steps h4{font-size:12.5px;font-weight:700;color:#102a50;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .next-step{display:flex;gap:10px;padding:8px 0;font-size:12.5px;color:#1f4c83;line-height:1.5}
+  .next-step__ico{width:20px;height:20px;border-radius:50%;background:#fff;color:#1f78d1;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;font-weight:800}
+
+  /* Actions */
+  .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px}
+  @media(max-width:560px){.actions{grid-template-columns:1fr}}
+  .btn{height:46px;padding:0 20px;border-radius:var(--radius-md);font:inherit;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:all .15s;border:none}
+  .btn-primary{background:var(--accent);color:#fff}
+  .btn-primary:hover{box-shadow:0 6px 16px rgba(215,64,9,.22)}
+  .btn-outline{background:#fff;color:var(--text-primary);border:1px solid var(--border-dark)}
+  .btn-outline:hover{background:#fafbfd}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <aside class="sidebar collapsed" id="sidebar">
+    <div class="sidebar-logo">
+      <button class="burger-btn" onclick="document.getElementById('sidebar').classList.toggle('collapsed')" aria-label="Toggle sidebar">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="#282834" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+      <svg class="naowee-logo" viewBox="0 0 180 34" fill="none"><text x="0" y="24" font-family="Inter" font-weight="800" font-size="22" fill="#002B5B">Naowee</text></svg>
+    </div>
+    <nav class="sidebar-nav" id="sideNav">
+      <div class="nav-section">INCENTIVOS · GESTOR</div>
+      <div class="nav-row" onclick="fadeAndGo('incentivo-02-dashboard.html')">
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="11" rx="1.5"/><rect x="13" y="3" width="8" height="6" rx="1.5"/><rect x="3" y="16" width="8" height="5" rx="1.5"/><rect x="13" y="11" width="8" height="10" rx="1.5"/></svg></div>
+        <span class="lbl">Dashboard</span>
+      </div>
+      <div class="nav-row active">
+        <div class="active-bar"></div>
+        <div class="icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d74009" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="1.5"/><circle cx="6" cy="12" r="1.5"/><circle cx="6" cy="18" r="1.5"/><line x1="6" y1="7.5" x2="6" y2="10.5"/><line x1="6" y1="13.5" x2="6" y2="16.5"/><line x1="11" y1="6" x2="20" y2="6"/><line x1="11" y1="12" x2="18" y2="12"/><line x1="11" y1="18" x2="16" y2="18"/></svg></div>
+        <span class="lbl">Historial</span>
+      </div>
+      <div class="nav-row" data-role="admin" onclick="fadeAndGo('incentivo-15-reporteria.html')">
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-5"/><circle cx="18" cy="9" r="1.5"/></svg></div>
+        <span class="lbl">Reportería</span>
+      </div>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <header class="top-header">
+      <div class="profile-switcher">
+        <div class="user-chip">
+          <div class="ava"><div class="ava-ring" style="background:#c4b5fd;color:#4c1d95">DV</div><div class="ava-dot"></div></div>
+          <div class="user-info"><span class="user-name">Juan Rodríguez</span><span class="user-role">Gestor de incentivos</span></div>
+          <button class="user-chip__chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>
+        </div>
+      </div>
+    </header>
+
+    <div class="page">
+
+      <div class="success-wrap">
+
+        <!-- PENDIENTE: el permiso "revertir asignación" para el rol OPERADOR está por confirmar en la matriz de roles y permisos (Danna, reunión 22-09, 00:30:59: "El operador sí, todo debe quedar en el historial"). Con ?from=mis-asignaciones esta pantalla se muestra en modo operador. -->
+        <div class="breadcrumb" id="crumb">
+          <a onclick="fadeAndGo('incentivo-12-asignaciones.html')">Historial</a>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          <span>Reversión registrada</span>
+        </div>
+
+        <div class="success-hero">
+          <div class="success-check">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 013.51 15"/></svg>
+          </div>
+          <h1>Reversión registrada con éxito</h1>
+          <p id="heroText">La asignación fue revertida. El código vuelve al inventario como disponible y el valor regresa al rubro del programa. El cambio queda en el historial de auditoría.</p>
+          <div class="success-stamp" id="stamp">ID · #REV-2026-—</div>
+        </div>
+
+        <!-- State transition -->
+        <div class="status-banner">
+          <div class="status-banner__ico">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 013.51 15"/></svg>
+          </div>
+          <div class="status-banner__body">
+            <div class="status-banner__title">Estado del incentivo actualizado</div>
+            <div class="status-banner__sub" id="bannerSub">Transición registrada con timestamp, motivo y datos del gestor.</div>
+          </div>
+          <div class="status-transition">
+            <span class="status-chip prev">Asignado</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            <span class="status-chip now">Revertido</span>
+          </div>
+        </div>
+
+        <!-- Receipt -->
+        <div class="receipt">
+          <div class="receipt__head">
+            <h3>Comprobante de reversión</h3>
+            <span class="receipt__id" id="receiptId">#REV-2026-—</span>
+          </div>
+          <div class="receipt__body">
+            <div class="receipt__ava" id="rAva">MC</div>
+            <div class="receipt__person">
+              <div class="receipt__person-name" id="rName">María C. Herrera Rojas</div>
+              <div class="receipt__person-meta" id="rMeta">CC 1.001.234.567 · Beca educativa · 22 abr · 15:42</div>
+            </div>
+          </div>
+          <dl class="receipt__details">
+            <!-- "Código revertido" retirado del comprobante por seguridad (feedback Danna): es el código redimible. -->
+            <div class="detail" id="rValueRow">
+              <dt>Valor devuelto al rubro</dt>
+              <dd id="rValue" style="color:var(--green)">+ $1.000.000</dd>
+            </div>
+            <div class="detail">
+              <dt id="rByLbl">Gestor que revertió</dt>
+              <dd id="rBy">Juan Rodríguez</dd>
+            </div>
+            <div class="detail">
+              <dt>Fecha y hora</dt>
+              <dd id="rDate">—</dd>
+            </div>
+            <div class="detail reason">
+              <dt>Motivo registrado</dt>
+              <dd id="rMotivo">Código o incentivo incorrecto</dd>
+            </div>
+          </dl>
+          <div class="receipt__footer">
+            <span>Programa: <strong id="rProg">Becas deportivas 2026</strong></span>
+            <span>Región: <strong id="rRegion">Atlántico · Barranquilla</strong></span>
+          </div>
+        </div>
+
+        <!-- What happens next -->
+        <div class="next-steps" id="nextSteps">
+          <h4>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+            Qué pasa ahora
+          </h4>
+          <div class="next-step">
+            <span class="next-step__ico">1</span>
+            <div>El código vuelve al inventario del programa como <strong>disponible</strong> y puede reasignarse a otro beneficiario.</div>
+          </div>
+          <div class="next-step">
+            <span class="next-step__ico">2</span>
+            <div>El <strong>valor del incentivo</strong> se reincorpora al rubro del programa. La ejecución presupuestal se actualiza en tiempo real.</div>
+          </div>
+          <div class="next-step">
+            <span class="next-step__ico">3</span>
+            <div>La asignación original queda marcada como <strong>"Revertida"</strong> en el historial con el motivo que ingresaste — visible en auditoría.</div>
+          </div>
+          <div class="next-step">
+            <span class="next-step__ico">4</span>
+            <div>El <strong>operador en campo</strong> que hizo la asignación original queda notificado dentro del sistema (no se envía email ni SMS).</div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="actions" id="actions">
+          <button class="btn btn-primary" onclick="fadeAndGo('incentivo-12-asignaciones.html')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="1.5"/><circle cx="6" cy="12" r="1.5"/><circle cx="6" cy="18" r="1.5"/><line x1="6" y1="7.5" x2="6" y2="10.5"/><line x1="6" y1="13.5" x2="6" y2="16.5"/><line x1="11" y1="6" x2="20" y2="6"/><line x1="11" y1="12" x2="18" y2="12"/><line x1="11" y1="18" x2="16" y2="18"/></svg>
+            Volver al historial
+          </button>
+          <button class="btn btn-outline" onclick="fadeAndGo('incentivo-05-programa-detalle.html?id=PRG-2026-001')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="13" height="13" rx="2"/><rect x="8" y="8" width="13" height="13" rx="2"/></svg>
+            Ver programa
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const rid = '#REV-2026-' + String(Math.floor(Math.random()*90000)+10000);
+document.getElementById('receiptId').textContent = rid;
+document.getElementById('stamp').textContent = 'ID · ' + rid;
+
+const now = new Date();
+document.getElementById('rDate').textContent = now.toLocaleString('es-CO', {
+  day:'2-digit', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit'
+});
+
+/* Hydrate from session storage */
+try{
+  const s = JSON.parse(sessionStorage.getItem('revert-complete') || '{}');
+  if(s.name){ document.getElementById('rName').textContent = s.name; document.getElementById('rAva').textContent = s.initials || 'DV'; }
+  if(s.bg) document.getElementById('rAva').style.background = s.bg;
+  if(s.doc) document.getElementById('rMeta').textContent = `${s.docType || 'CC'} ${s.doc} · ${s.prog || 'Programa'} · ${s.date || ''}`;
+  /* "Código revertido"/nsCode retirado por seguridad (feedback Danna): código redimible. */
+  if(s.value) document.getElementById('rValue').textContent = `+ $${s.value.toLocaleString('es-CO')}`;
+  if(s.motivo) document.getElementById('rMotivo').textContent = s.motivo;
+  if(s.prog) document.getElementById('rProg').textContent = s.prog;
+  if(s.region) document.getElementById('rRegion').textContent = s.region;
+}catch(e){}
+
+/* ═════ Modo operador: reversión hecha desde "Mis asignaciones" (reunión 22-09, 00:30:59) ═════
+   PENDIENTE: confirmar en la matriz de roles y permisos que el OPERADOR puede revertir.
+   El operador no ve valores monetarios → se oculta "Valor devuelto al rubro". */
+(function operatorMode(){
+  let s = {};
+  try{ s = JSON.parse(sessionStorage.getItem('revert-complete') || '{}'); }catch(e){}
+  const fromOp = new URLSearchParams(location.search).get('from') === 'mis-asignaciones';
+  if(!fromOp) return;
+  try{ sessionStorage.removeItem('inc-profile'); }catch(e){}
+  document.title = 'SUID – Incentivos · Reversión registrada';
+  const ico = (d, c) => `<div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${d}</svg></div>`;
+  document.getElementById('sideNav').innerHTML = `
+    <div class="nav-section">INCENTIVOS</div>
+    <div class="nav-row" onclick="fadeAndGo('incentivo-08-asignar-buscar.html')">${ico('<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/>', '#646587')}<span class="lbl">Asignar incentivo</span></div>
+    <div class="nav-row active"><div class="active-bar"></div>${ico('<path d="M8 7h13M8 12h13M8 17h13"/><circle cx="4" cy="7" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="17" r="1"/>', '#d74009')}<span class="lbl">Mis asignaciones</span></div>`;
+  const crumbLink = document.querySelector('#crumb a');
+  crumbLink.textContent = 'Mis asignaciones';
+  crumbLink.setAttribute('onclick', "fadeAndGo('incentivo-14-mis-asignaciones.html')");
+  crumbLink.setAttribute('href', 'incentivo-14-mis-asignaciones.html');
+  document.getElementById('heroText').textContent = s.hasCode
+    ? 'La asignación fue revertida. El código vuelve al inventario como disponible y el incentivo queda otra vez disponible para el beneficiario. El cambio queda en el historial.'
+    : 'La asignación fue revertida. El incentivo queda otra vez disponible para el beneficiario. El cambio queda en el historial.';
+  document.getElementById('bannerSub').textContent = 'Transición registrada con fecha, hora, motivo y datos del operador.';
+  document.getElementById('rValueRow').remove();
+  document.getElementById('rByLbl').textContent = 'Revertido por';
+  document.getElementById('rBy').textContent = s.revertedBy || 'Juan Rodríguez · Operador';
+  const footer = document.querySelector('.receipt__footer');
+  if(footer) footer.innerHTML = `<span>Incentivo: <strong>${s.prog || '—'}</strong></span><span>Departamento: <strong>${s.region || '—'}</strong></span>`;
+  document.getElementById('nextSteps').innerHTML = `
+    <h4><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>Qué pasa ahora</h4>
+    <div class="next-step"><span class="next-step__ico">1</span><div>La asignación queda como <strong>"Revertida"</strong> en Mis asignaciones, con el motivo que ingresaste, tu nombre y la fecha (en la integración real también llega al historial del gestor).</div></div>
+    <div class="next-step"><span class="next-step__ico">2</span><div>Al buscar de nuevo al beneficiario, el incentivo aparece como <strong>Disponible</strong> y se puede volver a asignar.</div></div>
+    ${s.hasCode ? '<div class="next-step"><span class="next-step__ico">3</span><div>El código vuelve al inventario del ' + (s.prog || 'bono') + ' como <strong>disponible</strong>.</div></div>' : ''}`;
+  document.getElementById('actions').innerHTML = `
+    <button class="btn btn-primary" onclick="fadeAndGo('incentivo-14-mis-asignaciones.html')">Volver a Mis asignaciones</button>
+    <button class="btn btn-outline" onclick="fadeAndGo('incentivo-08-asignar-buscar.html')">Asignar incentivo</button>`;
+})();
+
+function fadeAndGo(url){window.location.href=url}
+</script>
+<script src="shared/profile-switcher.js?v=20260922203322" defer></script>
+
+<script src="shared/footer-scroll.js" defer></script>
+<script src="shared/tour.js?v=20260922203322" defer></script>
+
+<!-- Footer flotante Naowee -->
+<div class="naowee-floating-footer" role="contentinfo" aria-label="Pie de página Naowee">
+  <img src="shared/logos/naowee.svg" alt="Naowee" class="naowee-floating-footer__logo"/>
+  <div class="naowee-floating-footer__sep"></div>
+  <span class="naowee-floating-footer__text">Todos los derechos reservados <strong>&copy; 2026</strong></span>
+</div>
+
+</body>
+</html>

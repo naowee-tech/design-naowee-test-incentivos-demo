@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Naowee Incentivos — Template</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+
+<!-- Design System (pinned v1.4.0) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.4.0/dist/design-system.css"/>
+
+<!-- Shell (sidebar + header + profile switcher) -->
+<link rel="stylesheet" href="shared/shell.css?v=20260922200101"/>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <button class="burger-btn" onclick="document.getElementById('sidebar').classList.toggle('collapsed')" aria-label="Toggle sidebar">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="#282834" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+      <svg class="naowee-logo" viewBox="0 0 180 34" fill="none"><text x="0" y="24" font-family="Inter" font-weight="800" font-size="22" fill="#002B5B">Naowee</text></svg>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section">INCENTIVOS</div>
+
+      <div class="nav-row" data-role="all" onclick="window.location.href='index.html'">
+        <div class="icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1.5" stroke="#646587" stroke-width="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5" stroke="#646587" stroke-width="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5" stroke="#646587" stroke-width="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5" stroke="#646587" stroke-width="1.5"/></svg>
+        </div>
+        <span class="lbl">Índice</span>
+      </div>
+
+      <!-- Items visibles sólo para Admin -->
+      <div class="nav-row nav-admin" data-role="admin" onclick="window.location.href='incentivo-02-dashboard.html'">
+        <div class="icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l2-2 4 4 8-8 4 4"/><path d="M21 6v4h-4"/></svg>
+        </div>
+        <span class="lbl">Dashboard</span>
+      </div>
+
+      <div class="nav-row nav-admin" data-role="admin" onclick="window.location.href='incentivo-03-programas.html'">
+        <div class="icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6"/></svg>
+        </div>
+        <span class="lbl">Programas</span>
+      </div>
+
+      <div class="nav-row nav-admin" data-role="admin" onclick="window.location.href='incentivo-07-codigos.html'">
+        <div class="icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="4" height="14"/><rect x="9" y="5" width="2" height="14"/><rect x="13" y="5" width="4" height="14"/><rect x="19" y="5" width="2" height="14"/></svg>
+        </div>
+        <span class="lbl">Códigos</span>
+      </div>
+
+      <!-- Items visibles sólo para Gestor -->
+      <div class="nav-row nav-gestor" data-role="gestor" onclick="window.location.href='incentivo-08-asignar-buscar.html'">
+        <div class="icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
+        </div>
+        <span class="lbl">Asignar incentivo</span>
+      </div>
+
+      <div class="nav-row nav-gestor" data-role="gestor" onclick="window.location.href='incentivo-12-asignaciones.html'">
+        <div class="icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7h13M8 12h13M8 17h13"/><circle cx="4" cy="7" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="17" r="1"/></svg>
+        </div>
+        <span class="lbl">Asignaciones</span>
+      </div>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <div class="nav-row" id="btnLogout">
+        <div class="icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <span class="lbl">Cerrar sesión</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <div class="main">
+
+    <!-- TOP HEADER -->
+    <header class="top-header">
+      <div class="profile-switcher" id="profileSwitcher">
+        <div class="user-chip" onclick="toggleProfileDD(event)">
+          <div class="ava">
+            <div class="ava-ring" id="avaRing" style="background:#c4b5fd;color:#4c1d95">DV</div>
+            <div class="ava-dot"></div>
+          </div>
+          <div class="user-info">
+            <span class="user-name">Doug Vargas</span>
+            <span class="user-role" id="userRoleLabel">Administrador</span>
+          </div>
+          <button class="user-chip__chevron" type="button" aria-label="Cambiar rol">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+        </div>
+
+      </div>
+    </header>
+
+    <!-- PAGE -->
+    <div class="page">
+      <h1 class="page-title">Título de la pantalla</h1>
+      <p class="page-sub">Breve descripción del flujo o acción que vive en esta pantalla.</p>
+
+      <!-- ═══ Contenido placeholder ═══ -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:48px;text-align:center;color:var(--text-secondary);box-shadow:var(--shadow-card)">
+        <div style="font-size:42px;margin-bottom:12px">✨</div>
+        <div style="font-size:15px;font-weight:600;color:var(--text-primary);margin-bottom:6px">Contenido de la pantalla</div>
+        <div style="font-size:13px;max-width:480px;margin:0 auto;line-height:1.55">
+          Reemplaza este bloque con el flujo real. Reutiliza componentes del Design System via CDN
+          (<code style="font-family:'SF Mono',monospace;color:var(--accent);font-size:12px">v1.4.0</code>):
+          <code style="font-family:'SF Mono',monospace;font-size:12px">.naowee-btn</code>,
+          <code style="font-family:'SF Mono',monospace;font-size:12px">.naowee-tabs</code>,
+          <code style="font-family:'SF Mono',monospace;font-size:12px">.naowee-textfield</code>, etc.
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ═══ Profile switcher ═══ */
+const ROLES = {
+  admin:  { name:'Doug Vargas', label:'Administrador', initials:'DV', bg:'#c4b5fd', fg:'#4c1d95' },
+  gestor: { name:'Doug Vargas', label:'Gestor',        initials:'DV', bg:'#ffdfb5', fg:'#92400e' }
+};
+
+function currentRole(){
+  return localStorage.getItem('naowee-incentivos-role') || 'admin';
+}
+
+function applyRole(role){
+  const r = ROLES[role] || ROLES.admin;
+  // chip
+  const ring = document.getElementById('avaRing');
+  if(ring){ ring.textContent = r.initials; ring.style.background = r.bg; ring.style.color = r.fg; }
+  const lbl = document.getElementById('userRoleLabel');
+  if(lbl) lbl.textContent = r.label;
+  // dropdown active state
+  document.querySelectorAll('.profile-dd__item').forEach(el => {
+    el.classList.toggle('active', el.dataset.role === role);
+  });
+  // sidebar visibility
+  document.querySelectorAll('.nav-row[data-role]').forEach(el => {
+    const dr = el.dataset.role;
+    el.style.display = (dr === 'all' || dr === role) ? '' : 'none';
+  });
+}
+
+function switchRole(role){
+  localStorage.setItem('naowee-incentivos-role', role);
+  applyRole(role);
+  // cierra dropdown
+  document.getElementById('profileSwitcher')?.classList.remove('open');
+}
+
+function toggleProfileDD(ev){
+  ev.stopPropagation();
+  document.getElementById('profileSwitcher')?.classList.toggle('open');
+}
+
+document.addEventListener('click', (e) => {
+  const sw = document.getElementById('profileSwitcher');
+  if(sw && !sw.contains(e.target)) sw.classList.remove('open');
+});
+
+/* ═══ Logout + page transition ═══ */
+function fadeAndGo(url){ window.location.href = url; }
+document.getElementById('btnLogout')?.addEventListener('click', () => {
+  fadeAndGo('incentivo-01-login.html');
+});
+
+/* init */
+applyRole(currentRole());
+</script>
+
+</body>
+</html>

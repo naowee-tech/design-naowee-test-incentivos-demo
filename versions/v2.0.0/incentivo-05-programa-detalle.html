@@ -1,0 +1,1966 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>SUID – Incentivos · Detalle del programa</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.4.0/dist/design-system.css"/>
+<link rel="stylesheet" href="shared/shell.css?v=20260922200101"/>
+<link rel="stylesheet" href="shared/programa-wizard.css?v=20260922194132"/>
+<script src="shared/programs-data.js?v=20260922203322"></script>
+
+<style>
+  /* Back link wrapper */
+  .back-link-wrap{margin-bottom:12px}
+
+  /* Hero card — header + KPIs unificados en un solo container */
+  .hero-card{
+    background:#fff;border:1px solid var(--naowee-color-border-default,#e7e9f3);
+    border-radius:16px;margin-bottom:20px;overflow:hidden;
+    box-shadow:0 1px 2px rgba(40,40,52,.03);
+  }
+  .hero-card__divider{
+    height:1px;background:var(--naowee-color-border-default,#e7e9f3);
+    margin:0 28px;
+  }
+
+  /* Detail header card — top section del hero (sin border propio) */
+  .detail-head{
+    padding:24px 28px;
+    display:grid;grid-template-columns:64px 1fr auto;gap:20px;align-items:center;
+  }
+  @media(max-width:900px){.detail-head{grid-template-columns:1fr}}
+  .detail-head__ico{
+    width:64px;height:64px;border-radius:12px;
+    background:#fff3e6;color:var(--naowee-color-text-accent,#d74009);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .detail-head__body{min-width:0}
+  .detail-head__id-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .detail-head__id{
+    font-family:'SF Mono',monospace;font-size:11px;
+    color:var(--naowee-color-text-secondary,#646587);font-weight:600;
+  }
+  .detail-head__title{
+    font-size:22px;font-weight:800;letter-spacing:-.01em;line-height:1.2;margin:2px 0 6px;
+    color:var(--naowee-color-text-primary,#282834);
+  }
+  .detail-head__meta{
+    display:flex;flex-wrap:wrap;align-items:center;gap:10px;
+    font-size:12.5px;color:var(--naowee-color-text-secondary,#646587);
+  }
+  .detail-head__meta .dot{width:3px;height:3px;background:#d0d4e6;border-radius:50%}
+  .detail-head__meta strong{color:var(--naowee-color-text-primary,#282834);font-weight:600}
+  .detail-head__actions{display:flex;flex-direction:column;gap:10px;align-items:flex-end}
+  .detail-head__btns{display:flex;gap:8px}
+
+  /* Mini KPI strip — bottom section del hero, sin borders individuales,
+     dividers verticales sutiles entre KPIs (con inset vertical). */
+  .kpi-strip{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:0;
+    padding:18px 4px;
+  }
+  /* Sin incentivos Bono se oculta la tarjeta de códigos: 3 columnas */
+  .kpi-strip:has(#kpiBonoBox[hidden]){grid-template-columns:repeat(3,1fr)}
+  .mini-kpi[hidden]{display:none}
+  @media(max-width:900px){
+    .kpi-strip{grid-template-columns:repeat(2,1fr);gap:0}
+  }
+  .mini-kpi{
+    background:transparent;border:none;border-radius:0;
+    padding:6px 24px;position:relative;
+  }
+  .mini-kpi + .mini-kpi::before{
+    content:"";position:absolute;left:0;top:8px;bottom:8px;
+    width:1px;background:var(--naowee-color-border-default,#e7e9f3);
+  }
+  @media(max-width:900px){
+    .mini-kpi:nth-child(odd) + .mini-kpi::before{display:block}
+    .mini-kpi:nth-child(3)::before{display:none}
+  }
+  .mini-kpi__lbl{
+    font-size:10.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;
+    color:var(--naowee-color-text-secondary,#646587);
+  }
+  .mini-kpi__val{
+    font-family:'Inter',sans-serif;
+    font-size:24px;font-weight:700;color:var(--naowee-color-text-primary,#282834);
+    letter-spacing:-.02em;margin-top:4px;line-height:1.1;
+  }
+  .mini-kpi__sub{font-size:11.5px;color:var(--naowee-color-text-secondary,#646587);margin-top:2px}
+
+  /* Énfasis en "Ejecutado" — KPI principal: tipografía mayor y barra
+     de progreso más prominente con accent color. */
+  .mini-kpi--hero .mini-kpi__val{font-size:28px;color:var(--naowee-color-text-accent,#d74009)}
+  .mini-kpi--hero .naowee-progress{height:6px}
+
+  /* Content card (wrapping tabs + panes) — escenarios style */
+  .detail-card{
+    background:#fff;border:1px solid var(--naowee-color-border-default,#e7e9f3);
+    border-radius:16px;overflow:hidden;
+  }
+  .detail-card__tabs{
+    position:relative;
+    border-bottom:1px solid var(--naowee-color-border-default,#e7e9f3);
+    padding:12px 8px 0;
+  }
+  .detail-card__tabs .naowee-tabs{border-bottom:none;background:transparent}
+  .detail-card__body{padding:32px 28px 28px}
+
+  /* Section labels (estilo escenarios: DATOS DE PRE-VALIDACIÓN gris claro) */
+  .section-label{
+    font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;
+    color:#9c9ebf;
+    margin-bottom:14px;
+  }
+  .section-label--row{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+  }
+  .section + .section{margin-top:28px}
+
+  /* Info rows — label gray / value dark, ritmo por spacing (sin dividers) */
+  .info-row-plain{
+    display:grid;grid-template-columns:180px 1fr;gap:16px;
+    padding:7px 0;
+    font-size:13px;
+  }
+  .info-row-plain dt{color:var(--naowee-color-text-secondary,#646587);font-weight:500}
+  .info-row-plain dd{color:var(--naowee-color-text-primary,#282834);font-weight:500}
+  .info-row-plain dd code{
+    font-family:'SF Mono',monospace;font-size:12px;
+    color:var(--naowee-color-text-accent,#d74009);
+    background:#fff3e6;padding:1px 6px;border-radius:4px;
+  }
+
+  /* Tipo de incentivo card (plain, sin caja envolvente) */
+  #incList{ display:flex;flex-direction:column;gap:10px; }
+  .inc-card{
+    display:flex;gap:14px;padding:14px 16px;
+    border:1px solid var(--naowee-color-border-default,#e7e9f3);
+    border-radius:10px;background:#fafbfd;
+  }
+  .inc-card__ico{
+    width:40px;height:40px;border-radius:10px;
+    background:#fff3e6;color:var(--naowee-color-text-accent,#d74009);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .inc-card__body{flex:1;min-width:0}
+  .inc-card__title{font-size:13.5px;font-weight:700;color:var(--naowee-color-text-primary,#282834)}
+  .inc-card__desc{font-size:11.5px;color:var(--naowee-color-text-secondary,#646587);margin-top:2px}
+  .inc-card__badges{display:flex;gap:6px;margin-top:6px}
+  .inc-card__val{text-align:right;flex-shrink:0}
+  .inc-card__val-val{
+    font-size:18px;font-weight:800;color:var(--naowee-color-text-primary,#282834);
+    font-variant-numeric:tabular-nums;
+  }
+  .inc-card__val-lbl{font-size:10.5px;color:var(--naowee-color-text-secondary,#646587)}
+
+  /* Cond preview en detalle: usa .wz-cond-preview de programa-wizard.css */
+  /* Resumen humano (1 frase) — bajo el preview natural language */
+  .cond-summary{
+    margin-top:14px;padding:12px 16px;
+    background:#f7f8fc;border-radius:10px;
+    font-size:13px;line-height:1.55;
+    color:var(--naowee-color-text-secondary,#646587);
+  }
+  .cond-summary__lbl{
+    font-size:10.5px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;
+    color:var(--naowee-color-text-accent,#d74009);
+    display:block;margin-bottom:4px;
+  }
+  .cond-summary__txt{color:var(--naowee-color-text-primary,#282834)}
+  .cond-summary__txt strong{font-weight:600;color:var(--naowee-color-text-primary,#282834)}
+
+  /* ═════ TOOLBAR pattern escenarios-11 (search pill + dropdown + pagination) ═════ */
+  .cg-toolbar{
+    display:flex;align-items:flex-start;justify-content:space-between;
+    gap:12px;flex-wrap:wrap;margin-bottom:18px;
+  }
+  .cg-toolbar__left{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  /* Botón en toolbar igualado al alto del search y del toolbar-dd (34px) */
+  .cg-toolbar__left > .naowee-btn{height:34px;padding:0 14px;font-size:12.5px}
+  .cg-toolbar__left > .naowee-btn svg{width:14px;height:14px}
+  .cg-toolbar .naowee-searchbox--pill{width:300px;max-width:100%}
+  .cg-toolbar .naowee-searchbox--pill .naowee-searchbox__input-wrap{
+    border-radius:9999px;height:34px;padding:4px 12px;
+  }
+
+  /* Filter dropdown (escenarios toolbar-dd) */
+  .toolbar-dd-wrap{position:relative;display:inline-flex}
+  .toolbar-dd{
+    position:relative;display:inline-flex;align-items:center;gap:8px;justify-content:space-between;
+    height:34px;padding:4px 12px 4px 14px;
+    background:#fff;border:1px solid #8788ab;border-radius:8px;
+    font-family:'Inter',sans-serif;font-size:12.5px;font-weight:500;
+    color:var(--naowee-color-text-primary,#282834);
+    cursor:pointer;transition:border-color .15s,box-shadow .15s;min-width:140px;
+  }
+  .toolbar-dd:hover{border-color:#646587}
+  .toolbar-dd.open,.toolbar-dd:focus-visible{
+    outline:none;border-color:var(--naowee-color-text-accent,#d74009);
+    box-shadow:0 0 0 3px rgba(215,64,9,.15);
+  }
+  .toolbar-dd svg{width:16px;height:16px;flex-shrink:0;color:var(--naowee-color-text-secondary,#646587);transition:transform .2s}
+  .toolbar-dd.open svg{transform:rotate(180deg)}
+  .toolbar-dd-menu{
+    position:absolute;top:calc(100% + 6px);left:0;z-index:50;
+    min-width:100%;background:#fff;
+    border:1px solid var(--naowee-color-border-default,#e7e9f3);border-radius:10px;
+    box-shadow:0 12px 32px rgba(40,40,52,.12);
+    padding:6px;white-space:nowrap;
+    opacity:0;transform:translateY(-6px);pointer-events:none;
+    transition:opacity .18s,transform .18s;
+  }
+  .toolbar-dd-wrap.open .toolbar-dd-menu{opacity:1;transform:translateY(0);pointer-events:auto}
+  .toolbar-dd-item{
+    display:flex;align-items:center;gap:10px;
+    padding:9px 10px;border-radius:6px;
+    font-size:13px;cursor:pointer;
+    transition:background .12s;
+  }
+  .toolbar-dd-item:hover{background:#f5f6fa}
+  .toolbar-dd-item[aria-selected="true"]{
+    background:#fff3e6;color:var(--naowee-color-text-accent,#d74009);font-weight:600;
+  }
+  .dd-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+  /* Pagination DS --small (bg quiet, sin border en botones) */
+  .naowee-pagination{
+    display:flex;align-items:center;gap:0;
+    font-family:'Inter',sans-serif;
+  }
+  .naowee-pagination__pages{display:flex;align-items:center;gap:6px}
+  .naowee-pagination__label,
+  .naowee-pagination__total{
+    font-size:12px;line-height:16px;
+    color:var(--naowee-color-text-secondary,#646587);
+    white-space:nowrap;
+  }
+  .naowee-pagination__input{
+    width:48px;height:32px;
+    border:1px solid var(--naowee-color-border-default,#e7e9f3);
+    border-radius:8px;
+    text-align:center;font:inherit;font-size:12px;font-weight:400;
+    color:var(--naowee-color-text-primary,#282834);
+    outline:none;background:#fff;
+    padding:4px 6px;
+    transition:border-color .15s;
+  }
+  .naowee-pagination__input:focus{
+    border-width:2px;border-color:var(--naowee-color-text-accent,#d74009);
+    padding:3px 5px;
+  }
+  .naowee-pagination__total strong{color:var(--naowee-color-text-primary,#282834);font-weight:600}
+  .naowee-pagination__controls{display:flex;gap:6px;margin-left:8px}
+  .naowee-pagination__btn{
+    width:32px;height:32px;border:none;
+    border-radius:8px;
+    background:#fff3e6;cursor:pointer;
+    display:inline-flex;align-items:center;justify-content:center;
+    color:var(--naowee-color-text-accent,#d74009);
+    transition:background .15s;
+    flex-shrink:0;padding:0;
+  }
+  .naowee-pagination__btn:hover:not(:disabled){background:#ffdaa3}
+  .naowee-pagination__btn:disabled{opacity:.35;cursor:not-allowed;pointer-events:none}
+  .naowee-pagination__btn svg{width:16px;height:16px}
+
+  /* Tabla sin container — header con bg gris pill redondeado full */
+  .cg-table{width:100%;border-collapse:separate;border-spacing:0}
+  .cg-table thead th{
+    font-family:'Inter',sans-serif;
+    font-size:11px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;
+    color:var(--naowee-color-text-secondary,#646587);
+    padding:12px 18px;text-align:left;
+    background:#f5f6fa;
+    border:none;
+  }
+  .cg-table thead th:first-child{border-top-left-radius:12px;border-bottom-left-radius:12px}
+  .cg-table thead th:last-child{border-top-right-radius:12px;border-bottom-right-radius:12px}
+  .cg-table tbody td{
+    padding:14px 18px;font-size:13px;vertical-align:middle;
+    border-bottom:1px solid var(--naowee-color-border-default,#e7e9f3);
+  }
+  .cg-table tbody tr:last-child td{border-bottom:none}
+  .cg-table tbody tr:hover{background:#fafbfd}
+  .cg-table code{
+    font-family:'SF Mono',monospace;font-size:12px;
+    color:var(--naowee-color-text-accent,#d74009);
+  }
+
+  .cg-pagination-row{
+    display:flex;justify-content:space-between;align-items:center;
+    padding-top:16px;flex-wrap:wrap;gap:12px;
+    font-size:12.5px;color:var(--naowee-color-text-secondary,#646587);
+  }
+
+  /* ═════ TIMELINE (escenarios-10 pattern) ═════ */
+  .timeline{position:relative;padding-left:36px;margin-top:8px}
+  .timeline-item{position:relative;padding-bottom:28px}
+  .timeline-item:last-child{padding-bottom:0}
+  .timeline-item::before{
+    content:'';position:absolute;left:-28px;top:24px;
+    width:2px;height:calc(100% - 12px);background:#d0d4e6;
+  }
+  .timeline-item:last-child::before{display:none}
+  .timeline-dot{
+    position:absolute;left:-36px;top:2px;
+    width:18px;height:18px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .timeline-dot svg{width:10px;height:10px}
+  .timeline-dot.green{background:var(--naowee-color-feedback-fill-positive-loud,#1f8923);color:#fff}
+  .timeline-dot.orange{background:var(--naowee-color-text-accent,#d74009);color:#fff}
+  .timeline-dot.blue{background:#1f78d1;color:#fff}
+  .timeline-dot.gray{background:#a0a3bd;color:#fff}
+  .timeline-content{display:flex;flex-direction:column;gap:2px}
+  .timeline-title{font-size:14px;font-weight:600;color:var(--naowee-color-text-primary,#282834)}
+  .timeline-desc{font-size:13px;font-weight:400;color:var(--naowee-color-text-secondary,#646587)}
+  .timeline-date{font-size:12px;font-weight:400;color:#9c9ebf;margin-top:2px}
+
+  /* Avatar small — low contrast (quiet tints) */
+  .av-sm{
+    width:32px;height:32px;border-radius:50%;
+    display:inline-flex;align-items:center;justify-content:center;
+    font-size:11px;font-weight:700;flex-shrink:0;
+  }
+  .av-sm--purple{background:#ede5ff;color:#6d28d9}
+  .av-sm--orange{background:#fff3e6;color:#c2410c}
+  .av-sm--green{background:#e6f4e7;color:#15803d}
+  .av-sm--blue{background:#eef5ff;color:#1d4ed8}
+  .av-sm--pink{background:#ffe4ee;color:#be185d}
+  .av-sm--teal{background:#ccfbf1;color:#0f766e}
+
+  /* Asignaciones table columns — better distribution */
+  .cg-table--asign{table-layout:fixed}
+  /* Beneficiario · Incentivo · Código · Operador · Departamento · Fecha · Estado · Acciones */
+  .cg-table--asign th:nth-child(1), .cg-table--asign td:nth-child(1){width:20%}
+  .cg-table--asign th:nth-child(2), .cg-table--asign td:nth-child(2){width:15%}
+  .cg-table--asign th:nth-child(3), .cg-table--asign td:nth-child(3){width:12%}
+  .cg-table--asign th:nth-child(4), .cg-table--asign td:nth-child(4){width:10%}
+  .cg-table--asign th:nth-child(5), .cg-table--asign td:nth-child(5){width:11%}
+  .cg-table--asign th:nth-child(6), .cg-table--asign td:nth-child(6){width:10%}
+  .cg-table--asign th:nth-child(7), .cg-table--asign td:nth-child(7){width:10%}
+  .cg-table--asign th:nth-child(8), .cg-table--asign td:nth-child(8){width:12%;padding-right:18px;text-align:right}
+  .cg-table--asign td{overflow:hidden;text-overflow:ellipsis}
+  /* Acciones: sin recorte, para que los tooltips no se corten */
+  .cg-table--asign td:nth-child(8){overflow:visible}
+  .cg-table--asign td.asign-inc{white-space:normal}
+
+  /* Botón ojo "Ver evidencia" — DS ghost (naowee-btn--mute icon-only) */
+  .ev-btn{padding:0;width:34px;min-width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center}
+  .ev-btn svg{width:16px;height:16px}
+
+  /* Lightbox de evidencia */
+  .ev-overlay{
+    position:fixed;inset:0;background:rgba(20,20,30,.72);z-index:1100;
+    display:none;align-items:center;justify-content:center;padding:24px;
+    backdrop-filter:blur(4px);
+  }
+  .ev-overlay.is-open{display:flex;animation:evFadeIn .2s ease}
+  @keyframes evFadeIn{from{opacity:0}to{opacity:1}}
+  .ev-modal{
+    background:#fff;border-radius:16px;overflow:hidden;
+    width:min(880px,100%);max-height:90vh;display:flex;flex-direction:column;
+    box-shadow:0 24px 60px rgba(0,0,0,.4);
+    animation:evScaleIn .25s cubic-bezier(.16,1,.3,1);
+  }
+  @keyframes evScaleIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+  .ev-head{
+    display:flex;align-items:center;justify-content:space-between;gap:14px;
+    padding:16px 22px;border-bottom:1px solid var(--naowee-color-border-default,#e7e9f3);
+  }
+  .ev-title{font-size:15px;font-weight:700;color:var(--naowee-color-text-primary,#282834)}
+  .ev-sub{font-size:12px;color:var(--naowee-color-text-secondary,#646587);margin-top:2px}
+  .ev-close{
+    width:32px;height:32px;border-radius:8px;border:none;background:transparent;
+    color:var(--naowee-color-text-secondary,#646587);cursor:pointer;
+    display:inline-flex;align-items:center;justify-content:center;transition:background .15s;
+  }
+  .ev-close:hover{background:#f5f6fa;color:var(--naowee-color-text-primary,#282834)}
+  .ev-body{display:grid;grid-template-columns:1fr 280px;min-height:0;flex:1}
+  @media(max-width:760px){.ev-body{grid-template-columns:1fr}}
+  .ev-photo{
+    background:#0f1218;display:flex;align-items:center;justify-content:center;
+    min-height:380px;position:relative;overflow:hidden;
+  }
+  .ev-photo img{width:100%;height:100%;object-fit:cover;display:block}
+  .ev-meta{padding:14px 22px;background:#fafbfd;overflow-y:auto;border-left:1px solid var(--naowee-color-border-default,#e7e9f3)}
+  .ev-meta__row{display:flex;flex-direction:column;gap:2px;padding:8px 0}
+  .ev-meta__lbl{font-size:10.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--naowee-color-text-secondary,#646587)}
+  .ev-meta__val{font-size:13px;font-weight:600;color:var(--naowee-color-text-primary,#282834)}
+  .ev-meta__val code{font-family:'SF Mono',monospace;font-size:12px;color:var(--naowee-color-text-accent,#d74009);background:#fff3e6;padding:2px 6px;border-radius:4px}
+  .ev-foot{
+    display:flex;justify-content:flex-start;align-items:center;
+    padding:12px 22px;border-top:1px solid var(--naowee-color-border-default,#e7e9f3);
+    font-size:11.5px;color:var(--naowee-color-text-secondary,#646587);background:#fafbfd;
+  }
+  .ev-foot__hint{display:inline-flex;align-items:center;gap:6px}
+  .ev-foot__hint svg{width:14px;height:14px}
+
+  /* Códigos: filas clicables y panel lateral con el historial */
+  .cod-row{cursor:pointer}
+  .cod-row:hover td{background:#fafbfd}
+  .cod-row:focus-visible{outline:2px solid var(--naowee-color-text-accent,#d74009);outline-offset:-2px}
+  .cod-inc{font-size:12.5px}
+  .cod-benef{font-weight:600;font-size:13px}
+  .cod-benef__doc,.cod-note{font-size:11.5px;color:var(--naowee-color-text-secondary,#646587)}
+  .cod-empty{color:#9c9ebf}
+  .cod-date{color:var(--naowee-color-text-secondary,#646587);font-size:12.5px}
+  .cod-chev{text-align:right;color:#9c9ebf;width:40px}
+  .cd-drawer{position:fixed;inset:0;z-index:1050;pointer-events:none}
+  .cd-drawer__backdrop{position:absolute;inset:0;background:rgba(40,40,52,.3);opacity:0;transition:opacity .2s}
+  .cd-drawer__panel{position:absolute;top:0;right:0;height:100%;width:440px;max-width:92vw;background:#fff;
+    box-shadow:-12px 0 32px rgba(40,40,52,.18);transform:translateX(100%);transition:transform .25s ease;display:flex;flex-direction:column}
+  .cd-drawer.is-open{pointer-events:auto}
+  .cd-drawer.is-open .cd-drawer__backdrop{opacity:1}
+  .cd-drawer.is-open .cd-drawer__panel{transform:none}
+  .cd-drawer__head{display:flex;align-items:flex-start;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--naowee-color-border-default,#e7e9f3)}
+  .cd-drawer__eyebrow{font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--naowee-color-text-secondary,#646587)}
+  .cd-drawer__head h2{margin:2px 0 0;font-size:17px;font-family:'SF Mono',ui-monospace,monospace;color:var(--naowee-color-text-accent,#d74009)}
+  .cd-drawer__close{border:0;background:transparent;cursor:pointer;color:var(--naowee-color-text-secondary,#646587);padding:6px;border-radius:8px}
+  .cd-drawer__close:hover{background:#f5f6fa}
+  .cd-drawer__body{padding:18px 20px;overflow:auto;display:flex;flex-direction:column;gap:12px}
+  .cd-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .cd-meta__inc{font-size:13px;font-weight:600}
+  .cd-sec{margin-top:6px;font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--naowee-color-text-secondary,#646587)}
+  .cd-benef{display:flex;gap:10px;align-items:flex-start}
+  .cd-benef__name{font-weight:700;font-size:14px}
+  .cd-benef__sub{font-size:12px;color:var(--naowee-color-text-secondary,#646587)}
+  .cd-actions{display:flex;gap:8px;flex-wrap:wrap}
+  .cd-empty{font-size:13px;color:var(--naowee-color-text-secondary,#646587)}
+  .cd-timeline{list-style:none;margin:0;padding:0 0 0 18px;border-left:2px solid var(--naowee-color-border-default,#e7e9f3);display:flex;flex-direction:column;gap:16px}
+  .cd-ev{position:relative}
+  .cd-ev::before{content:'';position:absolute;left:-25px;top:3px;width:12px;height:12px;border-radius:50%;background:#c4c7dc;border:2px solid #fff}
+  .cd-ev--green::before{background:#1f8923}
+  .cd-ev--red::before{background:#b42318}
+  .cd-ev__title{font-weight:700;font-size:13px}
+  .cd-ev__detail{font-size:12.5px;margin-top:2px}
+  .cd-ev__meta{font-size:11.5px;color:var(--naowee-color-text-secondary,#646587);margin-top:2px}
+
+  /* Equipo del programa */
+  .team-grid{display:grid;grid-template-columns:1fr 2fr;gap:24px}
+  @media(max-width:760px){.team-grid{grid-template-columns:1fr}}
+  .team-col{display:flex;flex-direction:column;gap:10px}
+  .team-col__lbl{font-size:12px;font-weight:600;color:var(--naowee-color-text-secondary,#646587)}
+  .team-person{display:flex;align-items:center;gap:10px}
+  .team-person__name{font-size:13.5px;font-weight:600;color:var(--naowee-color-text-primary,#282834)}
+  .team-person__role{font-size:12px;color:var(--naowee-color-text-secondary,#646587)}
+  .team-empty{font-size:13px;font-style:italic;color:var(--naowee-color-text-secondary,#646587)}
+  .inc-card--off{opacity:.6}
+  .section-edit{text-transform:none;letter-spacing:0}
+  .closed-note{margin:0 0 16px}
+  /* El DS fija display en varios componentes (p. ej. naowee-message); el
+     atributo hidden debe ganar siempre en esta página. */
+  [hidden]{display:none !important}
+  .status-issues{list-style:none;margin:0;padding:0;text-align:left;display:flex;flex-direction:column;gap:6px}
+  .status-issues li{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border:1px solid var(--naowee-color-border-default,#e7e9f3);border-radius:8px;font-size:13px}
+  .status-ico--ok{background:#e6f4e7 !important;color:#15803d !important}
+  /* Asignaciones: incentivo y sin código */
+  .asign-inc{max-width:220px;font-size:12.5px}
+  .asign-nocode{font-size:12px;color:var(--naowee-color-text-secondary,#646587);font-style:italic}
+  #ddIncLabel{max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  /* Aviso: abre el microfrontend de Perfil SUID (solo demo) */
+  .suid-toast{position:fixed;right:24px;bottom:24px;z-index:1300;max-width:420px;display:flex;gap:10px;align-items:flex-start;
+    padding:12px 14px;border-radius:12px;background:#fff;border:1px dashed #d9a441;box-shadow:0 12px 32px rgba(40,40,52,.18);
+    font-size:13px;line-height:1.45;color:var(--naowee-color-text-primary,#282834);transition:opacity .25s}
+  .suid-toast code{font-size:12px}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <button class="burger-btn" onclick="document.getElementById('sidebar').classList.toggle('collapsed')" aria-label="Toggle sidebar">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="#282834" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+      <img src="shared/logos/ministerio.svg" alt="Ministerio del Deporte" class="sb-logo-img"/>
+      <div class="logo-sep"></div>
+      <img src="shared/logos/suid.png" alt="SUID" class="sb-logo-img"/>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section">INCENTIVOS</div>
+      <div class="nav-row" onclick="fadeAndGo('incentivo-02-dashboard.html')">
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="11" rx="1.5"/><rect x="13" y="3" width="8" height="6" rx="1.5"/><rect x="3" y="16" width="8" height="5" rx="1.5"/><rect x="13" y="11" width="8" height="10" rx="1.5"/></svg></div>
+        <span class="lbl">Dashboard</span>
+      </div>
+      <div class="nav-row active">
+        <div class="active-bar"></div>
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d74009" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M6 7V5a1 1 0 011-1h10a1 1 0 011 1v2"/><line x1="3" y1="12" x2="21" y2="12"/></svg></div>
+        <span class="lbl">Programas</span>
+      </div>
+      <div class="nav-row" data-role="superadmin" onclick="fadeAndGo('incentivo-07-codigos.html')">
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 012-2h14a2 2 0 012 2v2a1.5 1.5 0 000 3v3a2 2 0 01-2 2H5a2 2 0 01-2-2v-3a1.5 1.5 0 000-3V8z"/><line x1="13" y1="6" x2="13" y2="9" stroke-dasharray="1.5 1.5"/><line x1="13" y1="11" x2="13" y2="13" stroke-dasharray="1.5 1.5"/><line x1="13" y1="15" x2="13" y2="18" stroke-dasharray="1.5 1.5"/></svg></div>
+        <span class="lbl">Códigos</span>
+      </div>
+      <div class="nav-row" data-role="superadmin" onclick="fadeAndGo('incentivo-12-asignaciones.html')">
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="1.5"/><circle cx="6" cy="12" r="1.5"/><circle cx="6" cy="18" r="1.5"/><line x1="6" y1="7.5" x2="6" y2="10.5"/><line x1="6" y1="13.5" x2="6" y2="16.5"/><line x1="11" y1="6" x2="20" y2="6"/><line x1="11" y1="12" x2="18" y2="12"/><line x1="11" y1="18" x2="16" y2="18"/></svg></div>
+        <span class="lbl">Historial</span>
+      </div>
+      <div class="nav-row" data-role="admin" onclick="fadeAndGo('incentivo-15-reporteria.html')">
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-5"/><circle cx="18" cy="9" r="1.5"/></svg></div>
+        <span class="lbl">Reportería</span>
+      </div>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <div class="nav-row" onclick="fadeAndGo('incentivo-01-login.html')">
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <span class="lbl">Cerrar sesión</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <div class="main">
+    <header class="top-header">
+      <div class="profile-switcher" id="profileSwitcher">
+        <div class="user-chip" onclick="toggleProfileDD(event)">
+          <div class="ava"><div class="ava-ring" style="background:#c4b5fd;color:#4c1d95">DV</div><div class="ava-dot"></div></div>
+          <div class="user-info"><span class="user-name">Doug Vargas</span><span class="user-role">Gestor de incentivos</span></div>
+          <button class="user-chip__chevron" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>
+        </div>
+      </div>
+    </header>
+
+    <div class="page">
+
+      <!-- Regresar (respeta el origen vía ?from=) -->
+      <div class="back-link-wrap">
+        <button type="button" class="naowee-btn naowee-btn--link naowee-btn--small" id="backBtn" onclick="goBackToOrigin()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          <span id="backBtnLabel">Regresar a la lista</span>
+        </button>
+      </div>
+      <script>
+        (function(){
+          // Mapa de orígenes → label + href
+          const ORIGINS = {
+            'mis-asignaciones': { href:'incentivo-14-mis-asignaciones.html', label:'Regresar a Mis asignaciones' },
+            'historial':        { href:'incentivo-12-asignaciones.html',     label:'Regresar al Historial' },
+            'codigos':          { href:'incentivo-07-codigos.html',          label:'Regresar a Códigos' },
+            'reporteria':       { href:'incentivo-15-reporteria.html',       label:'Regresar a Reportería' },
+            'dashboard':        { href:'incentivo-02-dashboard.html',        label:'Regresar al Dashboard' }
+          };
+          const params = new URLSearchParams(location.search);
+          const from = params.get('from');
+          const target = (from && ORIGINS[from]) || { href:'incentivo-03-programas.html', label:'Regresar a la lista' };
+          window.__backOrigin = target.href;
+          const lbl = document.getElementById('backBtnLabel');
+          if(lbl) lbl.textContent = target.label;
+        })();
+        function goBackToOrigin(){
+          fadeAndGo(window.__backOrigin || 'incentivo-03-programas.html');
+        }
+      </script>
+
+      <!-- Hero card: detail-head + KPIs unificados -->
+      <div class="hero-card">
+      <!-- Detail header -->
+      <div class="detail-head">
+        <div class="detail-head__ico" id="hdIco">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+        </div>
+        <div class="detail-head__body">
+          <div class="detail-head__id-row">
+            <span class="detail-head__id" id="hdId">—</span>
+            <span class="naowee-badge naowee-badge--positive naowee-badge--quiet naowee-badge--small" id="hdBadge">
+              <span class="naowee-badge__dot"></span>
+              <span id="hdBadgeText">—</span>
+            </span>
+          </div>
+          <h1 class="detail-head__title" id="hdTitle">—</h1>
+          <div class="detail-head__meta" id="hdMeta"></div>
+        </div>
+        <div class="detail-head__actions" id="hdActions"></div>
+      </div>
+      <div class="naowee-message naowee-message--informative closed-note" id="closedNote" hidden>
+        <div class="naowee-message__header"><div class="naowee-message__text" id="closedNoteText"></div></div>
+      </div>
+
+      <div class="hero-card__divider"></div>
+
+      <!-- KPIs (parte inferior del hero-card) -->
+      <div class="kpi-strip">
+        <div class="mini-kpi">
+          <div class="mini-kpi__lbl">Rubro</div>
+          <div class="mini-kpi__val" id="kpiRubro">—</div>
+          <div class="naowee-progress naowee-progress--positive" id="kpiRubroBar" style="margin-top:8px">
+            <div class="naowee-progress__fill" id="kpiRubroFill" style="width:0%"></div>
+          </div>
+          <div class="mini-kpi__sub" id="kpiRubroSub">—</div>
+        </div>
+        <div class="mini-kpi">
+          <div class="mini-kpi__lbl">Total de incentivos</div>
+          <div class="mini-kpi__val" id="kpiCupos">—</div>
+          <div class="mini-kpi__sub" id="kpiCuposSub">—</div>
+        </div>
+        <div class="mini-kpi mini-kpi--hero">
+          <div class="mini-kpi__lbl">Entregados</div>
+          <div class="mini-kpi__val" id="kpiDel" style="color:var(--naowee-color-text-accent,#d74009)">—</div>
+          <div class="naowee-progress naowee-progress--positive" style="margin-top:8px">
+            <div class="naowee-progress__fill" id="kpiDelFill" style="width:0%"></div>
+          </div>
+          <div class="mini-kpi__sub" id="kpiDelSub">—</div>
+        </div>
+        <div class="mini-kpi" id="kpiBonoBox">
+          <div class="mini-kpi__lbl">Bonos (códigos)</div>
+          <div class="mini-kpi__val" id="kpiBono">—</div>
+          <div class="mini-kpi__sub" id="kpiBonoSub">—</div>
+        </div>
+      </div>
+      </div><!-- /.hero-card -->
+
+      <!-- Detail card con tabs -->
+      <div class="detail-card">
+        <div class="detail-card__tabs">
+          <div class="naowee-tabs naowee-tabs--animated" role="tablist" id="wzTabs">
+            <button type="button" class="naowee-tab naowee-tab--selected" data-tab="resumen" role="tab" aria-selected="true" onclick="switchTab('resumen', this)">Resumen</button>
+            <button type="button" class="naowee-tab" data-tab="condiciones" role="tab" onclick="switchTab('condiciones', this)">Condiciones <span class="naowee-tab__count" id="tabCondCount">—</span></button>
+            <button type="button" class="naowee-tab" data-tab="codigos" role="tab" onclick="switchTab('codigos', this)">Códigos <span class="naowee-tab__count" id="tabCodCount">—</span></button>
+            <button type="button" class="naowee-tab" data-tab="asignaciones" role="tab" onclick="switchTab('asignaciones', this)">Asignaciones <span class="naowee-tab__count" id="tabAsigCount">—</span></button>
+            <button type="button" class="naowee-tab" data-tab="historial" role="tab" onclick="switchTab('historial', this)">Historial</button>
+            <span class="naowee-tabs__indicator"></span>
+          </div>
+        </div>
+
+        <div class="detail-card__body" id="tabBody">
+          <!-- Tab: Resumen -->
+          <div class="tab-pane" data-pane="resumen">
+            <div class="section">
+              <div class="section-label section-label--row">
+                <span>Información general</span>
+                <button class="naowee-btn naowee-btn--link naowee-btn--small section-edit" onclick="editSection('datos')">Editar</button>
+              </div>
+              <dl id="infoList"></dl>
+            </div>
+            <div class="section">
+              <div class="section-label section-label--row">
+                <span>Equipo del programa</span>
+                <button class="naowee-btn naowee-btn--link naowee-btn--small section-edit" id="btnEditTeam" onclick="editSection('equipo')">Editar</button>
+              </div>
+              <div class="team-grid" id="teamList"></div>
+            </div>
+            <div class="section">
+              <div class="section-label section-label--row">
+                <span>Incentivos</span>
+                <button class="naowee-btn naowee-btn--link naowee-btn--small section-edit" onclick="editSection('incentivos')">Editar</button>
+              </div>
+              <div id="incList"></div>
+            </div>
+          </div>
+
+          <!-- Tab: Condiciones -->
+          <div class="tab-pane" data-pane="condiciones" hidden>
+            <div class="section">
+              <div class="section-label section-label--row">
+                <span>Condiciones de elegibilidad</span>
+                <button class="naowee-btn naowee-btn--link naowee-btn--small" onclick="editSection('condiciones')" style="text-transform:none;letter-spacing:0">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 013 3L12 15l-4 1 1-4z"/></svg>
+                  Editar condiciones
+                </button>
+              </div>
+              <!-- Natural language preview (mismo UI que la creación del programa) -->
+              <div class="wz-cond-preview" id="condPreview">
+                <div class="wz-cond-preview__head">
+                  <div class="wz-cond-preview__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  </div>
+                  <div>
+                    <div class="wz-cond-preview__title">Así se lee la regla</div>
+                    <div class="wz-cond-preview__sub">Lenguaje natural</div>
+                  </div>
+                </div>
+                <div class="wz-cond-preview__body" id="condPreviewBody"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab: Códigos -->
+          <div class="tab-pane" data-pane="codigos" hidden>
+            <!-- Toolbar (escenarios-11 pattern) -->
+            <div class="cg-toolbar">
+              <div class="cg-toolbar__left">
+                <div class="naowee-searchbox naowee-searchbox--small naowee-searchbox--pill">
+                  <div class="naowee-searchbox__input-wrap">
+                    <span class="naowee-searchbox__icon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    </span>
+                    <input type="text" class="naowee-searchbox__input" placeholder="Buscar código o beneficiario" id="codigosSearch"/>
+                    <button type="button" class="naowee-searchbox__clear" onclick="clearSearch('codigosSearch')" aria-label="Limpiar búsqueda">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                  </div>
+                </div>
+                <div class="toolbar-dd-wrap" id="ddCodIncWrap">
+                  <button type="button" class="toolbar-dd" onclick="toggleDD('ddCodIncWrap')">
+                    <span id="ddCodIncLabel">Incentivo: Todos</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                  </button>
+                  <div class="toolbar-dd-menu" role="listbox" id="ddCodIncMenu"></div>
+                </div>
+                <div class="toolbar-dd-wrap" id="ddEstadoWrap">
+                  <button type="button" class="toolbar-dd" id="ddEstado" onclick="toggleDD('ddEstadoWrap')">
+                    <span id="ddEstadoLabel">Estado: Todos</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                  </button>
+                  <div class="toolbar-dd-menu" role="listbox">
+                    <div class="toolbar-dd-item" role="option" aria-selected="true" data-val="all" onclick="setEstadoFilter('all','Estado: Todos')">Todos los estados</div>
+                    <div class="toolbar-dd-item" role="option" data-val="disp" onclick="setEstadoFilter('disp','Disponibles')"><span class="dd-dot" style="background:#a0a3bd"></span>Disponibles</div>
+                    <div class="toolbar-dd-item" role="option" data-val="asig" onclick="setEstadoFilter('asig','Asignados')"><span class="dd-dot" style="background:#1f8923"></span>Asignados</div>
+                    <div class="toolbar-dd-item" role="option" data-val="reasig" onclick="setEstadoFilter('reasig','Reasignados')"><span class="dd-dot" style="background:#7c3aed"></span>Reasignados</div>
+                  </div>
+                </div>
+                <button class="naowee-btn naowee-btn--loud naowee-btn--small" id="btnCargarCodigos" onclick="editSection('codigos')">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Cargar códigos
+                </button>
+              </div>
+              <div class="naowee-pagination naowee-pagination--small">
+                <div class="naowee-pagination__pages">
+                  <span>Página</span>
+                  <input type="text" class="naowee-pagination__input" id="pagInput" value="1" inputmode="numeric"/>
+                  <span class="naowee-pagination__total">de <strong id="pagTotal">20</strong></span>
+                </div>
+                <div class="naowee-pagination__controls">
+                  <button type="button" class="naowee-pagination__btn" id="pagPrev" onclick="changePage(-1)" aria-label="Anterior">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+                  </button>
+                  <button type="button" class="naowee-pagination__btn" id="pagNext" onclick="changePage(1)" aria-label="Siguiente">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <table class="cg-table" id="codigosTable">
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Incentivo</th>
+                  <th>Estado</th>
+                  <th>Asignado a</th>
+                  <th>Última actualización</th>
+                  <th aria-label="Ver historial"></th>
+                </tr>
+              </thead>
+              <tbody id="codigosTbody"></tbody>
+            </table>
+            <div class="cg-pagination-row">
+              <div id="pagInfo">Mostrando 1–10 de 200</div>
+            </div>
+          </div>
+
+          <!-- Tab: Asignaciones -->
+          <div class="tab-pane" data-pane="asignaciones" hidden>
+            <div class="cg-toolbar">
+              <div class="cg-toolbar__left">
+                <div class="naowee-searchbox naowee-searchbox--small naowee-searchbox--pill">
+                  <div class="naowee-searchbox__input-wrap">
+                    <span class="naowee-searchbox__icon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    </span>
+                    <input type="text" class="naowee-searchbox__input" placeholder="Buscar beneficiario, documento, código u operador" id="asignSearch"/>
+                    <button type="button" class="naowee-searchbox__clear" onclick="clearSearch('asignSearch')" aria-label="Limpiar búsqueda">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                  </div>
+                </div>
+                <div class="toolbar-dd-wrap" id="ddIncWrap">
+                  <button type="button" class="toolbar-dd" onclick="toggleDD('ddIncWrap')">
+                    <span id="ddIncLabel">Incentivo: Todos</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                  </button>
+                  <div class="toolbar-dd-menu" role="listbox" id="ddIncMenu">
+                    <!-- opciones generadas: renderIncFilter() -->
+                  </div>
+                </div>
+                <div class="toolbar-dd-wrap" id="ddRegionWrap">
+                  <button type="button" class="toolbar-dd" onclick="toggleDD('ddRegionWrap')">
+                    <span id="ddRegionLabel">Departamento: Todos</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                  </button>
+                  <div class="toolbar-dd-menu" role="listbox" id="ddRegionMenu">
+                    <!-- opciones generadas: renderDeptoFilter() -->
+                  </div>
+                </div>
+              </div>
+              <div class="naowee-pagination naowee-pagination--small">
+                <div class="naowee-pagination__pages">
+                  <span>Página</span>
+                  <input type="text" class="naowee-pagination__input" id="asignPagInput" value="1" inputmode="numeric"/>
+                  <span class="naowee-pagination__total">de <strong id="asignPagTotal">19</strong></span>
+                </div>
+                <div class="naowee-pagination__controls">
+                  <button type="button" class="naowee-pagination__btn" id="asignPagPrev" onclick="changeAsignPage(-1)" aria-label="Anterior">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+                  </button>
+                  <button type="button" class="naowee-pagination__btn" id="asignPagNext" onclick="changeAsignPage(1)" aria-label="Siguiente">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <table class="cg-table cg-table--asign" id="asignTable">
+              <thead>
+                <tr>
+                  <th>Beneficiario</th>
+                  <th>Incentivo</th>
+                  <th>Código</th>
+                  <th>Operador</th>
+                  <th>Departamento</th>
+                  <th>Fecha</th>
+                  <th>Estado</th>
+                  <th aria-label="Acciones"></th>
+                </tr>
+              </thead>
+              <tbody id="asignTbody"></tbody>
+            </table>
+            <div class="cg-pagination-row">
+              <div id="asignPagInfo">Mostrando 1–10 de 182</div>
+            </div>
+          </div>
+
+          <!-- Tab: Historial -->
+          <div class="tab-pane" data-pane="historial" hidden>
+            <div class="section">
+              <div class="section-label">Historial de cambios del programa</div>
+              <div class="timeline" id="timeline"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+function switchTab(t, btn){
+  document.querySelectorAll('.naowee-tab').forEach(b => {
+    b.classList.toggle('naowee-tab--selected', b === btn);
+    b.setAttribute('aria-selected', b === btn ? 'true' : 'false');
+  });
+  document.querySelectorAll('.tab-pane').forEach(p => { p.hidden = p.dataset.pane !== t; });
+  positionTabIndicator();
+}
+
+function positionTabIndicator(){
+  const tabs = document.getElementById('wzTabs');
+  if(!tabs) return;
+  const active = tabs.querySelector('.naowee-tab--selected');
+  const ind = tabs.querySelector('.naowee-tabs__indicator');
+  if(!active || !ind) return;
+  const tRect = tabs.getBoundingClientRect();
+  const aRect = active.getBoundingClientRect();
+  ind.style.width = aRect.width + 'px';
+  ind.style.transform = `translateX(${aRect.left - tRect.left + tabs.scrollLeft}px)`;
+}
+
+// Profile switcher dropdown
+function toggleProfileDD(e){
+  if(e) e.stopPropagation();
+  document.getElementById('profileDD').classList.toggle('open');
+}
+function switchRole(role){
+  document.querySelectorAll('.profile-dd__item').forEach(it => it.classList.toggle('active', it.dataset.role === role));
+  if(role === 'operador') fadeAndGo('incentivo-08-asignar-buscar.html');
+  document.getElementById('profileDD')?.classList.remove('open');
+}
+document.addEventListener('click', (e) => {
+  const sw = document.getElementById('profileSwitcher');
+  if(sw && !sw.contains(e.target)) document.getElementById('profileDD')?.classList.remove('open');
+});
+
+function fadeAndGo(url){window.location.href=url}
+
+/* ══ HYDRATE: llena la página según el ?id= del query string ══ */
+const STATUS_META = {
+  active: { label: 'Activo', variant: 'positive' },
+  draft:  { label: 'Borrador', variant: 'neutral' },
+  paused: { label: 'Pausado', variant: 'caution' },
+  closed: { label: 'Cerrado', variant: 'informative' }
+};
+// Iconografía de categorías: ahora viene de shared/programs-data.js
+// (window.CAT_ICONS). Alias local para no tocar callsites.
+const CAT_ICONS = window.CAT_ICONS;
+function formatMoney(n){return '$' + Number(n||0).toLocaleString('es-CO')}
+function formatMoneyShort(n){
+  if(!n) return '$0';
+  if(n >= 1000000000) return '$' + (n/1000000000).toFixed(1).replace('.0','') + 'B';
+  return '$' + Number(n).toLocaleString('es-CO');
+}
+
+let CURRENT_PROGRAM = null;
+
+/* Vigencia opcional (reunión 22-09): sin fechas el programa no tiene cierre. */
+function vigenciaLabel(p){
+  const f = p.from && p.from !== '—' ? p.from : '';
+  const t = p.to && p.to !== '—' ? p.to : '';
+  if(f && t) return `${f} — ${t}`;
+  if(t) return `Hasta ${t}`;
+  if(f) return `Desde ${f} · sin fecha de cierre`;
+  return 'Sin fecha de cierre';
+}
+
+function hydrateProgram(){
+  const params = new URLSearchParams(location.search);
+  const id = params.get('id') || (window.PROGRAMS_DATA && window.PROGRAMS_DATA[0]?.id);
+  const p = window.getProgramById(id);
+  if(!p) return;
+  CURRENT_PROGRAM = p;
+
+  // Detail head
+  const ico = document.getElementById('hdIco');
+  ico.style.background = p.iconBg;
+  ico.style.color = p.iconColor;
+  const mainCat = (p.incentives[0]?.category) || 'Beca';
+  const iconPath = CAT_ICONS[mainCat] || CAT_ICONS['Beca'];
+  ico.innerHTML = `<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${iconPath}</svg>`;
+
+  document.getElementById('hdId').textContent = p.id;
+  document.getElementById('hdTitle').textContent = p.name;
+
+  const meta = STATUS_META[p.status] || STATUS_META.draft;
+  const badge = document.getElementById('hdBadge');
+  badge.className = `naowee-badge naowee-badge--${meta.variant} naowee-badge--quiet naowee-badge--small`;
+  badge.querySelector('#hdBadgeText').textContent = meta.label;
+
+  document.getElementById('hdMeta').innerHTML = `
+    <span>${p.shortDesc} · ${p.event}</span><span class="dot"></span>
+    <span>Vigencia: ${vigenciaLabel(p)}</span><span class="dot"></span>
+    <span>Cobertura: <strong>${p.coverage}</strong></span><span class="dot"></span>
+    <span>Gestor de programa: ${p.team && p.team.gestor ? p.team.gestor.split(' · ')[0] : 'sin asignar'}</span>
+  `;
+
+  // KPIs: se calculan en renderKpis() después de generar entregas y códigos.
+
+  // Regla de negocio: solo programas tipo Bono manejan inventario de códigos.
+  // Para los demás (Beca, Kit, Inscripción, Transporte) ocultamos el tab y
+  // el botón "Cargar códigos".
+  const isBonoProgram = (p.incentives || []).some(i => (i.categoryKey || String(i.category).toLowerCase()) === 'bono' && i.active !== false);
+  const cargarBtn = document.getElementById('btnCargarCodigos');
+  if(cargarBtn) cargarBtn.style.display = isBonoProgram ? '' : 'none';
+  // Marca el container del tab códigos para estilizar el empty state
+  document.querySelector('.tab-pane[data-pane="codigos"]')?.classList.toggle('codigos-pane--no-codes', !isBonoProgram);
+
+  // Tab counts
+  const countRules = groups => (groups || []).reduce((acc, g) => acc + g.rules.length, 0);
+  const totalConds = countRules(p.conditions.groups) + (p.incentives || []).reduce((acc, i) => acc + countRules(i.conditions && i.conditions.groups), 0);
+  document.getElementById('tabCondCount').textContent = totalConds;
+  document.getElementById('tabCodCount').textContent = p.codes.total;
+  document.getElementById('tabAsigCount').textContent = p.codes.asig;
+
+  // Resumen: incentivos (con entregas, códigos cargados y estado)
+  const codesBy = Object.fromEntries((p.codesByIncentive || []).map(c => [c.name, c.count]));
+  document.getElementById('incList').innerHTML = p.incentives.map(inc => {
+    const catIco = CAT_ICONS[inc.category] || CAT_ICONS['Beca'];
+    const off = inc.active === false;
+    const badges = inc.badges.map(b => `<span class="naowee-badge naowee-badge--${b.variant} naowee-badge--quiet naowee-badge--small">${b.text}</span>`).join('')
+      + (off ? '<span class="naowee-badge naowee-badge--neutral naowee-badge--small">Desactivado</span>' : '');
+    const isBono = (inc.categoryKey || String(inc.category).toLowerCase()) === 'bono';
+    const stats = [`${inc.delivered || 0} entregas`, isBono ? (codesBy[inc.name] != null ? `${codesBy[inc.name]} códigos` : 'Sin códigos') : 'Sin código'].join(' · ');
+    return `
+      <div class="inc-card${off ? ' inc-card--off' : ''}">
+        <div class="inc-card__ico" style="background:${p.iconBg};color:${p.iconColor}">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${catIco}</svg>
+        </div>
+        <div class="inc-card__body">
+          <div class="inc-card__title">${inc.name}</div>
+          <div class="inc-card__desc">${inc.detail}</div>
+          <div class="inc-card__badges">${badges}</div>
+        </div>
+        <div class="inc-card__val">
+          <div class="inc-card__val-val">${inc.valueLabel}</div>
+          <div class="inc-card__val-lbl">${stats}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Resumen: equipo del programa
+  const t = p.team || {};
+  const hasTeam = !!(t.gestor || (t.operators && t.operators.length));
+  const person = (full, role) => {
+    const [name, org] = String(full).split(' · ');
+    const ini = name.split(' ').map(x => x[0]).slice(0, 2).join('');
+    return `<div class="team-person"><span class="naowee-thumbnail naowee-thumbnail--small naowee-thumbnail--neutral naowee-thumbnail--quiet">${ini}</span><div><div class="team-person__name">${name}</div><div class="team-person__role">${[role, org].filter(Boolean).join(' · ')}</div></div></div>`;
+  };
+  document.getElementById('teamList').innerHTML = `
+    <div class="team-col">
+      <div class="team-col__lbl">Gestor de programa</div>
+      ${t.gestor ? person(t.gestor, '') : '<div class="team-empty">Sin asignar</div>'}
+    </div>
+    <div class="team-col">
+      <div class="team-col__lbl">Operadores en campo · ${(t.operators || []).length}</div>
+      ${(t.operators || []).length ? t.operators.map(o => person(o.split(' · ')[0] + ' · ' + (o.split(' · ')[1] || 'Operador'), '')).join('') : '<div class="team-empty">Sin asignar</div>'}
+    </div>`;
+  const teamBtn = document.getElementById('btnEditTeam');
+  if(teamBtn) teamBtn.textContent = hasTeam ? 'Editar' : 'Asignar';
+
+  // Resumen: información general
+  document.getElementById('infoList').innerHTML = `
+    <div class="info-row-plain"><dt>Descripción</dt><dd>${p.longDesc}</dd></div>
+    <div class="info-row-plain"><dt>Código del programa</dt><dd><code>${p.id}</code></dd></div>
+    <div class="info-row-plain"><dt>Fuente presupuestal</dt><dd>${p.fuente}</dd></div>
+    <div class="info-row-plain"><dt>Acto administrativo</dt><dd>${p.actoAdmin || '<em>Sin registrar</em>'}</dd></div>
+    <div class="info-row-plain"><dt>Evento asociado</dt><dd>${p.event}</dd></div>
+    <div class="info-row-plain"><dt>Cobertura</dt><dd>${p.coverage}</dd></div>
+    <div class="info-row-plain"><dt>Vigencia</dt><dd>${vigenciaLabel(p)}</dd></div>
+  `;
+
+  // Condiciones — si los incentivos tienen su propio bloque (multi mode), las
+  // mostramos por incentivo. Si no, las del programa.
+  const incHasConditions = p.incentives && p.incentives.some(i => i.conditions && i.conditions.groups && i.conditions.groups.length);
+  const renderGroupsHTML = (groups) => {
+    return groups.map((g, gi) => {
+      const rowHTML = g.rules.map(r => {
+        const valStr = String(r.value);
+        const valHTML = valStr
+          ? `<span class="wz-cond-preview__val">${valStr}</span>`
+          : `<span class="wz-cond-preview__val wz-cond-preview__val--empty">…</span>`;
+        return `<span class="wz-cond-preview__field">${r.field}</span> ${r.op} ${valHTML}`;
+      }).join(' <span class="wz-cond-preview__conn wz-cond-preview__conn--and">y</span> ');
+      return `<div class="wz-cond-preview__group"><span class="wz-cond-preview__group-lbl">Grupo ${gi + 1}</span><span class="wz-cond-preview__group-body">${rowHTML}</span></div>`;
+    });
+  };
+  const orDivider = '<div class="wz-cond-preview__or"><span class="wz-cond-preview__conn wz-cond-preview__conn--or">o</span></div>';
+  let condBodyHTML = '';
+  if(incHasConditions){
+    // Mostrar un bloque por cada incentivo con condiciones
+    condBodyHTML = p.incentives.map((inc, idx) => {
+      const groups = inc.conditions && inc.conditions.groups || [];
+      if(!groups.length) return '';
+      const intro = groups.length > 1
+        ? `Es elegible para <strong>${inc.name}</strong> quien cumpla <strong>cualquiera</strong> de estas reglas:`
+        : `Es elegible para <strong>${inc.name}</strong> quien cumpla <strong>todas</strong> estas condiciones${inc.beneficiaryLabel ? ` (<strong>${inc.beneficiaryLabel}</strong>)` : ''}:`;
+      return `<div class="cond-inc-block"><div class="cond-inc-block__head"><span class="cond-inc-block__num">#${idx+1}</span><span class="cond-inc-block__name">${inc.name}</span><span class="naowee-badge naowee-badge--neutral naowee-badge--quiet naowee-badge--small">${inc.category}</span></div><p class="wz-cond-preview__intro">${intro}</p>${renderGroupsHTML(groups).join(orDivider)}</div>`;
+    }).join('');
+  } else if(p.conditions.groups.length){
+    const intro = p.conditions.groups.length > 1
+      ? 'El atleta es elegible si cumple <strong>cualquiera</strong> de estos grupos de condiciones:'
+      : 'El atleta es elegible si cumple <strong>todas</strong> estas condiciones:';
+    condBodyHTML = `<p class="wz-cond-preview__intro">${intro}</p>${renderGroupsHTML(p.conditions.groups).join(orDivider)}`;
+  } else {
+    condBodyHTML = '<em>Sin condiciones definidas.</em>';
+  }
+  document.getElementById('condPreviewBody').innerHTML = condBodyHTML;
+
+  // Modal cargar codigos — program name
+
+  // Title del documento
+  document.title = `SUID – Incentivos · ${p.name}`;
+}
+
+// Init
+window.addEventListener('load', () => {
+  if(guardProgramAccess()) return;
+  // Menú: el gestor de programa ve "Mis programas"
+  if(currentRoleKey() === 'programa') document.querySelectorAll('.nav-row.active .lbl').forEach(l => { l.textContent = 'Mis programas'; });
+  hydrateProgram();
+  positionTabIndicator();
+  setTimeout(positionTabIndicator, 100);
+  seedAsign();
+  seedCodigos();
+  renderKpis();
+  renderStatusActions(CURRENT_PROGRAM || {});
+  renderCodigos();
+  renderAsign();
+  renderHistorial();
+  showActivatedToastIfNeeded();
+  openTabFromUrl();
+});
+
+/* ══ KPIs del programa ══
+   - Rubro: monto y % ejecutado (si hay rubro).
+   - Total de incentivos: cupos del programa. Bono = sus códigos; Kit u otros
+     con "Puestos que reciben" = esos puestos; con rubro y valor unitario =
+     rubro ÷ valor; si no, "sin cupo definido" (no suma).
+   - Entregados: entregas y % sobre los cupos definidos (solo cuenta las
+     entregas de incentivos con cupo).
+   - Bonos (códigos): entregados / cargados y disponibles. */
+function cupoOf(inc, p){
+  const isBono = (inc.categoryKey || String(inc.category).toLowerCase()) === 'bono';
+  if(isBono){
+    const byName = Object.fromEntries((p.codesByIncentive || []).map(c => [c.name, c.count]));
+    if(byName[inc.name] != null) return byName[inc.name];
+    return p.incentives.length === 1 ? ((p.codes && p.codes.total) || 0) : 0;
+  }
+  const rules = (inc.conditions && inc.conditions.groups && inc.conditions.groups[0] && inc.conditions.groups[0].rules) || [];
+  const puestos = rules.find(r => r.fieldKey === 'puestos' || r.field === 'Puestos que reciben' || r.field === 'Recibe');
+  if(puestos){ const v = String(puestos.value || ''); return /3/.test(v) ? 3 : /2/.test(v) ? 2 : 1; }
+  if(inc.rubro && inc.value) return Math.floor(inc.rubro / inc.value);
+  if(p.incentives.length === 1 && p.codes && p.codes.total) return p.codes.total; // programas de un solo incentivo
+  return null;
+}
+function renderKpis(){
+  const p = CURRENT_PROGRAM;
+  if(!p) return;
+  const fmt = n => Number(n || 0).toLocaleString('es-CO');
+  // Rubro
+  const execPct = p.rubro ? Math.min(100, Math.round((p.exec / p.rubro) * 100)) : 0;
+  document.getElementById('kpiRubro').textContent = p.rubro ? formatMoneyShort(p.rubro) : 'Sin rubro';
+  document.getElementById('kpiRubroBar').hidden = !p.rubro;
+  document.getElementById('kpiRubroFill').style.width = execPct + '%';
+  document.getElementById('kpiRubroSub').textContent = p.rubro ? `${execPct}% ejecutado · ${formatMoneyShort(p.exec)}` : 'El programa no tiene rubro definido';
+  // Cupos
+  const incs = (p.incentives || []).filter(i => i.active !== false || i.delivered);
+  const withCupo = incs.map(inc => ({ inc, cupo: cupoOf(inc, p) }));
+  const defined = withCupo.filter(x => x.cupo != null);
+  const totalCupos = defined.reduce((a, x) => a + x.cupo, 0);
+  const group = {};
+  defined.forEach(x => { const k = x.inc.category || 'Otros'; group[k] = (group[k] || 0) + x.cupo; });
+  const noCupo = [...new Set(withCupo.filter(x => x.cupo == null).map(x => x.inc.category))];
+  document.getElementById('kpiCupos').textContent = defined.length ? fmt(totalCupos) : '—';
+  document.getElementById('kpiCuposSub').textContent = [
+    ...Object.entries(group).map(([k, n]) => `${fmt(n)} ${k.toLowerCase()}${n === 1 ? '' : 's'}`),
+    ...(noCupo.length ? [`${noCupo.join(', ').toLowerCase()} sin cupo definido`] : [])
+  ].join(' · ') || '—';
+  // Entregados
+  const delivered = incs.reduce((a, i) => a + (i.delivered || 0), 0);
+  const deliveredWithCupo = defined.reduce((a, x) => a + (x.inc.delivered || 0), 0);
+  const pct = totalCupos ? Math.round((deliveredWithCupo / totalCupos) * 100) : 0;
+  document.getElementById('kpiDel').textContent = fmt(delivered);
+  document.getElementById('kpiDelFill').style.width = pct + '%';
+  document.getElementById('kpiDelSub').textContent = totalCupos
+    ? `${pct}% de los ${fmt(totalCupos)} cupos${deliveredWithCupo !== delivered ? ` · ${fmt(delivered - deliveredWithCupo)} sin cupo` : ''}`
+    : 'Sin cupos definidos';
+  // Bonos (códigos)
+  const box = document.getElementById('kpiBonoBox');
+  const codes = state.all || [];
+  box.hidden = !codes.length;
+  if(codes.length){
+    const used = codes.filter(c => c.estado !== 'disp').length;
+    document.getElementById('kpiBono').textContent = `${fmt(used)} / ${fmt(codes.length)}`;
+    document.getElementById('kpiBonoSub').textContent = `${fmt(codes.length - used)} códigos disponibles`;
+  }
+}
+
+/* ══ Estado del programa: Activar (borrador) y Cerrar (activo) ══
+   - Activar valida que el programa esté completo; si falta algo, lo lista
+     con un acceso a la sección donde se completa.
+   - Cerrar pide confirmación: no se entregan más incentivos y el programa
+     queda en solo lectura (entregas, códigos e historial se conservan).
+   Pausar queda fuera del alcance. */
+const ICO_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+const ICO_WARN  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="17" x2="12" y2="17.01"/></svg>';
+function currentRoleKey(){ return (window.currentRole && window.currentRole()) || 'admin'; }
+function currentUserName(){ return ((window.ROLES || {})[currentRoleKey()] || {}).name || 'Doug Vargas'; }
+/* Gestor de programa: solo entra a los programas donde es gestor. */
+function guardProgramAccess(){
+  if(currentRoleKey() !== 'programa') return false;
+  const allowed = (window.getRoleAssignments && window.getRoleAssignments()) || [];
+  const id = new URLSearchParams(location.search).get('id');
+  if(!id || allowed.includes(id)) return false;
+  const page = document.querySelector('.page');
+  if(page) page.innerHTML = `
+    <div class="naowee-message naowee-message--caution" style="margin-top:24px">
+      <div class="naowee-message__header"><div class="naowee-message__text">
+        <strong>No tienes acceso a este programa.</strong> Solo ves los programas donde eres gestor de programa.
+        <div style="margin-top:10px"><button class="naowee-btn naowee-btn--mute naowee-btn--small" onclick="fadeAndGo('incentivo-03-programas.html')">Ir a Mis programas</button></div>
+      </div></div>
+    </div>`;
+  return true;
+}
+function renderStatusActions(p){
+  const box = document.getElementById('hdActions');
+  if(!box) return;
+  box.innerHTML = p.status === 'draft'
+    ? `<button class="naowee-btn naowee-btn--loud naowee-btn--large" onclick="askActivate()">${ICO_CHECK.replace('<svg ', '<svg width="16" height="16" ')} Activar programa</button>`
+    : p.status === 'active'
+      ? `<button class="naowee-btn naowee-btn--mute naowee-btn--large" onclick="askClose()">Cerrar programa</button>`
+      : '';
+  // Permisos por rol. El gestor de programa OPERA su programa (operadores y
+  // códigos); armarlo (datos, incentivos, condiciones) y activarlo o cerrarlo
+  // es del gestor de incentivos. Cerrado: solo lectura para todos.
+  const closed = p.status === 'closed';
+  const isPG = currentRoleKey() === 'programa';
+  const allow = { datos: !isPG, incentivos: !isPG, condiciones: !isPG, equipo: true, codigos: true };
+  document.querySelectorAll('[onclick^="editSection("]').forEach(el => {
+    const sec = (el.getAttribute('onclick').match(/editSection\('(\w+)'\)/) || [])[1];
+    el.hidden = closed || !allow[sec];
+  });
+  const teamBtn = document.getElementById('btnEditTeam');
+  if(teamBtn && isPG){
+    const hasOps = !!(p.team && p.team.operators && p.team.operators.length);
+    teamBtn.textContent = hasOps ? 'Editar operadores' : 'Asignar operadores';
+  }
+  if(isPG) box.innerHTML = '';
+  const note = document.getElementById('closedNote');
+  if(note){
+    note.hidden = !closed;
+    const when = (p.history || []).slice().reverse().find(h => h.title === 'Programa cerrado');
+    document.getElementById('closedNoteText').innerHTML = `<strong>Programa cerrado${when ? ' el ' + new Date(when.at).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) : ''}.</strong> Ya no se entregan incentivos. Las entregas, códigos e historial quedan como consulta.`;
+  }
+}
+/* Qué le falta a un programa en borrador para activarse. */
+function activationIssues(p){
+  const out = [];
+  if(!p.name || p.name === 'Programa sin nombre') out.push({ label: 'Nombre del programa', section: 'datos' });
+  if(!p.coverage || p.coverage === '—') out.push({ label: 'Cobertura territorial', section: 'datos' });
+  const active = (p.incentives || []).filter(i => i.active !== false);
+  if(!active.length) out.push({ label: 'Al menos un incentivo activo', section: 'incentivos' });
+  active.forEach(i => {
+    if(!i.category || !i.beneficiary && !(p.incentives.length === 1)) out.push({ label: `Tipo de beneficiario y categoría de "${i.name}"`, section: 'incentivos' });
+    const rules = ((i.conditions && i.conditions.groups) || []).flatMap(g => g.rules || []).filter(r => r.fieldKey !== 'tipoBeneficiario');
+    const progRules = ((p.conditions && p.conditions.groups) || []).flatMap(g => g.rules || []);
+    if(!rules.length && !progRules.length) out.push({ label: `Condiciones de "${i.name}"`, section: 'condiciones' });
+    const isBono = (i.categoryKey || String(i.category).toLowerCase()) === 'bono';
+    if(isBono){
+      const n = (state.all || []).filter(c => c.incName === i.name).length;
+      if(!n) out.push({ label: `Códigos de "${i.name}"`, section: 'codigos' });
+    }
+  });
+  return out;
+}
+function openStatusDialog({ icon, iconClass, title, sub, buttons }){
+  document.getElementById('statusIcon').innerHTML = icon;
+  document.getElementById('statusIcon').className = 'wz-warn-card__icon' + (iconClass ? ' ' + iconClass : '');
+  document.getElementById('statusTitle').textContent = title;
+  document.getElementById('statusSub').innerHTML = sub;
+  document.getElementById('statusFooter').innerHTML = buttons;
+  document.getElementById('statusOverlay').classList.add('open');
+}
+function closeStatusDialog(){ document.getElementById('statusOverlay').classList.remove('open'); }
+function askActivate(){
+  const p = CURRENT_PROGRAM;
+  const issues = activationIssues(p);
+  if(issues.length){
+    openStatusDialog({
+      icon: ICO_WARN, title: 'Falta completar el programa',
+      sub: `<p style="margin:0 0 10px">Para activarlo completa:</p><ul class="status-issues">${issues.map(x => `<li><span>${x.label}</span><button type="button" class="naowee-btn naowee-btn--link naowee-btn--small" onclick="closeStatusDialog();editSection('${x.section}')">Completar</button></li>`).join('')}</ul>`,
+      buttons: `<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--large" onclick="closeStatusDialog()">Entendido</button>`
+    });
+    return;
+  }
+  openStatusDialog({
+    icon: ICO_CHECK, iconClass: 'status-ico--ok', title: '¿Activar el programa?',
+    sub: 'Los operadores asignados podrán empezar a entregar incentivos a quienes cumplan las condiciones.',
+    buttons: `<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--large" onclick="closeStatusDialog()">Cancelar</button>
+              <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--large" onclick="setProgramStatus('active')">Activar</button>`
+  });
+}
+function askClose(){
+  const p = CURRENT_PROGRAM;
+  const avail = (state.all || []).filter(c => c.estado === 'disp').length;
+  openStatusDialog({
+    icon: ICO_WARN, title: '¿Cerrar el programa?',
+    sub: `Los operadores ya no podrán entregar incentivos de <strong>${p.name}</strong>.${avail ? ` Quedarán <strong>${avail} códigos sin entregar</strong>.` : ''} Las entregas, códigos e historial se conservan como consulta. Esta acción no se puede deshacer desde la demo.`,
+    buttons: `<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--large" onclick="closeStatusDialog()">Cancelar</button>
+              <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--large" onclick="setProgramStatus('closed')">Cerrar programa</button>`
+  });
+}
+function setProgramStatus(status){
+  const p = CURRENT_PROGRAM;
+  const prog = { ...p, status };
+  prog.history = [...(p.history || []), {
+    at: new Date().toISOString(), who: currentUserName(),
+    title: status === 'active' ? 'Programa activado' : 'Programa cerrado',
+    desc: status === 'active' ? 'Disponible para los operadores en campo.' : 'Ya no se entregan incentivos.'
+  }];
+  if(typeof window.saveDemoProgram === 'function') window.saveDemoProgram(prog);
+  closeStatusDialog();
+  location.href = `incentivo-05-programa-detalle.html?id=${encodeURIComponent(p.id)}&tab=historial&saved=${status === 'active' ? 'activado' : 'cerrado'}`;
+}
+window.askActivate = askActivate;
+window.askClose = askClose;
+window.closeStatusDialog = closeStatusDialog;
+window.setProgramStatus = setProgramStatus;
+
+/* Una sola forma de editar: cada sección abre el wizard solo con esa sección. */
+function editSection(section){
+  if(!CURRENT_PROGRAM || typeof window.openWizardSection !== 'function') return;
+  window.openWizardSection(CURRENT_PROGRAM.id, section);
+}
+window.editSection = editSection;
+const SECTION_TAB = { datos:'resumen', equipo:'resumen', incentivos:'resumen', condiciones:'condiciones', codigos:'codigos' };
+window.onSectionSaved = function(prog, section){
+  const tab = SECTION_TAB[section] || 'resumen';
+  location.href = `incentivo-05-programa-detalle.html?id=${encodeURIComponent(prog.id)}&tab=${tab}&saved=${section}`;
+};
+/* ?tab= abre esa pestaña; ?saved= muestra "Cambios guardados". */
+function openTabFromUrl(){
+  const params = new URLSearchParams(location.search);
+  const tab = params.get('tab');
+  const btn = tab && document.querySelector(`.naowee-tab[data-tab="${tab}"]`);
+  if(btn) switchTab(tab, btn);
+  const saved = params.get('saved');
+  if(saved){
+    const msg = { datos:'Información general actualizada.', equipo:'Equipo del programa actualizado.', incentivos:'Incentivos actualizados.', condiciones:'Condiciones actualizadas.', codigos:'Códigos agregados al inventario.', activado:'El programa está activo.', cerrado:'El programa quedó cerrado.' }[saved] || 'Cambios guardados.';
+    const wrap = document.createElement('div');
+    wrap.className = 'wz-toast-wrap';
+    wrap.innerHTML = `<div class="wz-toast naowee-message naowee-message--positive"><div class="naowee-message__header"><div class="naowee-message__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="naowee-message__text"><strong>Cambios guardados.</strong> ${msg} Quedó registrado en el historial.</div></div></div>`;
+    document.body.appendChild(wrap);
+    setTimeout(() => { wrap.style.opacity = '0'; setTimeout(() => wrap.remove(), 250); }, 4500);
+  }
+  params.delete('tab'); params.delete('saved');
+  history.replaceState(null, '', location.pathname + (params.toString() ? '?' + params : ''));
+}
+
+function showActivatedToastIfNeeded(){
+  const params = new URLSearchParams(location.search);
+  if(params.get('activated') !== '1') return;
+  const wrap = document.createElement('div');
+  wrap.className = 'wz-toast-wrap';
+  wrap.innerHTML = `
+    <div class="wz-toast naowee-message naowee-message--positive">
+      <div class="naowee-message__header">
+        <div class="naowee-message__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="naowee-message__text">
+          <strong>Programa creado exitosamente.</strong> ${(CURRENT_PROGRAM && CURRENT_PROGRAM.name) ? CURRENT_PROGRAM.name + ' ' : ''}ya está disponible para los operadores en campo.
+        </div>
+        <button type="button" class="wz-toast__dismiss" aria-label="Cerrar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    </div>`;
+  document.body.appendChild(wrap);
+  const dismiss = () => { wrap.style.opacity = '0'; setTimeout(() => wrap.remove(), 250); };
+  wrap.querySelector('.wz-toast__dismiss').addEventListener('click', dismiss);
+  setTimeout(dismiss, 5500);
+  // Limpia el query param para que recargas no re-disparen.
+  params.delete('activated');
+  const newUrl = location.pathname + (params.toString() ? '?' + params : '') + location.hash;
+  history.replaceState(null, '', newUrl);
+}
+
+/* Historial dinámico — refleja sólo los eventos reales del programa.
+   Para programas creados por el usuario: sólo "Programa creado/activado".
+   Para programas demo seeded: timeline rico simulado. */
+function renderHistorial(){
+  const tl = document.getElementById('timeline');
+  if(!tl || !CURRENT_PROGRAM) return;
+  const p = CURRENT_PROGRAM;
+  const items = [];
+  const ICONS = {
+    check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+    plus:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+    upload:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>',
+    edit:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 013 3L12 15l-4 1 1-4z"/></svg>'
+  };
+
+  if(p._userCreated){
+    const when = p.createdAt ? new Date(p.createdAt) : new Date();
+    const dateStr = when.toLocaleString('es-CO', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+    if(p.status === 'active'){
+      items.push({ dot:'green', ico: ICONS.check, title:'Programa activado',
+        desc:'El programa quedó disponible para los operadores en campo.',
+        date:`${p.responsible} · ${dateStr}` });
+    }
+    if(p.codes.total > 0){
+      const fileLabel = p.codesFile ? `Archivo <code>${p.codesFile}</code>` : `${p.codes.total} códigos cargados`;
+      items.push({ dot:'orange', ico: ICONS.upload, title:`Cargue de ${p.codes.total} códigos`,
+        desc:`${fileLabel}.`,
+        date:`${p.responsible} · ${dateStr}` });
+    }
+    items.push({ dot:'gray', ico: ICONS.plus, title:'Programa creado',
+      desc:`Estado inicial: ${p.status === 'active' ? 'activo' : 'borrador'}. Rubro asignado: ${formatMoneyShort(p.rubro)}.`,
+      date:`${p.responsible} · ${dateStr}` });
+  } else {
+    // Programa demo seeded: timeline rico simulado consistente con el seed actual.
+    // Historial de ejemplo, coherente con el estado del programa de ejemplo
+    const seedStatus = ((window.PROGRAMS_SEED_STATUS || {})[p.id]) || p.status;
+    if(seedStatus !== 'draft' && !(p.history || []).some(h => h.title === 'Programa activado')) items.push(
+      { dot:'green',  ico: ICONS.check,  title:'Programa activado',         desc:'El programa quedó disponible para los operadores en campo.', date:`${p.responsible} · hace 3 minutos` });
+    if(p.codes && p.codes.total) items.push(
+      { dot:'orange', ico: ICONS.upload, title:`Cargue masivo de ${p.codes.total} códigos`, desc:'Archivo procesado sin errores.', date:`${p.responsible} · hace 4 minutos` });
+    items.push(
+      { dot:'blue',   ico: ICONS.edit,   title:'Condiciones de elegibilidad editadas', desc:'Reglas de elegibilidad actualizadas.', date:`${p.responsible} · hace 6 minutos` },
+      { dot:'gray',   ico: ICONS.plus,   title:'Programa creado',           desc:`Estado inicial: borrador. Rubro asignado: ${formatMoneyShort(p.rubro)}.`, date:`${p.responsible} · hace 8 minutos` }
+    );
+  }
+
+  const hist = (p.history || []).slice().reverse().map(h => ({
+    dot: 'blue', ico: ICONS.edit, title: h.title, desc: h.desc,
+    date: `${h.who} · ${new Date(h.at).toLocaleString('es-CO', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}`
+  }));
+  items.unshift(...hist);
+  tl.innerHTML = items.map(it => `
+    <div class="timeline-item">
+      <div class="timeline-dot ${it.dot}">${it.ico}</div>
+      <div class="timeline-content">
+        <div class="timeline-title">${it.title}</div>
+        <div class="timeline-desc">${it.desc}</div>
+        <div class="timeline-date">${it.date}</div>
+      </div>
+    </div>
+  `).join('');
+}
+window.addEventListener('resize', () => { positionTabIndicator(); });
+
+/* ══ Dropdown toolbar toggles ══ */
+function toggleDD(wrapId){
+  const wrap = document.getElementById(wrapId);
+  if(!wrap) return;
+  const wasOpen = wrap.classList.contains('open');
+  document.querySelectorAll('.toolbar-dd-wrap.open').forEach(w => w.classList.remove('open'));
+  document.querySelectorAll('.toolbar-dd.open').forEach(b => b.classList.remove('open'));
+  if(!wasOpen){
+    wrap.classList.add('open');
+    wrap.querySelector('.toolbar-dd').classList.add('open');
+  }
+}
+document.addEventListener('click', e => {
+  if(!e.target.closest('.toolbar-dd-wrap')){
+    document.querySelectorAll('.toolbar-dd-wrap.open').forEach(w => w.classList.remove('open'));
+    document.querySelectorAll('.toolbar-dd.open').forEach(b => b.classList.remove('open'));
+  }
+});
+function setEstadoFilter(val, label){
+  state.filter = val; state.page = 1;
+  document.getElementById('ddEstadoLabel').textContent = label;
+  document.getElementById('ddEstadoWrap').querySelectorAll('.toolbar-dd-item').forEach(it => {
+    it.setAttribute('aria-selected', it.dataset.val === val ? 'true' : 'false');
+  });
+  toggleDD('ddEstadoWrap');
+  renderCodigos();
+}
+function setRegionFilter(val, label){
+  asignState.region = val; asignState.page = 1;
+  document.getElementById('ddRegionLabel').textContent = label;
+  document.getElementById('ddRegionWrap').querySelectorAll('.toolbar-dd-item').forEach(it => {
+    it.setAttribute('aria-selected', it.dataset.val === val ? 'true' : 'false');
+  });
+  toggleDD('ddRegionWrap');
+  renderAsign();
+}
+
+/* ══ Códigos: data fake (200 codes) ══ */
+const PEOPLE = ['Ana García','Pedro Martínez','Andrés García','María C. Herrera','Laura Meza','Camila Ríos','Santiago López','Valentina Pérez','Juan Rodríguez','Diana Torres','Carlos Guzmán','Natalia Ruiz','Esteban Mora','Isabella Gil','Nicolás Bernal'];
+const OPERATORS = ['Doug Vargas','Laura Meza','Carla Suárez','Andrés Polo'];
+const REGIONS = [['atl','Atlántico'],['cun','Cundinamarca'],['val','Valle del Cauca'],['ant','Antioquia'],['bog','Bogotá D.C.'],['san','Santander'],['bol','Bolívar']];
+const BENEF_SHORT = { deportista:'Deportista', paradeportista:'Paradeportista', entrenador:'Docente entrenador', asistente:'Docente asistente', institucion:'Institución educativa', organizacion:'Organización' };
+const state = { all: [], filter: 'all', inc: 'all', search: '', page: 1, pageSize: 10 };
+const asignState = { all: [], region: 'all', inc: 'all', search: '', page: 1, pageSize: 10 };
+
+/* Códigos del programa, generados a partir de las MISMAS entregas de la
+   pestaña Asignaciones: el código de una entrega es el que aparece como
+   "Asignado a" aquí. Cada código guarda su historial (cargado → asignado →
+   revertido → reasignado). Solo los incentivos Bono llevan códigos. */
+function seedCodigos(){
+  const p = CURRENT_PROGRAM;
+  state.all = [];
+  if(!p) return;
+  const isBono = inc => (inc.categoryKey || String(inc.category).toLowerCase()) === 'bono';
+  const bonos = (p.incentives || []).filter(isBono);
+  if(!bonos.length) return;
+  const countBy = Object.fromEntries((p.codesByIncentive || []).map(c => [c.name, c.count]));
+  const manualBy = Object.fromEntries((p.manualCodesByIncentive || []).map(g => [g.name, g.codes]));
+  const prefix = p.codePrefix || '2026BEC';
+  const UPLOADERS = ['Doug Vargas', 'María Rojas', 'Andrés Polo'];
+  const MOTIVOS = ['Error en la asignación', 'Beneficiario no elegible', 'Devolución del beneficiario'];
+  const rowsBy = {};
+  asignState.all.filter(r => r.code).forEach(r => (rowsBy[r.incName] = rowsBy[r.incName] || []).push(r));
+  let next = asignState.all.filter(r => r.code).length;
+  let demoRev = p._userCreated ? 0 : Math.min(2, (p.codes && p.codes.rev) || 0); // reversiones de ejemplo
+  bonos.forEach((inc, bi) => {
+    const rows = rowsBy[inc.name] || [];
+    const manual = manualBy[inc.name];
+    const total = manual ? manual.length : (countBy[inc.name] != null ? countBy[inc.name] : (bonos.length === 1 ? ((p.codes && p.codes.total) || 0) : rows.length));
+    const n = Math.max(total, rows.length);
+    const loaded = { type: 'load', title: 'Cargado al inventario', who: UPLOADERS[bi % UPLOADERS.length], date: '15 feb 2026', detail: manual ? 'Carga uno por uno' : 'Plantilla Excel' };
+    for(let k = 0; k < n; k++){
+      const row = rows[k] || null;
+      const code = row ? row.code : (manual ? manual[k] : `${prefix}-${String(++next).padStart(5, '0')}`);
+      const history = [loaded];
+      let estado = 'disp';
+      // Ejemplos de reversión: 1 código reasignado (tenía una entrega anterior) y 1 que volvió a estar disponible
+      const withPrevRevert = demoRev > 0 && ((row && k === 2) || (!row && k === rows.length));
+      if(withPrevRevert){
+        demoRev--;
+        const prev = PEOPLE[(k * 11 + bi) % PEOPLE.length];
+        history.push({ type: 'assign', title: 'Asignado', who: OPERATORS[(k + 1) % OPERATORS.length], date: '18 abr 2026 · 10:12', detail: `A ${prev}` });
+        history.push({ type: 'revert', title: 'Revertido', who: 'Doug Vargas · Gestor de incentivos', date: '19 abr 2026 · 09:40', detail: `Motivo: ${MOTIVOS[k % MOTIVOS.length]}. El código volvió al inventario.` });
+      }
+      if(row){
+        history.push({ type: 'assign', title: withPrevRevert ? 'Reasignado' : 'Asignado', who: row.op, date: `${row.fecha} · 2026`.replace(' · 2026', ''), detail: `A ${row.person} · ${row.region}` });
+        if(row.estado === 'rev'){
+          history.push({ type: 'revert', title: 'Revertido', who: 'Doug Vargas · Gestor de incentivos', date: row.fecha, detail: 'El código volvió al inventario.' });
+          estado = 'disp';
+        } else estado = withPrevRevert ? 'reasig' : 'asig';
+      }
+      const current = row && row.estado !== 'rev' ? row : null;
+      state.all.push({ code, incName: inc.name, estado, row: current, history, fecha: history[history.length - 1].date });
+    }
+  });
+  renderCodIncFilter();
+}
+function renderCodIncFilter(){
+  const menu = document.getElementById('ddCodIncMenu');
+  if(!menu) return;
+  const names = [...new Set(state.all.map(r => r.incName))];
+  const opts = [['all', 'Todos los incentivos'], ...names.map(n => [n, n])];
+  menu.innerHTML = opts.map(([v, l]) => `<div class="toolbar-dd-item" role="option" aria-selected="${(state.inc || 'all') === v}" data-val="${v}" onclick="setCodIncFilter(this.dataset.val)">${l}</div>`).join('');
+}
+function setCodIncFilter(val){
+  state.inc = val; state.page = 1;
+  document.getElementById('ddCodIncLabel').textContent = val === 'all' ? 'Incentivo: Todos' : val;
+  document.querySelectorAll('#ddCodIncMenu .toolbar-dd-item').forEach(it => it.setAttribute('aria-selected', it.dataset.val === val ? 'true' : 'false'));
+  toggleDD('ddCodIncWrap');
+  renderCodigos();
+}
+function filteredCodigos(){
+  return state.all.filter(r => {
+    if(state.filter !== 'all' && r.estado !== state.filter) return false;
+    if(state.inc && state.inc !== 'all' && r.incName !== state.inc) return false;
+    if(state.search){
+      const q = state.search.toLowerCase();
+      if(!`${r.code} ${r.row ? r.row.person + ' ' + r.row.cc : ''}`.toLowerCase().includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+function renderCodigos(){
+  const tbody = document.getElementById('codigosTbody');
+  if(!tbody) return;
+  const list = filteredCodigos();
+  const total = list.length;
+  const totalPages = Math.max(1, Math.ceil(total / state.pageSize));
+  if(state.page > totalPages) state.page = totalPages;
+  const start = (state.page - 1) * state.pageSize;
+  const end = Math.min(start + state.pageSize, total);
+  const slice = list.slice(start, end);
+
+  const badges = {
+    disp:   '<span class="naowee-badge naowee-badge--neutral naowee-badge--quiet naowee-badge--small">Disponible</span>',
+    asig:   '<span class="naowee-badge naowee-badge--positive naowee-badge--quiet naowee-badge--small">Asignado</span>',
+    reasig: '<span class="naowee-badge naowee-badge--informative naowee-badge--quiet naowee-badge--small" style="background:#f3e8ff;color:#7c3aed">Reasignado</span>',
+    rev:    '<span class="naowee-badge naowee-badge--negative naowee-badge--quiet naowee-badge--small">Revertido</span>'
+  };
+
+  // Empty state especial: este programa no usa códigos (ningún incentivo Bono)
+  const primaryCat = CURRENT_PROGRAM?.incentives?.[0]?.category;
+  const isBonoProg = (CURRENT_PROGRAM?.incentives || []).some(i => (i.categoryKey || String(i.category).toLowerCase()) === 'bono');
+
+  if(!isBonoProg){
+    tbody.innerHTML = `<tr><td colspan="6" style="padding:0">
+      <div class="naowee-message naowee-message--informative" style="margin:18px;border-radius:12px">
+        <div class="naowee-message__header">
+          <div class="naowee-message__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          </div>
+          <div class="naowee-message__text">
+            Este programa no maneja inventario de códigos. Los incentivos tipo
+            <strong>${primaryCat || '—'}</strong> se entregan directamente al beneficiario sin
+            requerir un código canjeable. Las asignaciones quedan registradas en el tab
+            <strong>Asignaciones</strong>.
+          </div>
+        </div>
+      </div>
+    </td></tr>`;
+    document.getElementById('pagInfo').textContent = '—';
+    document.getElementById('pagInput').value = 1;
+    document.getElementById('pagTotal').textContent = 1;
+    document.getElementById('pagPrev').disabled = true;
+    document.getElementById('pagNext').disabled = true;
+    return;
+  }
+
+  tbody.innerHTML = slice.length ? slice.map(r => {
+    const hadRevert = r.history.some(h => h.type === 'revert');
+    return `<tr class="cod-row" tabindex="0" role="button" onclick="openCodeDrawer('${r.code}')" onkeydown="if(event.key==='Enter')openCodeDrawer('${r.code}')" aria-label="Ver historial del código ${r.code}">
+      <td><code>${r.code}</code></td>
+      <td class="cod-inc">${r.incName}</td>
+      <td>${badges[r.estado] || badges.disp}${hadRevert && r.estado === 'disp' ? ' <span class="cod-note">con reversión</span>' : ''}</td>
+      <td>${r.row ? `<div class="cod-benef">${r.row.person}</div><div class="cod-benef__doc">${r.row.cc}</div>` : '<span class="cod-empty">—</span>'}</td>
+      <td class="cod-date">${r.fecha}</td>
+      <td class="cod-chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--naowee-color-text-secondary,#646587)">Sin resultados para los filtros actuales.</td></tr>`;
+
+  document.getElementById('pagInfo').textContent = total === 0 ? 'Sin resultados' : `Mostrando ${start + 1}–${end} de ${total}`;
+  document.getElementById('pagInput').value = state.page;
+  document.getElementById('pagTotal').textContent = totalPages;
+  document.getElementById('pagPrev').disabled = state.page <= 1;
+  document.getElementById('pagNext').disabled = state.page >= totalPages;
+}
+
+function changePage(delta){
+  const total = filteredCodigos().length;
+  const totalPages = Math.max(1, Math.ceil(total / state.pageSize));
+  state.page = Math.max(1, Math.min(totalPages, state.page + delta));
+  renderCodigos();
+}
+
+document.addEventListener('input', e => {
+  if(e.target.id === 'codigosSearch'){
+    state.search = e.target.value.trim(); state.page = 1; renderCodigos();
+  }
+  if(e.target.id === 'pagInput'){
+    const v = parseInt(e.target.value, 10);
+    if(!isNaN(v)){
+      const total = filteredCodigos().length;
+      const totalPages = Math.max(1, Math.ceil(total / state.pageSize));
+      state.page = Math.max(1, Math.min(totalPages, v));
+      renderCodigos();
+    }
+  }
+  if(e.target.id === 'asignSearch'){
+    asignState.search = e.target.value.trim(); asignState.page = 1; renderAsign();
+  }
+  if(e.target.id === 'asignPagInput'){
+    const v = parseInt(e.target.value, 10);
+    if(!isNaN(v)){
+      const total = filteredAsign().length;
+      const totalPages = Math.max(1, Math.ceil(total / asignState.pageSize));
+      asignState.page = Math.max(1, Math.min(totalPages, v));
+      renderAsign();
+    }
+  }
+});
+
+/* ══ Asignaciones: fake data (sólo para programas demo) ══ */
+function seedAsign(){
+  // Programa creado por el usuario: 0 asignaciones — apenas se acaba de crear.
+  if(CURRENT_PROGRAM && CURRENT_PROGRAM._userCreated){
+    asignState.all = [];
+    return;
+  }
+  const out = [];
+  const avColors = ['purple','orange','green','blue','pink','teal'];
+  const prefix = (CURRENT_PROGRAM && CURRENT_PROGRAM.codePrefix) || '2026BEC';
+  /* Una fila por entrega de cada incentivo (inc.delivered). Si el programa
+     no trae entregas por incentivo, se reparten las del programa en el primero. */
+  const incs = (CURRENT_PROGRAM && CURRENT_PROGRAM.incentives) || [];
+  let plan = incs.filter(inc => inc.delivered > 0).map(inc => ({ inc, n: inc.delivered }));
+  if(!plan.length && incs[0]) plan = [{ inc: incs[0], n: (CURRENT_PROGRAM.codes && CURRENT_PROGRAM.codes.asig) || 0 }];
+  let i = 0, codeN = 0;
+  plan.forEach(({ inc, n }) => {
+    const isBono = (inc.categoryKey || String(inc.category).toLowerCase()) === 'bono';
+    const isEntity = inc.beneficiary === 'institucion' || inc.beneficiary === 'organizacion';
+    for(let k = 0; k < n; k++){
+      i++;
+      const person = PEOPLE[(i * 7) % PEOPLE.length];
+      const cc = isEntity ? `DANE ${String(105001000000 + i * 97)}` : `${inc.beneficiary === 'deportista' || inc.beneficiary === 'paradeportista' ? 'TI' : 'CC'} ${(1000000 + i * 131).toLocaleString('es-CO').replace(/,/g, '.')}`;
+      const code = isBono ? `${prefix}-${String(++codeN).padStart(5, '0')}` : '';
+      const op = OPERATORS[i % OPERATORS.length];
+      const region = REGIONS[i % REGIONS.length];
+      const day = 22 - Math.floor(i / 20);
+      const hour = String((6 + i) % 18 + 6).padStart(2, '0');
+      const min = String((i * 13) % 60).padStart(2, '0');
+      const fecha = `${day} abr · ${hour}:${min}`;
+      const estado = (i % 60 === 0) ? 'rev' : 'asig';
+      const initials = person.split(' ').map(p => p[0]).slice(0, 2).join('');
+      out.push({ person, cc, code, op, regKey: region[0], region: region[1], fecha, estado, avClass: avColors[i % avColors.length], initials,
+        incName: inc.name, benefType: inc.beneficiary || 'deportista', benefLbl: BENEF_SHORT[inc.beneficiary] || 'Deportista', isEntity });
+    }
+  });
+  asignState.all = out;
+  renderDeptoFilter();
+  renderIncFilter();
+}
+/* Filtro por incentivo: todos los del programa (los desactivados también,
+   sus entregas siguen en el historial). */
+function renderIncFilter(){
+  const menu = document.getElementById('ddIncMenu');
+  if(!menu) return;
+  const incs = (CURRENT_PROGRAM && CURRENT_PROGRAM.incentives) || [];
+  const opts = [['all', 'Todos los incentivos'], ...incs.map((inc, i) => [String(i), inc.name + (inc.active === false ? ' (desactivado)' : '')])];
+  menu.innerHTML = opts.map(([v, l]) => `<div class="toolbar-dd-item" role="option" aria-selected="${asignState.inc === v}" data-val="${v}" onclick="setIncFilter('${v}')">${l}</div>`).join('');
+}
+function setIncFilter(val){
+  asignState.inc = val; asignState.page = 1;
+  const incs = (CURRENT_PROGRAM && CURRENT_PROGRAM.incentives) || [];
+  document.getElementById('ddIncLabel').textContent = val === 'all' ? 'Incentivo: Todos' : incs[+val].name;
+  document.getElementById('ddIncWrap').querySelectorAll('.toolbar-dd-item').forEach(it => it.setAttribute('aria-selected', it.dataset.val === val ? 'true' : 'false'));
+  toggleDD('ddIncWrap');
+  renderAsign();
+}
+/* Filtro por departamento con los departamentos que aparecen en las entregas. */
+function renderDeptoFilter(){
+  const menu = document.getElementById('ddRegionMenu');
+  if(!menu) return;
+  const seen = new Map(asignState.all.map(r => [r.regKey, r.region]));
+  const opts = [['all', 'Todos los departamentos', 'Departamento: Todos'], ...[...seen.entries()].sort((a, b) => a[1].localeCompare(b[1], 'es')).map(([k, l]) => [k, l, l])];
+  menu.innerHTML = opts.map(([v, l, lbl]) => `<div class="toolbar-dd-item" role="option" aria-selected="${asignState.region === v}" data-val="${v}" onclick="setRegionFilter('${v}','${lbl}')">${l}</div>`).join('');
+}
+function filteredAsign(){
+  return asignState.all.filter(r => {
+    if(asignState.region !== 'all' && r.regKey !== asignState.region) return false;
+    if(asignState.inc !== 'all' && r.incName !== (CURRENT_PROGRAM.incentives[+asignState.inc] || {}).name) return false;
+    if(asignState.search){
+      const q = asignState.search.toLowerCase();
+      if(!`${r.person} ${r.cc} ${r.code} ${r.incName} ${r.op}`.toLowerCase().includes(q)) return false;
+    }
+    return true;
+  });
+}
+function renderAsign(){
+  const tb = document.getElementById('asignTbody');
+  if(!tb) return;
+  const list = filteredAsign();
+  const total = list.length;
+  const totalPages = Math.max(1, Math.ceil(total / asignState.pageSize));
+  if(asignState.page > totalPages) asignState.page = totalPages;
+  const start = (asignState.page - 1) * asignState.pageSize;
+  const end = Math.min(start + asignState.pageSize, total);
+  const slice = list.slice(start, end);
+  const badges = {
+    asig: '<span class="naowee-badge naowee-badge--positive naowee-badge--quiet naowee-badge--small">Entregado</span>',
+    rev: '<span class="naowee-badge naowee-badge--negative naowee-badge--quiet naowee-badge--small">Revertido</span>'
+  };
+  tb.innerHTML = slice.length ? slice.map(r => {
+    const evPayload = encodeURIComponent(JSON.stringify({
+      person:r.person, cc:r.cc, code:r.code, op:r.op, region:r.region, fecha:r.fecha, estado:r.estado, incName:r.incName, benefLbl:r.benefLbl
+    }));
+    return `
+    <tr>
+      <td><div style="display:flex;gap:10px;align-items:center;min-width:0">
+        <div class="av-sm av-sm--${r.avClass}">${r.initials}</div>
+        <div style="min-width:0"><div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.person}</div><div style="font-size:11.5px;color:var(--naowee-color-text-secondary,#646587)">${r.benefLbl} · ${r.cc}</div></div>
+      </div></td>
+      <td class="asign-inc">${r.incName}</td>
+      <td>${r.code ? `<code>${r.code}</code>` : '<span class="asign-nocode">Sin código</span>'}</td>
+      <td>${r.op}</td>
+      <td>${r.region}</td>
+      <td>${r.fecha}</td>
+      <td>${badges[r.estado]}</td>
+      <td style="text-align:right;white-space:nowrap">
+        ${r.isEntity ? '' : `<span class="naowee-tooltip">
+          <button class="naowee-btn naowee-btn--mute naowee-btn--small ev-btn" onclick="openSuidProfile('${evPayload}')" aria-label="Abrir perfil SUID de ${r.person}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M17 3h4v4"/><path d="M14 10l7-7"/></svg>
+          </button>
+          <span class="naowee-tooltip__content">Abrir perfil SUID</span>
+        </span>`}
+        <span class="naowee-tooltip">
+          <button class="naowee-btn naowee-btn--mute naowee-btn--small ev-btn" onclick="openEvidence('${evPayload}')" aria-label="Ver evidencia">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+          <span class="naowee-tooltip__content">Ver evidencia</span>
+        </span>
+      </td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--naowee-color-text-secondary,#646587)">Sin resultados.</td></tr>`;
+  document.getElementById('asignPagInfo').textContent = total === 0 ? 'Sin resultados' : `Mostrando ${start + 1}–${end} de ${total}`;
+  document.getElementById('asignPagInput').value = asignState.page;
+  document.getElementById('asignPagTotal').textContent = totalPages;
+  document.getElementById('asignPagPrev').disabled = asignState.page <= 1;
+  document.getElementById('asignPagNext').disabled = asignState.page >= totalPages;
+}
+function changeAsignPage(delta){
+  const total = filteredAsign().length;
+  const totalPages = Math.max(1, Math.ceil(total / asignState.pageSize));
+  asignState.page = Math.max(1, Math.min(totalPages, asignState.page + delta));
+  renderAsign();
+}
+
+/* ═══ Panel lateral: historial de un código ═══ */
+function openCodeDrawer(code){
+  const r = state.all.find(x => x.code === code);
+  if(!r) return;
+  const badges = { disp:'Disponible', asig:'Asignado', reasig:'Reasignado' };
+  const cur = r.row;
+  const payload = cur ? encodeURIComponent(JSON.stringify({ person:cur.person, cc:cur.cc, code:cur.code, op:cur.op, region:cur.region, fecha:cur.fecha, estado:cur.estado, incName:cur.incName, benefLbl:cur.benefLbl })) : '';
+  const DOT = { load:'gray', assign:'green', revert:'red' };
+  document.getElementById('codeDrawerTitle').textContent = r.code;
+  document.getElementById('codeDrawerBody').innerHTML = `
+    <div class="cd-meta">
+      <span class="naowee-badge naowee-badge--${r.estado === 'disp' ? 'neutral' : 'positive'} naowee-badge--quiet naowee-badge--small">${badges[r.estado] || r.estado}</span>
+      <span class="cd-meta__inc">${r.incName}</span>
+    </div>
+    <div class="cd-sec">Asignado a</div>
+    ${cur ? `
+      <div class="cd-benef">
+        <div class="av-sm av-sm--${cur.avClass}">${cur.initials}</div>
+        <div class="cd-benef__body"><div class="cd-benef__name">${cur.person}</div><div class="cd-benef__sub">${cur.benefLbl} · ${cur.cc} · ${cur.region}</div><div class="cd-benef__sub">Entregado por ${cur.op} · ${cur.fecha}</div></div>
+      </div>
+      <div class="cd-actions">
+        ${cur.isEntity ? '' : `<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small" onclick="openSuidProfile('${payload}')">Abrir perfil SUID</button>`}
+        <button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small" onclick="openEvidence('${payload}')">Ver evidencia</button>
+      </div>` : '<div class="cd-empty">Disponible · no está asignado a nadie.</div>'}
+    <div class="cd-sec">Historial del código</div>
+    <ol class="cd-timeline">
+      ${r.history.slice().reverse().map(h => `
+        <li class="cd-ev cd-ev--${DOT[h.type] || 'gray'}">
+          <div class="cd-ev__title">${h.title}</div>
+          <div class="cd-ev__detail">${h.detail || ''}</div>
+          <div class="cd-ev__meta">${h.who} · ${h.date}</div>
+        </li>`).join('')}
+    </ol>`;
+  const dr = document.getElementById('codeDrawer');
+  dr.classList.add('is-open');
+  dr.setAttribute('aria-hidden', 'false');
+  dr.querySelector('.cd-drawer__close')?.focus();
+}
+function closeCodeDrawer(){
+  const dr = document.getElementById('codeDrawer');
+  dr.classList.remove('is-open');
+  dr.setAttribute('aria-hidden', 'true');
+}
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape' && !document.getElementById('evOverlay')?.classList.contains('is-open')) closeCodeDrawer();
+});
+
+/* ═══ Lightbox de evidencia ═══ */
+const EV_PALETTES = [
+  ['#1f78d1','#7c3aed'], ['#d74009','#f59e0b'], ['#15803d','#0891b2'],
+  ['#7c3aed','#db2777'], ['#0f766e','#1f78d1'], ['#b45309','#dc2626']
+];
+function evPaletteFor(code){
+  let h = 0;
+  for(const c of (code || '')){ h = (h * 31 + c.charCodeAt(0)) & 0xffffffff; }
+  return EV_PALETTES[Math.abs(h) % EV_PALETTES.length];
+}
+function openEvidence(payload){
+  let r;
+  try { r = JSON.parse(decodeURIComponent(payload)); } catch(e){ return; }
+  const overlay = document.getElementById('evOverlay');
+  const [c1, c2] = evPaletteFor(r.code);
+  overlay.style.setProperty('--ev-c1', c1);
+  overlay.style.setProperty('--ev-c2', c2);
+  document.getElementById('evCode').textContent = r.code || r.incName || '';
+  document.getElementById('evBenef').innerHTML = `${r.person}<div style="font-size:11.5px;color:#646587;font-weight:500;margin-top:2px">${r.benefLbl ? r.benefLbl + ' · ' : ''}${r.cc}</div>`;
+  document.getElementById('evCodeRow').innerHTML = r.code ? `<code>${r.code}</code>` : `Sin código · ${r.incName || ''}`;
+  document.getElementById('evOp').textContent = r.op;
+  document.getElementById('evRegion').textContent = r.region;
+  document.getElementById('evFecha').textContent = r.fecha;
+  document.getElementById('evEstado').innerHTML = r.estado === 'rev'
+    ? '<span class="naowee-badge naowee-badge--negative naowee-badge--quiet naowee-badge--small">Revertido</span>'
+    : '<span class="naowee-badge naowee-badge--positive naowee-badge--quiet naowee-badge--small">Entregado</span>';
+  overlay.classList.add('is-open');
+  document.body.style.overflow = 'hidden';
+}
+function closeEvidence(){
+  document.getElementById('evOverlay').classList.remove('is-open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape' && document.getElementById('evOverlay')?.classList.contains('is-open')) closeEvidence();
+});
+</script>
+
+<!-- ═══ Panel lateral: historial de un código ═══ -->
+<div class="cd-drawer" id="codeDrawer" aria-hidden="true">
+  <div class="cd-drawer__backdrop" onclick="closeCodeDrawer()"></div>
+  <aside class="cd-drawer__panel" role="dialog" aria-modal="true" aria-labelledby="codeDrawerTitle">
+    <header class="cd-drawer__head">
+      <div><div class="cd-drawer__eyebrow">Código</div><h2 id="codeDrawerTitle">—</h2></div>
+      <button type="button" class="cd-drawer__close" onclick="closeCodeDrawer()" aria-label="Cerrar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </header>
+    <div class="cd-drawer__body" id="codeDrawerBody"></div>
+  </aside>
+</div>
+
+<!-- ═══ Diálogo: activar o cerrar el programa ═══ -->
+<div class="wz-warn-overlay wz-warn-overlay--top" id="statusOverlay" role="dialog" aria-modal="true" aria-labelledby="statusTitle">
+  <div class="wz-warn-card">
+    <div class="wz-warn-card__body">
+      <div class="wz-warn-card__icon" id="statusIcon"></div>
+      <h2 class="wz-warn-card__title" id="statusTitle">—</h2>
+      <div class="wz-warn-card__sub" id="statusSub"></div>
+    </div>
+    <div class="wz-warn-card__footer" id="statusFooter"></div>
+  </div>
+</div>
+
+<!-- ═══ Lightbox: Evidencia de entrega ═══ -->
+<div class="ev-overlay" id="evOverlay" role="dialog" aria-modal="true" aria-labelledby="evTitle" onclick="if(event.target===this)closeEvidence()">
+  <div class="ev-modal" role="document">
+    <div class="ev-head">
+      <div>
+        <div class="ev-title" id="evTitle">Evidencia de entrega</div>
+        <div class="ev-sub">Código <code id="evCode">—</code> · captura tomada al confirmar la asignación</div>
+      </div>
+      <button class="ev-close" onclick="closeEvidence()" aria-label="Cerrar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="ev-body">
+      <div class="ev-photo">
+        <img id="evPhoto" alt="Evidencia de entrega — entrega de cheque ceremonial al beneficiario"
+             src="https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=900&q=80"
+             onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+(document.getElementById('evCode').textContent||'evidencia')+'/900/600'"/>
+      </div>
+      <div class="ev-meta">
+        <div class="ev-meta__row">
+          <div class="ev-meta__lbl">Beneficiario</div>
+          <div class="ev-meta__val" id="evBenef">—</div>
+        </div>
+        <div class="ev-meta__row">
+          <div class="ev-meta__lbl">Código entregado</div>
+          <div class="ev-meta__val" id="evCodeRow">—</div>
+        </div>
+        <div class="ev-meta__row">
+          <div class="ev-meta__lbl">Operador</div>
+          <div class="ev-meta__val" id="evOp">—</div>
+        </div>
+        <div class="ev-meta__row">
+          <div class="ev-meta__lbl">Departamento</div>
+          <div class="ev-meta__val" id="evRegion">—</div>
+        </div>
+        <div class="ev-meta__row">
+          <div class="ev-meta__lbl">Fecha y hora</div>
+          <div class="ev-meta__val" id="evFecha">—</div>
+        </div>
+        <div class="ev-meta__row">
+          <div class="ev-meta__lbl">Estado</div>
+          <div class="ev-meta__val" id="evEstado">—</div>
+        </div>
+      </div>
+    </div>
+    <div class="ev-foot">
+      <span class="ev-foot__hint">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        Captura registrada en el paso 3 del flujo de asignación.
+      </span>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══ Perfil SUID del beneficiario ══
+   En el producto la acción ABRE el Perfil SUID (pantalla completa: Perfil,
+   Trayectoria, Análisis cualitativo), que es un microfrontend (mf) que se
+   inyecta con el documento del beneficiario. Nota devs: respetar permisos
+   del rol (hay menores de edad). La demo solo muestra un aviso. */
+function openSuidProfile(payload){
+  let r;
+  try { r = JSON.parse(decodeURIComponent(payload)); } catch(e){ return; }
+  document.querySelector('.suid-toast')?.remove();
+  const t = document.createElement('div');
+  t.className = 'suid-toast';
+  t.setAttribute('role', 'status');
+  t.innerHTML = `<span class="naowee-badge naowee-badge--caution naowee-badge--small">Solo demo</span>
+    <div>Aquí se abre el <strong>Perfil SUID</strong> (microfrontend) de <strong>${r.person}</strong> · <code>${r.cc}</code>.</div>`;
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 250); }, 4000);
+}
+
+/* ══ Clear search ══ */
+function clearSearch(inputId){
+  const inp = document.getElementById(inputId);
+  if(!inp) return;
+  inp.value = '';
+  inp.dispatchEvent(new Event('input', { bubbles: true }));
+  inp.focus();
+}
+</script>
+
+<script src="shared/programa-wizard.js?v=20260922194132" defer></script>
+
+<script src="shared/profile-switcher.js?v=20260922203322" defer></script>
+
+<script src="shared/footer-scroll.js" defer></script>
+<script src="shared/tour.js?v=20260922203322" defer></script>
+
+<!-- Footer flotante Naowee -->
+<div class="naowee-floating-footer" role="contentinfo" aria-label="Pie de página Naowee">
+  <img src="shared/logos/naowee.svg" alt="Naowee" class="naowee-floating-footer__logo"/>
+  <div class="naowee-floating-footer__sep"></div>
+  <span class="naowee-floating-footer__text">Todos los derechos reservados <strong>&copy; 2026</strong></span>
+</div>
+
+</body>
+</html>

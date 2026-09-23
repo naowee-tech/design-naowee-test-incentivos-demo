@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>SUID – Iniciar sesión</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.4.0/dist/design-system.css"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:var(--naowee-font-family,'Inter',sans-serif);
+  background:var(--naowee-color-background-default,#fff);
+  color:var(--naowee-color-text-primary,#282834);
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ═══ SHELL ═══ */
+.auth-shell{min-height:100vh;display:flex;flex-direction:column;background:#fff;position:relative;overflow:hidden}
+.auth-shell::before{
+  content:'';position:absolute;right:-280px;bottom:-280px;width:720px;height:720px;
+  background:radial-gradient(circle,rgba(255,117,0,.10) 0%,rgba(255,117,0,0) 70%);
+  pointer-events:none;z-index:0;
+}
+
+/* ═══ HEADER ═══ */
+.auth-header{
+  height:88px;padding:0 40px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--naowee-color-border-default,#e7e9f3);
+  background:#fff;position:relative;z-index:10;flex-shrink:0;
+}
+.auth-header__logos{display:flex;align-items:center;gap:20px}
+.logo-sep{width:1px;height:48px;background:var(--naowee-color-border-default,#e7e9f3)}
+.logo-ministerio{height:56px;width:auto;display:block}
+.logo-suid{height:56px;width:auto;display:block}
+.auth-header__actions{display:flex;align-items:center;gap:12px}
+
+/* ═══ MAIN ═══ */
+.auth-main{
+  flex:1;display:grid;grid-template-columns:507px minmax(0,1fr);
+  gap:0;min-height:0;position:relative;z-index:1;
+}
+
+/* ═══ CAROUSEL WRAPPER (left) ═══ */
+.auth-carousel-wrap{
+  background:var(--naowee-color-background-secondary,#e7e9f3);
+  padding:24px;display:flex;align-items:stretch;justify-content:center;
+  min-height:0;
+}
+.auth-carousel{
+  position:relative;border-radius:20px;overflow:hidden;
+  width:100%;max-width:459px;
+  background:#1a1f2e;
+}
+.carousel-track{position:relative;width:100%;height:100%;min-height:680px}
+.carousel-slide{
+  position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;
+  padding:28px 28px 100px 28px;opacity:0;transition:opacity .6s ease;
+  color:#fff;
+}
+.carousel-slide.active{opacity:1;z-index:2}
+.carousel-slide::before{display:none}
+.carousel-slide::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(20,25,45,.15) 0%,rgba(20,25,45,.5) 45%,rgba(20,25,45,.94) 100%);
+  pointer-events:none;
+}
+
+/* Slide backgrounds (gradient per sport theme) */
+.carousel-slide[data-slide="1"]{background-image:linear-gradient(to bottom,rgba(20,30,50,.3),rgba(10,15,30,.85)),url('https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800&h=1000&fit=crop');background-size:cover;background-position:center}
+.carousel-slide[data-slide="2"]{background-image:linear-gradient(to bottom,rgba(15,40,25,.3),rgba(5,20,10,.85)),url('https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=800&h=1000&fit=crop');background-size:cover;background-position:center}
+.carousel-slide[data-slide="3"]{background-image:linear-gradient(to bottom,rgba(10,50,70,.3),rgba(5,25,40,.85)),url('https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=800&h=1000&fit=crop');background-size:cover;background-position:center}
+.carousel-slide[data-slide="4"]{background-image:linear-gradient(to bottom,rgba(60,40,10,.3),rgba(30,20,5,.85)),url('https://images.unsplash.com/photo-1517649763962-0c623066013b?w=800&h=1000&fit=crop');background-size:cover;background-position:center}
+.carousel-slide[data-slide="5"]{background-image:linear-gradient(to bottom,rgba(15,35,60,.3),rgba(5,15,30,.85)),url('https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800&h=1000&fit=crop');background-size:cover;background-position:center}
+
+.slide-top{position:relative;z-index:3;display:flex}
+.slide-badge{
+  display:inline-flex;align-items:center;padding:6px 12px;border-radius:999px;
+  background:rgba(255,255,255,.18);backdrop-filter:blur(10px);
+  font-size:10px;font-weight:700;color:#fff;letter-spacing:1px;
+}
+.slide-bottom{position:relative;z-index:3;max-width:100%}
+.slide-tag{
+  display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:999px;
+  background:rgba(0,0,0,.45);backdrop-filter:blur(10px);
+  font-size:12px;font-weight:600;color:#fff;margin-bottom:16px;
+  border:1px solid rgba(255,255,255,.12);
+}
+.slide-title{
+  font-size:38px;font-weight:600;line-height:1.1;letter-spacing:-0.5px;
+  margin-bottom:18px;color:#fff;
+}
+.slide-title em{font-style:normal;color:#FF7500;display:inline;font-weight:600}
+.slide-desc{
+  font-size:14px;font-weight:300;line-height:1.6;color:rgba(255,255,255,.75);
+  margin-bottom:8px;
+}
+
+/* Controls */
+.carousel-controls{
+  position:absolute;left:28px;right:28px;bottom:28px;z-index:5;
+  display:flex;flex-direction:column;gap:18px;
+}
+.carousel-controls__row{
+  display:flex;align-items:center;justify-content:space-between;
+}
+/* Progress bar */
+.carousel-progress{
+  width:100%;height:3px;background:rgba(255,255,255,.15);
+  border-radius:3px;overflow:hidden;
+}
+.carousel-progress__bar{
+  height:100%;width:0%;background:#FF7500;
+  border-radius:3px;
+}
+.carousel-indicators{display:flex;align-items:center;gap:6px;flex:1}
+.carousel-dot{
+  width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.4);
+  cursor:pointer;transition:all .3s ease;border:none;padding:0;
+}
+.carousel-dot.active{width:40px;height:3px;border-radius:2px;background:#FF7500}
+.carousel-counter{
+  font-size:12px;font-weight:600;color:rgba(255,255,255,.7);
+  letter-spacing:.5px;margin-right:12px;
+}
+.carousel-nav{display:flex;gap:8px}
+.carousel-arrow{
+  width:40px;height:40px;border-radius:50%;
+  background:rgba(255,255,255,.15);backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.2);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;color:#fff;
+  transition:all .2s ease;
+}
+.carousel-arrow:hover{background:rgba(255,255,255,.25);transform:scale(1.05)}
+.carousel-arrow svg{width:18px;height:18px}
+
+/* ═══ FORM PANEL (right) ═══ */
+.auth-form-panel{
+  display:flex;align-items:center;justify-content:center;padding:40px 24px;min-height:0;overflow-y:auto;
+}
+.auth-form{width:100%;max-width:457px;display:flex;flex-direction:column;gap:48px}
+.auth-form__header{text-align:center;display:flex;flex-direction:column;gap:16px}
+.auth-form__title{
+  font-size:32px;font-weight:400;line-height:36px;color:var(--naowee-color-text-primary,#282834);
+  letter-spacing:-.3px;
+}
+.auth-form__title strong{font-weight:700}
+.auth-form__subtitle{
+  font-size:16px;font-weight:400;line-height:24px;color:var(--naowee-color-text-secondary,#646587);
+  margin:0;
+}
+.auth-form__group{display:flex;flex-direction:column;gap:32px}
+.auth-form__fields{display:flex;flex-direction:column;gap:24px}
+.auth-form__forgot{text-align:right;font-size:16px;line-height:24px;color:var(--naowee-color-text-secondary,#646587)}
+.auth-form__forgot a{color:var(--naowee-color-text-accent,#d74009);font-weight:600;text-decoration:underline;margin-left:4px}
+.auth-form__legal{
+  text-align:center;font-size:14px;color:var(--naowee-color-text-secondary,#646587);
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.auth-form__legal a{color:#1f78d1;text-decoration:underline;font-weight:500}
+.auth-form__legal a:hover{color:#0d5ba8}
+
+.auth-help{text-align:center;display:flex;flex-direction:column;gap:16px}
+.auth-help__title{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  font-size:11px;font-weight:700;letter-spacing:1.2px;
+  color:var(--naowee-color-text-secondary,#646587);
+}
+.auth-help__text{
+  font-size:13px;line-height:1.5;color:var(--naowee-color-text-secondary,#646587);
+  max-width:380px;margin:0 auto;
+}
+.auth-help__link{
+  color:#1f78d1;text-decoration:underline;font-weight:600;font-size:13px;
+}
+
+/* Override naowee-textfield to ensure consistency */
+.auth-form .naowee-textfield{width:100%}
+
+/* Eye button for password */
+.pw-toggle{
+  background:none;border:none;cursor:pointer;padding:4px;display:flex;align-items:center;
+  color:var(--naowee-color-text-accent,#d74009);
+}
+.pw-toggle:hover{opacity:.8}
+
+/* ═══ DEMO MODE PICKER (modal tras login) ═══ */
+.demo-overlay{
+  position:fixed;inset:0;z-index:1500;
+  background:rgba(40,40,52,.6);
+  backdrop-filter:blur(3px);
+  display:none;align-items:center;justify-content:center;
+  padding:24px;
+  animation:demoFade .25s ease;
+}
+.demo-overlay.open{display:flex}
+@keyframes demoFade{from{opacity:0}to{opacity:1}}
+
+.demo-modal{
+  width:520px;max-width:100%;
+  background:#fff;border-radius:20px;
+  padding:32px;
+  box-shadow:0 24px 48px rgba(0,0,0,.2);
+  animation:demoScale .35s cubic-bezier(.175,.885,.32,1.275);
+  display:flex;flex-direction:column;gap:20px;
+  max-height:calc(100vh - 32px);overflow-y:auto;
+}
+.demo-option__scope{
+  align-self:flex-start;margin-top:4px;
+  padding:2px 8px;border-radius:9999px;
+  background:#eff6ff;color:#1e3a8a;
+  font-size:11px;font-weight:600;line-height:16px;
+}
+@keyframes demoScale{
+  from{opacity:0;transform:scale(.9) translateY(20px)}
+  to{opacity:1;transform:scale(1) translateY(0)}
+}
+
+.demo-modal__header{
+  display:flex;flex-direction:column;gap:6px;
+}
+.demo-modal__badge{
+  display:inline-flex;align-items:center;gap:6px;
+  align-self:flex-start;
+  padding:4px 10px;border-radius:9999px;
+  background:#fff3e6;color:#d74009;
+  font-size:11px;font-weight:700;letter-spacing:.5px;
+  text-transform:uppercase;
+  margin-bottom:4px;
+}
+.demo-modal__title{
+  font-size:22px;font-weight:700;line-height:28px;
+  color:var(--naowee-color-text-primary,#282834);
+  margin:0;
+}
+.demo-modal__subtitle{
+  font-size:14px;line-height:20px;
+  color:var(--naowee-color-text-secondary,#646587);
+  margin:0;
+}
+
+.demo-modal__options{
+  display:flex;flex-direction:column;gap:12px;
+  margin-top:4px;
+}
+.demo-option{
+  display:flex;align-items:center;gap:14px;
+  padding:16px;
+  background:#fff;
+  border:1.5px solid var(--naowee-color-gray-200,#e7e9f3);
+  border-radius:12px;
+  cursor:pointer;text-align:left;
+  transition:border-color .15s,background .15s,transform .1s;
+  font-family:'Inter',sans-serif;
+}
+.demo-option:hover{
+  border-color:#d74009;
+  background:#fffbf8;
+}
+.demo-option:active{transform:scale(.99)}
+.demo-option__icon{
+  flex-shrink:0;width:40px;height:40px;border-radius:10px;
+  background:#fff3e6;color:#d74009;
+  display:flex;align-items:center;justify-content:center;
+}
+.demo-option__icon svg{width:22px;height:22px}
+.demo-option__body{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
+.demo-option__title{
+  font-size:14px;font-weight:700;line-height:18px;
+  color:var(--naowee-color-text-primary,#282834);
+}
+.demo-option__desc{
+  font-size:12px;font-weight:400;line-height:16px;
+  color:var(--naowee-color-text-secondary,#646587);
+}
+.demo-option__arrow{
+  flex-shrink:0;width:20px;height:20px;
+  color:var(--naowee-color-text-secondary,#646587);
+  transition:transform .2s,color .15s;
+}
+.demo-option:hover .demo-option__arrow{
+  transform:translateX(4px);
+  color:#d74009;
+}
+
+/* Responsive */
+/* Wiggle animation for validation */
+@keyframes wiggle{0%,100%{transform:translateX(0)}20%{transform:translateX(-4px)}40%{transform:translateX(4px)}60%{transform:translateX(-3px)}80%{transform:translateX(2px)}}
+.field-error-wiggle{animation:wiggle .4s ease}
+
+@media(max-width:1024px){
+  .auth-main{grid-template-columns:1fr}
+  .auth-carousel-wrap{display:none}
+  .auth-form-panel{padding:24px}
+}
+@media(max-width:640px){
+  .auth-header{padding:0 20px;height:72px}
+  .auth-header__logos{gap:12px}
+  .auth-header__logos .logo-sep,
+  .logo-ministerio{display:none}
+  .auth-header__actions .naowee-btn{padding:0 12px;font-size:12px}
+  .auth-form__title{font-size:22px}
+}
+</style>
+</head>
+<body>
+
+<div class="auth-shell">
+
+  <!-- ═══ HEADER ═══ -->
+  <header class="auth-header">
+    <div class="auth-header__logos">
+      <img src="shared/logos/ministerio.svg" alt="Ministerio del Deporte Colombia" class="logo-ministerio"/>
+      <div class="logo-sep"></div>
+      <img src="shared/logos/suid.png" alt="SUID — Sistema Único de Información del Deporte" class="logo-suid"/>
+    </div>
+
+    <div class="auth-header__actions">
+      <button class="naowee-btn naowee-btn--mute naowee-btn--small" onclick="window.location.href='https://naowee-tech.github.io/naowee-test-escenarios/escenario-03-registrar-escenario.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h1M9 13h1M9 17h1M14 9h1M14 13h1M14 17h1"/></svg>
+        Registra sede o escenario
+      </button>
+      <button class="naowee-btn naowee-btn--loud naowee-btn--small" onclick="alert('Crear cuenta — Próximamente')">
+        Crear una cuenta
+      </button>
+    </div>
+  </header>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="auth-main">
+
+    <!-- Carousel wrapper (light gray background + padding) -->
+    <div class="auth-carousel-wrap">
+    <aside class="auth-carousel">
+      <div class="carousel-track">
+
+        <div class="carousel-slide active" data-slide="1" data-emoji="🏆">
+          <div class="slide-top">
+            <span class="slide-badge">SUID</span>
+          </div>
+          <div class="slide-bottom">
+            <span class="slide-tag">🏆 Tu camino a la gloria</span>
+            <h2 class="slide-title">Supera <em>tus propias</em> marcas.</h2>
+            <p class="slide-desc">Registra tu rendimiento, fija metas y visualiza cada paso en tu evolución como deportista.</p>
+          </div>
+        </div>
+
+        <div class="carousel-slide" data-slide="2" data-emoji="⚽">
+          <div class="slide-top">
+            <span class="slide-badge">SUID</span>
+          </div>
+          <div class="slide-bottom">
+            <span class="slide-tag">⚽ Fútbol y pasión</span>
+            <h2 class="slide-title">El partido lo gana <em>quien se prepara.</em></h2>
+            <p class="slide-desc">Lleva un historial completo de tus partidos, posiciones y rendimiento en cada temporada.</p>
+          </div>
+        </div>
+
+        <div class="carousel-slide" data-slide="3" data-emoji="🎾">
+          <div class="slide-top">
+            <span class="slide-badge">SUID</span>
+          </div>
+          <div class="slide-bottom">
+            <span class="slide-tag">🎾 Métricas avanzadas</span>
+            <h2 class="slide-title">Tus datos, <em>tu mayor</em> ventaja.</h2>
+            <p class="slide-desc">Analiza estadísticas de entrenamiento, detecta áreas de mejora y toma decisiones con información real.</p>
+          </div>
+        </div>
+
+        <div class="carousel-slide" data-slide="4" data-emoji="🏅">
+          <div class="slide-top">
+            <span class="slide-badge">SUID</span>
+          </div>
+          <div class="slide-bottom">
+            <span class="slide-tag">👌 Reconocimientos</span>
+            <h2 class="slide-title">Cada medalla <em>cuenta</em> una historia.</h2>
+            <p class="slide-desc">Acumula logros, exhibe tus reconocimientos y deja que tu trayectoria hable por ti.</p>
+          </div>
+        </div>
+
+        <div class="carousel-slide" data-slide="5" data-emoji="🇨🇴">
+          <div class="slide-top">
+            <span class="slide-badge">SUID</span>
+          </div>
+          <div class="slide-bottom">
+            <span class="slide-tag">🇨🇴 Comunidad SUID</span>
+            <h2 class="slide-title">El deporte <em>colombiano</em> te necesita.</h2>
+            <p class="slide-desc">Miles de deportistas, clubes y ligas ya forman parte del Sistema Único de Información del Deporte.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="carousel-controls">
+        <!-- Progress bar -->
+        <div class="carousel-progress">
+          <div class="carousel-progress__bar" id="carouselProgress"></div>
+        </div>
+        <div class="carousel-controls__row">
+        <div class="carousel-indicators" id="carouselDots">
+          <button class="carousel-dot active" data-go="1" aria-label="Ir al slide 1"></button>
+          <button class="carousel-dot" data-go="2" aria-label="Ir al slide 2"></button>
+          <button class="carousel-dot" data-go="3" aria-label="Ir al slide 3"></button>
+          <button class="carousel-dot" data-go="4" aria-label="Ir al slide 4"></button>
+          <button class="carousel-dot" data-go="5" aria-label="Ir al slide 5"></button>
+        </div>
+        <!-- counter removed, dots are sufficient -->
+        <div class="carousel-nav">
+          <button class="carousel-arrow" id="prevBtn" aria-label="Slide anterior">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+          <button class="carousel-arrow" id="nextBtn" aria-label="Siguiente slide">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+        </div>
+        </div><!-- /carousel-controls__row -->
+      </div>
+    </aside>
+    </div>
+
+    <!-- Form panel -->
+    <section class="auth-form-panel">
+      <div class="auth-form">
+
+        <div class="auth-form__header">
+          <h1 class="auth-form__title">Bienvenido al <strong>Sistema Único de Información del Deporte</strong></h1>
+          <p class="auth-form__subtitle">Ingresa tus credenciales para acceder a tu perfil y gestionar tu información deportiva.</p>
+        </div>
+
+        <div class="auth-form__group">
+        <form class="auth-form__fields" id="loginForm" novalidate>
+
+          <!-- Email field -->
+          <div class="naowee-textfield" id="emailField">
+            <label class="naowee-textfield__label naowee-textfield__label--required" for="email">Correo electrónico</label>
+            <div class="naowee-textfield__input-wrap">
+              <input
+                type="email"
+                id="email"
+                class="naowee-textfield__input"
+                placeholder="correo@ejemplo.com"
+                autocomplete="email"
+                required
+              />
+            </div>
+          </div>
+
+          <!-- Password field -->
+          <div class="naowee-textfield" id="passwordField">
+            <label class="naowee-textfield__label naowee-textfield__label--required" for="password">Contraseña</label>
+            <div class="naowee-textfield__input-wrap">
+              <input
+                type="password"
+                id="password"
+                class="naowee-textfield__input"
+                placeholder="Ingresa tu contraseña"
+                autocomplete="current-password"
+                required
+              />
+              <button type="button" class="naowee-textfield__suffix pw-toggle" id="pwToggle" aria-label="Mostrar u ocultar contraseña">
+                <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Forgot link -->
+          <div class="auth-form__forgot">
+            ¿Olvidaste la contraseña? <a href="escenario-02-recuperar-password.html">Recuperar</a>
+          </div>
+
+          <!-- Submit -->
+          <button type="submit" class="naowee-btn naowee-btn--loud naowee-btn--large naowee-btn--full" id="submitBtn">
+            Iniciar sesión
+          </button>
+
+        </form>
+        </div>
+
+        <!-- Legal links (major section) -->
+        <div class="auth-form__legal">
+          <a href="#">Política de privacidad</a> <span>y</span> <a href="#">Términos y condiciones</a>
+        </div>
+
+        <div class="auth-help">
+          <div class="auth-help__title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            ¿NECESITAS AYUDA?
+          </div>
+          <p class="auth-help__text">Si tienes dudas o problemas con la activación de tu cuenta, puedes comunicarte con el equipo de soporte</p>
+          <a href="mailto:soporte@naowee.com" class="auth-help__link">soporte@naowee.com</a>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ═══ DEMO MODE PICKER MODAL ═══ -->
+<div class="demo-overlay" id="demoOverlay" role="dialog" aria-labelledby="demoTitle" aria-modal="true">
+  <div class="demo-modal">
+    <div class="demo-modal__header">
+      <span class="demo-modal__badge">🎬 Demo · Elige perfil</span>
+      <h2 class="demo-modal__title" id="demoTitle">¿Con qué rol quieres entrar?</h2>
+      <p class="demo-modal__subtitle">Para esta demo del módulo de incentivos, selecciona con qué rol quieres explorar. En producción, tu usuario real tendrá su rol asignado por el ministerio.</p>
+    </div>
+
+    <div class="demo-modal__options">
+
+      <button type="button" class="demo-option" data-role="superadmin">
+        <div class="demo-option__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z"/><polyline points="9 12 11 14 15 10"/></svg>
+        </div>
+        <div class="demo-option__body">
+          <span class="demo-option__title">Superadmin</span>
+          <span class="demo-option__desc">Acceso global al módulo: todos los programas, códigos, asignaciones y reportería.</span>
+        </div>
+        <svg class="demo-option__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+
+      <button type="button" class="demo-option" data-role="admin">
+        <div class="demo-option__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+        </div>
+        <div class="demo-option__body">
+          <span class="demo-option__title">Gestor de incentivos</span>
+          <span class="demo-option__desc">Equipo Naowee. Parametriza y audita: crea programas, carga códigos, revierte asignaciones y monitorea la ejecución nacional.</span>
+        </div>
+        <svg class="demo-option__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+
+      <button type="button" class="demo-option" data-role="programa">
+        <div class="demo-option__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a1 1 0 011-1h6a1 1 0 011 1v2"/><line x1="3" y1="12" x2="21" y2="12"/></svg>
+        </div>
+        <div class="demo-option__body">
+          <span class="demo-option__title">Gestor de programa</span>
+          <span class="demo-option__desc">Gestiona los programas donde figura como gestor: su equipo, incentivos, condiciones y códigos.</span>
+          <span class="demo-option__scope">Elkin Ávila · programas a cargo</span>
+        </div>
+        <svg class="demo-option__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+
+      <button type="button" class="demo-option" data-role="operador">
+        <div class="demo-option__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
+        </div>
+        <div class="demo-option__body">
+          <span class="demo-option__title">Operador</span>
+          <span class="demo-option__desc">Ministerio. Solo asigna: busca al beneficiario, asigna el código y registra evidencia.</span>
+        </div>
+        <svg class="demo-option__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══ CAROUSEL ═══ */
+(function(){
+  const slides = document.querySelectorAll('.carousel-slide');
+  const dots = document.querySelectorAll('.carousel-dot');
+  const counter = document.getElementById('carouselCounter');
+  const progressBar = document.getElementById('carouselProgress');
+  const prev = document.getElementById('prevBtn');
+  const next = document.getElementById('nextBtn');
+  let current = 0;
+  const total = slides.length;
+  const DURATION = 6000; // ms per slide
+  let autoplayId, progressId, progressStart;
+
+  function go(i){
+    current = (i + total) % total;
+    slides.forEach((s,idx)=>s.classList.toggle('active', idx===current));
+    dots.forEach((d,idx)=>d.classList.toggle('active', idx===current));
+    if(counter) counter.textContent = String(current+1).padStart(2,'0') + ' / ' + String(total).padStart(2,'0');
+  }
+
+  function startProgress(){
+    cancelAnimationFrame(progressId);
+    progressStart = performance.now();
+    progressBar.style.width = '0%';
+    function tick(now){
+      const elapsed = now - progressStart;
+      const pct = Math.min(100, (elapsed / DURATION) * 100);
+      progressBar.style.width = pct + '%';
+      if(pct >= 100){
+        go(current + 1);
+        startProgress();
+        return;
+      }
+      progressId = requestAnimationFrame(tick);
+    }
+    progressId = requestAnimationFrame(tick);
+  }
+
+  function resetAutoplay(){
+    startProgress();
+  }
+
+  prev.addEventListener('click', ()=>{go(current-1); resetAutoplay();});
+  next.addEventListener('click', ()=>{go(current+1); resetAutoplay();});
+  dots.forEach(d=>d.addEventListener('click', e=>{
+    go(parseInt(e.currentTarget.dataset.go)-1);
+    resetAutoplay();
+  }));
+
+  // Resume autoplay when tab becomes visible again
+  document.addEventListener('visibilitychange', () => {
+    if(!document.hidden) resetAutoplay();
+  });
+
+  resetAutoplay();
+})();
+
+/* ═══ PASSWORD TOGGLE ═══ */
+(function(){
+  const btn = document.getElementById('pwToggle');
+  const input = document.getElementById('password');
+  const icon = document.getElementById('eyeIcon');
+  btn.addEventListener('click', ()=>{
+    const isPw = input.type === 'password';
+    input.type = isPw ? 'text' : 'password';
+    icon.innerHTML = isPw
+      ? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>'
+      : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/>';
+  });
+})();
+
+/* ═══ FORM VALIDATION ═══ */
+(function(){
+  const form = document.getElementById('loginForm');
+  const email = document.getElementById('email');
+  const password = document.getElementById('password');
+  const submit = document.getElementById('submitBtn');
+  const emailField = document.getElementById('emailField');
+  const passwordField = document.getElementById('passwordField');
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const HELPER_SVG = '<svg viewBox="0 0 12 12" fill="none"><line x1="3" y1="6" x2="9" y2="6" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
+
+  function showError(field, msg){
+    field.classList.add('naowee-textfield--error');
+    field.classList.add('field-error-wiggle');
+    field.addEventListener('animationend', () => field.classList.remove('field-error-wiggle'), {once:true});
+    if(!field.querySelector('.field-req-helper')){
+      const h = document.createElement('div');
+      h.className = 'naowee-helper naowee-helper--negative field-req-helper';
+      h.innerHTML = '<div class="naowee-helper__text"><span class="naowee-helper__badge">'+HELPER_SVG+'</span>'+msg+'</div>';
+      field.appendChild(h);
+    }
+  }
+  function clearError(field){
+    field.classList.remove('naowee-textfield--error');
+    const h = field.querySelector('.field-req-helper');
+    if(h) h.remove();
+  }
+
+  // Live clear on input
+  email.addEventListener('input', () => clearError(emailField));
+  password.addEventListener('input', () => clearError(passwordField));
+
+  form.addEventListener('submit', e=>{
+    e.preventDefault();
+    const emailVal = email.value.trim();
+    const pwVal = password.value;
+    let hasError = false;
+
+    if(!emailVal){
+      showError(emailField, 'Este campo es obligatorio');
+      hasError = true;
+    } else if(!emailRegex.test(emailVal)){
+      showError(emailField, 'El formato de correo no es válido');
+      hasError = true;
+    }
+    if(!pwVal){
+      showError(passwordField, 'Este campo es obligatorio');
+      hasError = true;
+    } else if(pwVal.length < 6){
+      showError(passwordField, 'La contraseña debe tener al menos 6 caracteres');
+      hasError = true;
+    }
+
+    if(hasError){
+      const first = form.querySelector('.naowee-textfield--error');
+      if(first) first.querySelector('input')?.focus();
+      return;
+    }
+
+    // All valid → open demo picker
+    const overlay = document.getElementById('demoOverlay');
+    overlay.classList.add('open');
+    setTimeout(() => overlay.querySelector('.demo-option')?.focus(), 100);
+  });
+})();
+
+/* ═══ ROLE PICKER · INCENTIVOS ═══ */
+(function(){
+  const overlay = document.getElementById('demoOverlay');
+  const options = overlay.querySelectorAll('.demo-option');
+
+  options.forEach(opt => {
+    opt.addEventListener('click', () => {
+      const role = opt.dataset.role;
+      // Persistir el rol para que el shell lo aplique
+      try { localStorage.setItem('naowee-incentivos-role', role); } catch(e){}
+      // Animación de salida antes de navegar
+      overlay.style.animation = 'demoFade .2s ease reverse';
+      setTimeout(() => {
+        // Superadmin / Gestor de incentivos / Gestor de programa → dashboard
+        // Operador → flujo de asignación en campo
+        window.location.href = role === 'operador'
+          ? 'incentivo-08-asignar-buscar.html'
+          : 'incentivo-02-dashboard.html';
+      }, 180);
+    });
+  });
+
+  // ESC cierra el modal
+  document.addEventListener('keydown', e => {
+    if(e.key === 'Escape' && overlay.classList.contains('open')){
+      overlay.classList.remove('open');
+    }
+  });
+
+  // Click fuera del modal cierra
+  overlay.addEventListener('click', e => {
+    if(e.target === overlay){
+      overlay.classList.remove('open');
+    }
+  });
+})();
+</script>
+
+
+<script src="shared/footer-scroll.js" defer></script>
+<script src="shared/tour.js?v=20260922203322" defer></script>
+
+<!-- Footer flotante Naowee -->
+<div class="naowee-floating-footer" role="contentinfo" aria-label="Pie de página Naowee">
+  <img src="shared/logos/naowee.svg" alt="Naowee" class="naowee-floating-footer__logo"/>
+  <div class="naowee-floating-footer__sep"></div>
+  <span class="naowee-floating-footer__text">Todos los derechos reservados <strong>&copy; 2026</strong></span>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>SUID – Incentivos · Programas</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.4.0/dist/design-system.css"/>
+<link rel="stylesheet" href="shared/shell.css?v=20260922200101"/>
+<link rel="stylesheet" href="shared/programa-wizard.css?v=20260922194132"/>
+
+<style>
+  /* Los componentes fijan display; el atributo hidden debe ganar siempre. */
+  [hidden]{display:none !important}
+  /* SOLO DEMO · botón Reiniciar demo */
+  .demo-reset{
+    display:inline-flex;align-items:center;gap:6px;cursor:pointer;
+    border:1px dashed #d9a441;background:#fff8e6;color:#8a5a00;
+    border-radius:999px;padding:4px 12px 4px 4px;font:inherit;font-size:12.5px;font-weight:600;
+  }
+  .demo-reset.is-armed{border-style:solid;border-color:#b42318;background:#fff0ee;color:#b42318}
+  .demo-reset:focus-visible{outline:2px solid var(--naowee-color-text-accent,#d74009);outline-offset:2px}
+
+  .page-header{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:24px;flex-wrap:wrap}
+  .page-title{font-size:24px;font-weight:700;line-height:1.2;letter-spacing:-.01em;margin-bottom:4px;color:var(--naowee-color-text-primary,#282834)}
+  .page-sub{font-size:14px;color:var(--naowee-color-text-secondary,#646587);line-height:1.5;max-width:640px}
+  .page-header__actions{display:flex;gap:10px;align-items:center}
+
+  /* ═════ TABLET (patrón escenarios-11) ═════ */
+  .tablet{
+    border:1px solid var(--naowee-color-border-default,#e7e9f3);
+    border-radius:16px;padding:20px;background:#fff;
+    display:flex;flex-direction:column;gap:18px;
+  }
+  .tablet-toolbar{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:12px;flex-wrap:wrap;
+  }
+  .tablet-toolbar__left{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+
+  /* Search pill */
+  .tablet .naowee-searchbox--pill{width:340px;max-width:100%}
+  .tablet .naowee-searchbox--pill .naowee-searchbox__input-wrap{
+    border-radius:9999px;height:36px;padding:4px 12px;
+  }
+
+  /* Toolbar dropdown (filter) */
+  .toolbar-dd-wrap{position:relative;display:inline-flex}
+  .toolbar-dd{
+    position:relative;display:inline-flex;align-items:center;gap:8px;justify-content:space-between;
+    height:36px;padding:4px 12px 4px 14px;
+    background:#fff;border:1px solid #8788ab;border-radius:8px;
+    font-family:'Inter',sans-serif;font-size:12.5px;font-weight:500;
+    color:var(--naowee-color-text-primary,#282834);
+    cursor:pointer;transition:border-color .15s,box-shadow .15s;
+  }
+  .toolbar-dd:hover{border-color:#646587}
+  .toolbar-dd.open,.toolbar-dd:focus-visible{
+    outline:none;border-color:var(--naowee-color-text-accent,#d74009);
+    box-shadow:0 0 0 3px rgba(215,64,9,.15);
+  }
+  .toolbar-dd svg{width:16px;height:16px;flex-shrink:0;color:var(--naowee-color-text-secondary,#646587);transition:transform .2s}
+  .toolbar-dd.open svg{transform:rotate(180deg)}
+  .toolbar-dd-menu{
+    position:absolute;top:calc(100% + 6px);left:0;z-index:50;
+    min-width:100%;background:#fff;white-space:nowrap;
+    border:1px solid var(--naowee-color-border-default,#e7e9f3);border-radius:10px;
+    box-shadow:0 12px 32px rgba(40,40,52,.12);padding:6px;
+    opacity:0;transform:translateY(-6px);pointer-events:none;
+    transition:opacity .18s,transform .18s;
+  }
+  .toolbar-dd-wrap.open .toolbar-dd-menu{opacity:1;transform:translateY(0);pointer-events:auto}
+  .toolbar-dd-item{
+    display:flex;align-items:center;gap:10px;
+    padding:9px 10px;border-radius:6px;
+    font-size:13px;cursor:pointer;transition:background .12s;
+  }
+  .toolbar-dd-item:hover{background:#f5f6fa}
+  .toolbar-dd-item[aria-selected="true"]{
+    background:#fff3e6;color:var(--naowee-color-text-accent,#d74009);font-weight:600;
+  }
+  .toolbar-dd-item .dd-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .toolbar-dd-item .dd-count{
+    margin-left:auto;font-size:10.5px;font-weight:700;
+    padding:1px 7px;border-radius:9999px;
+    background:#f5f6fa;color:var(--naowee-color-text-secondary,#646587);
+  }
+  .toolbar-dd-item[aria-selected="true"] .dd-count{background:#fff;color:var(--naowee-color-text-accent,#d74009)}
+
+  /* Pagination DS small */
+  .naowee-pagination{display:flex;align-items:center;gap:0;font-family:'Inter',sans-serif}
+  .naowee-pagination__pages{display:flex;align-items:center;gap:6px}
+  .naowee-pagination__label,.naowee-pagination__total{font-size:12px;line-height:16px;color:var(--naowee-color-text-secondary,#646587);white-space:nowrap}
+  .naowee-pagination__input{
+    width:48px;height:32px;border:1px solid var(--naowee-color-border-default,#e7e9f3);
+    border-radius:8px;text-align:center;font:inherit;font-size:12px;font-weight:400;
+    color:var(--naowee-color-text-primary,#282834);outline:none;background:#fff;
+    padding:4px 6px;transition:border-color .15s;
+  }
+  .naowee-pagination__input:focus{border-width:2px;border-color:var(--naowee-color-text-accent,#d74009);padding:3px 5px}
+  .naowee-pagination__total strong{color:var(--naowee-color-text-primary,#282834);font-weight:600}
+  .naowee-pagination__controls{display:flex;gap:6px;margin-left:8px}
+  .naowee-pagination__btn{
+    width:32px;height:32px;border:none;border-radius:8px;
+    background:#fff3e6;cursor:pointer;
+    display:inline-flex;align-items:center;justify-content:center;
+    color:var(--naowee-color-text-accent,#d74009);transition:background .15s;
+    flex-shrink:0;padding:0;
+  }
+  .naowee-pagination__btn:hover:not(:disabled){background:#ffdaa3}
+  .naowee-pagination__btn:disabled{opacity:.35;cursor:not-allowed;pointer-events:none}
+  .naowee-pagination__btn svg{width:16px;height:16px}
+
+  /* ═════ TABLA (header rounded, sin stroke, low-contrast hover) ═════ */
+  .prg-table{width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed}
+  .prg-table thead th{
+    font-family:'Inter',sans-serif;
+    font-size:11px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;
+    color:var(--naowee-color-text-secondary,#646587);
+    padding:12px 18px;text-align:left;
+    background:#f5f6fa;border:none;
+  }
+  .prg-table thead th:first-child{border-top-left-radius:12px;border-bottom-left-radius:12px}
+  .prg-table thead th:last-child{border-top-right-radius:12px;border-bottom-right-radius:12px}
+  .prg-table tbody td{
+    padding:16px 18px;font-size:13px;vertical-align:middle;
+    border-bottom:1px solid var(--naowee-color-border-default,#e7e9f3);
+  }
+  .prg-table tbody tr{cursor:pointer;transition:background .12s}
+  .prg-table tbody tr:hover{background:#fafbfd}
+  .prg-table tbody tr:last-child td{border-bottom:none}
+
+  /* Column widths */
+  .prg-table th:nth-child(1),.prg-table td:nth-child(1){width:30%}
+  .prg-table th:nth-child(2),.prg-table td:nth-child(2){width:12%}
+  .prg-table th:nth-child(3),.prg-table td:nth-child(3){width:20%}
+  .prg-table th:nth-child(4),.prg-table td:nth-child(4){width:12%}
+  .prg-table th:nth-child(5),.prg-table td:nth-child(5){width:14%}
+  .prg-table th:nth-child(6),.prg-table td:nth-child(6){width:12%;text-align:right;padding-right:32px}
+
+  /* Program cell */
+  .prg-cell{display:flex;align-items:center;gap:12px;min-width:0}
+  .prg-icon{
+    width:36px;height:36px;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .prg-cell__body{min-width:0}
+  .prg-cell__name{font-weight:700;color:var(--naowee-color-text-primary,#282834);font-size:13.5px}
+  .prg-cell__desc{font-size:11.5px;color:var(--naowee-color-text-secondary,#646587);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .prg-cell__id{font-family:'SF Mono',monospace;font-size:10.5px;color:#9c9ebf;font-weight:500;margin-top:2px}
+
+  /* Rubro cell */
+  .rubro-cell{display:flex;flex-direction:column;gap:6px}
+  .rubro-cell__val{font-family:'Inter',sans-serif;font-size:13.5px;font-weight:700;color:var(--naowee-color-text-primary,#282834)}
+  .rubro-cell__exec{font-size:11px;color:var(--naowee-color-text-secondary,#646587)}
+  .rubro-cell .naowee-progress{width:100%;max-width:160px;height:4px}
+
+  /* Codes counter (no badge) */
+  .codes-counter{
+    font-family:'Inter',sans-serif;
+    font-size:13px;font-weight:600;
+    color:var(--naowee-color-text-primary,#282834);
+  }
+  .codes-counter__total{color:var(--naowee-color-text-secondary,#646587);font-weight:400}
+  .codes-counter--low .codes-counter__val{color:#b42318}
+
+  /* Vigencia */
+  .vigencia-cell{font-size:12.5px}
+  .vigencia-cell__from{color:var(--naowee-color-text-primary,#282834);font-weight:500}
+  .vigencia-cell__to{color:var(--naowee-color-text-secondary,#646587);margin-top:2px;font-size:11.5px}
+
+  /* ═════ Hero card del Gestor de programa ═════
+     Vista enfocada de un solo programa: header (icono + ID/badge + título +
+     meta + CTA) y bottom (4 KPIs separados por dividers verticales sutiles
+     con énfasis en "Ejecutado"). Patrón consistente con el detalle del
+     programa para que el cambio de rol sea inmediatamente reconocible. */
+  .prog-hero{
+    background:#fff;border:1px solid var(--naowee-color-border-default,#e7e9f3);
+    border-radius:16px;margin-bottom:24px;overflow:hidden;
+    box-shadow:0 1px 2px rgba(40,40,52,.03);
+  }
+  .prog-hero__head{
+    display:grid;grid-template-columns:64px 1fr auto;gap:20px;align-items:center;
+    padding:24px 28px;
+  }
+  .prog-hero__ico{
+    width:64px;height:64px;border-radius:14px;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:inset 0 0 0 1px rgba(215,64,9,.12);
+  }
+  .prog-hero__ico svg{width:32px;height:32px}
+  .prog-hero__main{min-width:0}
+  .prog-hero__id-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .prog-hero__id{
+    font-family:'SF Mono',monospace;font-size:11px;
+    color:var(--naowee-color-text-secondary,#646587);font-weight:600;letter-spacing:.4px;
+  }
+  .prog-hero__title{
+    font-size:22px;font-weight:800;letter-spacing:-.01em;line-height:1.2;
+    color:var(--naowee-color-text-primary,#282834);margin:2px 0 6px;
+  }
+  .prog-hero__meta{
+    font-size:13px;color:var(--naowee-color-text-secondary,#646587);line-height:1.4;
+  }
+  .prog-hero__divider{
+    height:1px;background:var(--naowee-color-border-default,#e7e9f3);margin:0 28px;
+  }
+  .prog-hero__kpis{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:0;padding:18px 4px;
+  }
+  @media(max-width:900px){.prog-hero__kpis{grid-template-columns:repeat(2,1fr)}}
+  .prog-hero__kpi{
+    padding:6px 24px;position:relative;
+  }
+  .prog-hero__kpi + .prog-hero__kpi::before{
+    content:"";position:absolute;left:0;top:8px;bottom:8px;width:1px;
+    background:var(--naowee-color-border-default,#e7e9f3);
+  }
+  .prog-hero__kpi-lbl{
+    font-size:10.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;
+    color:var(--naowee-color-text-secondary,#646587);
+  }
+  .prog-hero__kpi-val{
+    font-family:'Inter',sans-serif;font-size:24px;font-weight:700;
+    color:var(--naowee-color-text-primary,#282834);
+    letter-spacing:-.02em;margin-top:4px;line-height:1.1;
+  }
+  .prog-hero__kpi-sub{font-size:11.5px;color:var(--naowee-color-text-secondary,#646587);margin-top:2px}
+  .prog-hero__kpi--accent .prog-hero__kpi-val{font-size:28px;color:var(--naowee-color-text-accent,#d74009)}
+
+  /* Acciones — botón único Editar accent naranja, tooltip via .naowee-tooltip del DS */
+  .acciones-cell{display:flex;gap:4px;justify-content:flex-end}
+  .acciones-cell__btn{
+    width:32px;height:32px;border:none;background:transparent;
+    border-radius:8px;color:var(--naowee-color-text-accent,#d74009);
+    cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
+    transition:background .15s,color .15s;
+  }
+  .acciones-cell__btn:hover{background:#fff3e6}
+
+  .tablet-foot{
+    display:flex;justify-content:space-between;align-items:center;
+    font-size:12.5px;color:var(--naowee-color-text-secondary,#646587);
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <button class="burger-btn" onclick="document.getElementById('sidebar').classList.toggle('collapsed')" aria-label="Toggle sidebar">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="#282834" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+      <img src="shared/logos/ministerio.svg" alt="Ministerio del Deporte" class="sb-logo-img"/>
+      <div class="logo-sep"></div>
+      <img src="shared/logos/suid.png" alt="SUID" class="sb-logo-img"/>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">INCENTIVOS</div>
+      <div class="nav-row" data-role="admin programa" onclick="fadeAndGo('incentivo-02-dashboard.html')">
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="11" rx="1.5"/><rect x="13" y="3" width="8" height="6" rx="1.5"/><rect x="3" y="16" width="8" height="5" rx="1.5"/><rect x="13" y="11" width="8" height="10" rx="1.5"/></svg></div>
+        <span class="lbl">Dashboard</span>
+      </div>
+      <div class="nav-row active" data-role="all">
+        <div class="active-bar"></div>
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d74009" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M6 7V5a1 1 0 011-1h10a1 1 0 011 1v2"/><line x1="3" y1="12" x2="21" y2="12"/></svg></div>
+        <span class="lbl" id="navProgramasLbl">Programas</span>
+      </div>
+      <div class="nav-row" data-role="superadmin" onclick="fadeAndGo('incentivo-07-codigos.html')">
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 012-2h14a2 2 0 012 2v2a1.5 1.5 0 000 3v3a2 2 0 01-2 2H5a2 2 0 01-2-2v-3a1.5 1.5 0 000-3V8z"/><line x1="13" y1="6" x2="13" y2="9" stroke-dasharray="1.5 1.5"/><line x1="13" y1="11" x2="13" y2="13" stroke-dasharray="1.5 1.5"/><line x1="13" y1="15" x2="13" y2="18" stroke-dasharray="1.5 1.5"/></svg></div>
+        <span class="lbl">Códigos</span>
+      </div>
+      <div class="nav-row" data-role="superadmin" onclick="fadeAndGo('incentivo-12-asignaciones.html')">
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="1.5"/><circle cx="6" cy="12" r="1.5"/><circle cx="6" cy="18" r="1.5"/><line x1="6" y1="7.5" x2="6" y2="10.5"/><line x1="6" y1="13.5" x2="6" y2="16.5"/><line x1="11" y1="6" x2="20" y2="6"/><line x1="11" y1="12" x2="18" y2="12"/><line x1="11" y1="18" x2="16" y2="18"/></svg></div>
+        <span class="lbl">Historial</span>
+      </div>
+      <div class="nav-row" data-role="admin" onclick="fadeAndGo('incentivo-15-reporteria.html')">
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-5"/><circle cx="18" cy="9" r="1.5"/></svg></div>
+        <span class="lbl">Reportería</span>
+      </div>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="nav-row" onclick="fadeAndGo('incentivo-01-login.html')">
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <span class="lbl">Cerrar sesión</span>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="top-header">
+      <div class="profile-switcher">
+        <div class="user-chip">
+          <div class="ava"><div class="ava-ring" style="background:#c4b5fd;color:#4c1d95">DV</div><div class="ava-dot"></div></div>
+          <div class="user-info"><span class="user-name">Doug Vargas</span><span class="user-role">Gestor de incentivos</span></div>
+          <button class="user-chip__chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>
+        </div>
+      </div>
+    </header>
+
+    <div class="page">
+
+      <div class="page-header">
+        <div>
+          <h1 class="page-title" id="pageTitle">Programas de incentivos</h1>
+          <p class="page-sub" id="pageSub">Administra todos los programas parametrizados. Cada programa tiene su propio rubro, condiciones de elegibilidad e inventario de códigos.</p>
+        </div>
+        <div class="page-header__actions" data-role="admin">
+          <!-- SOLO DEMO: borra lo creado en este navegador y deja los programas de ejemplo -->
+          <button type="button" id="btnDemoReset" class="demo-reset" onclick="demoResetClick(this)" hidden>
+            <span class="naowee-badge naowee-badge--caution naowee-badge--small">Solo demo</span>
+            <span class="demo-reset__label">Reiniciar demo</span>
+          </button>
+          <button id="btnCrearPrograma" class="naowee-btn naowee-btn--loud naowee-btn--large" onclick="openWizard()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nuevo programa
+          </button>
+        </div>
+      </div>
+
+      <!-- ═════════════════════════════════════════════════════════════
+           VISTA "GESTOR DE PROGRAMA" — hero card del único programa que
+           tiene asignado. Reemplaza el grid de KPIs y la tabla cuando el
+           rol activo es 'programa'. Se llena dinámicamente con
+           hydrateProgramHero() en init.
+           ═════════════════════════════════════════════════════════════ -->
+      <section class="prog-hero" data-role="legacy" id="progHero" hidden>
+        <header class="prog-hero__head">
+          <div class="prog-hero__ico" id="progHeroIco" style="background:#fff3e6;color:#d74009"></div>
+          <div class="prog-hero__main">
+            <div class="prog-hero__id-row">
+              <span class="prog-hero__id" id="progHeroId">—</span>
+              <span class="naowee-badge naowee-badge--positive naowee-badge--quiet naowee-badge--small" id="progHeroBadge">
+                <span class="naowee-badge__dot"></span>
+                <span id="progHeroBadgeText">—</span>
+              </span>
+            </div>
+            <h2 class="prog-hero__title" id="progHeroTitle">—</h2>
+            <p class="prog-hero__meta" id="progHeroMeta">—</p>
+          </div>
+          <button class="naowee-btn naowee-btn--loud naowee-btn--large" id="progHeroCTA">
+            Ver detalle completo
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </header>
+        <div class="prog-hero__divider"></div>
+        <div class="prog-hero__kpis">
+          <div class="prog-hero__kpi">
+            <div class="prog-hero__kpi-lbl">Rubro total</div>
+            <div class="prog-hero__kpi-val" id="progHeroRubro">—</div>
+            <div class="prog-hero__kpi-sub" id="progHeroRubroSub">—</div>
+          </div>
+          <div class="prog-hero__kpi prog-hero__kpi--accent">
+            <div class="prog-hero__kpi-lbl">Ejecutado</div>
+            <div class="prog-hero__kpi-val" id="progHeroExec">—</div>
+            <div class="naowee-progress naowee-progress--positive" style="margin-top:6px"><div class="naowee-progress__fill" id="progHeroExecFill" style="width:0%"></div></div>
+            <div class="prog-hero__kpi-sub" style="margin-top:4px" id="progHeroExecSub">—</div>
+          </div>
+          <div class="prog-hero__kpi">
+            <div class="prog-hero__kpi-lbl">Inventario</div>
+            <div class="prog-hero__kpi-val" id="progHeroInv" style="color:var(--naowee-color-text-accent,#d74009)">—</div>
+            <div class="prog-hero__kpi-sub">códigos disponibles</div>
+          </div>
+          <div class="prog-hero__kpi">
+            <div class="prog-hero__kpi-lbl">Revertidos</div>
+            <div class="prog-hero__kpi-val" id="progHeroRev">—</div>
+            <div class="prog-hero__kpi-sub" id="progHeroRevSub">—</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tablet: toolbar + table + pagination — sólo para admin (gestor
+           de incentivos). Para gestor de programa se reemplaza por el
+           prog-hero arriba. -->
+      <section class="tablet" data-role="admin programa">
+        <div class="tablet-toolbar">
+          <div class="tablet-toolbar__left">
+            <div class="naowee-searchbox naowee-searchbox--small naowee-searchbox--pill">
+              <div class="naowee-searchbox__input-wrap">
+                <span class="naowee-searchbox__icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                </span>
+                <input type="text" class="naowee-searchbox__input" placeholder="Buscar por nombre o código (PRG-…)" id="searchInput" oninput="renderRows()"/>
+                <button type="button" class="naowee-searchbox__clear" onclick="clearSearch('searchInput')" aria-label="Limpiar búsqueda">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="toolbar-dd-wrap" id="ddGestorWrap">
+              <button type="button" class="toolbar-dd" onclick="toggleDD('ddGestorWrap')">
+                <span id="ddGestorLabel">Gestor: Todos</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="toolbar-dd-menu" role="listbox" id="ddGestorMenu"></div>
+            </div>
+            <div class="toolbar-dd-wrap" id="ddOperWrap">
+              <button type="button" class="toolbar-dd" onclick="toggleDD('ddOperWrap')">
+                <span id="ddOperLabel">Operador: Todos</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="toolbar-dd-menu" role="listbox" id="ddOperMenu"></div>
+            </div>
+            <div class="toolbar-dd-wrap" id="ddStatusWrap">
+              <button type="button" class="toolbar-dd" onclick="toggleDD('ddStatusWrap')">
+                <span id="ddStatusLabel">Estado: Todos</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="toolbar-dd-menu" role="listbox">
+                <div class="toolbar-dd-item" role="option" aria-selected="true" data-val="all" onclick="setStatus('all','Estado: Todos')">Todos</div>
+                <div class="toolbar-dd-item" role="option" data-val="active" onclick="setStatus('active','Activos')"><span class="dd-dot" style="background:#15803d"></span>Activos</div>
+                <div class="toolbar-dd-item" role="option" data-val="draft" onclick="setStatus('draft','Borrador')"><span class="dd-dot" style="background:#9c9ebf"></span>Borrador</div>
+                <div class="toolbar-dd-item" role="option" data-val="closed" onclick="setStatus('closed','Cerrados')"><span class="dd-dot" style="background:#1f78d1"></span>Cerrados</div>
+              </div>
+            </div>
+          </div>
+          <div class="naowee-pagination naowee-pagination--small">
+            <div class="naowee-pagination__pages">
+              <span class="naowee-pagination__label">Página</span>
+              <input type="text" class="naowee-pagination__input" id="pagInput" value="1" inputmode="numeric"/>
+              <span class="naowee-pagination__total">de <strong id="pagTotal">1</strong></span>
+            </div>
+            <div class="naowee-pagination__controls">
+              <button type="button" class="naowee-pagination__btn" id="pagPrev" onclick="changePage(-1)" aria-label="Anterior" disabled>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+              </button>
+              <button type="button" class="naowee-pagination__btn" id="pagNext" onclick="changePage(1)" aria-label="Siguiente" disabled>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <table class="prg-table">
+          <thead>
+            <tr>
+              <th>Programa</th>
+              <th>Estado</th>
+              <th>Rubro / ejecución</th>
+              <th>Códigos</th>
+              <th>Vigencia</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="prgBody"></tbody>
+        </table>
+
+        <div class="tablet-foot">
+          <div id="rowCountFoot">Mostrando 8 de 8 programas</div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<script src="shared/programs-data.js?v=20260922203322"></script>
+<script>
+/* ═══ PROGRAMS DATA (consumed from shared/programs-data.js) ═══ */
+const PROGRAMS = window.PROGRAMS_DATA.map(p => ({
+  id: p.id, name: p.name, desc: p.shortDesc,
+  iconBg: p.iconBg, iconColor: p.iconColor,
+  status: p.status, rubro: p.rubro, exec: p.exec,
+  codes: p.codes, from: p.from, to: p.to, team: p.team || null
+}));
+
+const STATUS_META = {
+  active: { label:'Activo', variant:'positive' },
+  draft:  { label:'Borrador', variant:'neutral' },
+  closed: { label:'Cerrado', variant:'informative' }
+};
+
+const state = { status: 'all', gestor: 'all', operador: 'all', search: '', page: 1, pageSize: 10 };
+
+/* Filtros por equipo: las opciones salen de los equipos de los programas
+   (gestor de programa y operadores asignados en el wizard). */
+function teamOptions(kind){
+  const map = new Map();
+  PROGRAMS.forEach(p => {
+    const t = p.team; if(!t) return;
+    if(kind === 'gestor' && t.gestorKey) map.set(t.gestorKey, (t.gestor || t.gestorKey).split(' · ')[0]);
+    if(kind === 'operador') (t.operatorKeys || []).forEach((k, i) => map.set(k, ((t.operators || [])[i] || k).split(' · ')[0]));
+  });
+  return [...map.entries()].sort((a, b) => a[1].localeCompare(b[1], 'es'));
+}
+const TEAM_DD = {
+  gestor:   { wrap: 'ddGestorWrap', menu: 'ddGestorMenu', label: 'ddGestorLabel', prefix: 'Gestor' },
+  operador: { wrap: 'ddOperWrap',   menu: 'ddOperMenu',   label: 'ddOperLabel',   prefix: 'Operador' }
+};
+function renderTeamFilters(){
+  Object.entries(TEAM_DD).forEach(([kind, cfg]) => {
+    const menu = document.getElementById(cfg.menu);
+    if(!menu) return;
+    const opts = [['all', 'Todos'], ...teamOptions(kind), ['none', 'Sin asignar']];
+    if(state[kind] !== 'all' && !opts.some(o => o[0] === state[kind])) state[kind] = 'all';
+    menu.innerHTML = opts.map(([v, l]) =>
+      `<div class="toolbar-dd-item" role="option" aria-selected="${state[kind] === v}" data-val="${v}" onclick="setTeamFilter('${kind}','${v}')">${l}</div>`).join('');
+    const cur = opts.find(o => o[0] === state[kind]);
+    document.getElementById(cfg.label).textContent = `${cfg.prefix}: ${cur ? cur[1] : 'Todos'}`;
+  });
+}
+function setTeamFilter(kind, val){
+  state[kind] = val; state.page = 1;
+  renderTeamFilters();
+  toggleDD(TEAM_DD[kind].wrap);
+  renderRows();
+}
+
+function toggleDD(wrapId){
+  const wrap = document.getElementById(wrapId);
+  if(!wrap) return;
+  const wasOpen = wrap.classList.contains('open');
+  document.querySelectorAll('.toolbar-dd-wrap.open').forEach(w => w.classList.remove('open'));
+  document.querySelectorAll('.toolbar-dd.open').forEach(b => b.classList.remove('open'));
+  if(!wasOpen){
+    wrap.classList.add('open');
+    wrap.querySelector('.toolbar-dd').classList.add('open');
+  }
+}
+document.addEventListener('click', e => {
+  if(!e.target.closest('.toolbar-dd-wrap')){
+    document.querySelectorAll('.toolbar-dd-wrap.open').forEach(w => w.classList.remove('open'));
+    document.querySelectorAll('.toolbar-dd.open').forEach(b => b.classList.remove('open'));
+  }
+});
+
+function setStatus(val, label){
+  state.status = val; state.page = 1;
+  document.getElementById('ddStatusLabel').textContent = label;
+  document.querySelectorAll('#ddStatusWrap .toolbar-dd-item').forEach(it => {
+    it.setAttribute('aria-selected', it.dataset.val === val ? 'true' : 'false');
+  });
+  toggleDD('ddStatusWrap');
+  renderRows();
+}
+
+function clearSearch(inputId){
+  const inp = document.getElementById(inputId);
+  if(!inp) return;
+  inp.value = '';
+  inp.dispatchEvent(new Event('input', { bubbles: true }));
+  inp.focus();
+}
+
+function filteredPrograms(){
+  const q = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
+  // Si el rol activo tiene programas asignados (ej: Gestor de programa),
+  // restringir la lista a esos IDs antes de aplicar filtros del usuario.
+  const allowed = (window.getRoleAssignments && window.getRoleAssignments()) || null;
+  return PROGRAMS.filter(p => {
+    if(allowed && !allowed.includes(p.id)) return false;
+    if(state.status !== 'all' && p.status !== state.status) return false;
+    const t = p.team || {};
+    if(state.gestor === 'none' && t.gestorKey) return false;
+    if(state.gestor !== 'all' && state.gestor !== 'none' && t.gestorKey !== state.gestor) return false;
+    const ops = t.operatorKeys || [];
+    if(state.operador === 'none' && ops.length) return false;
+    if(state.operador !== 'all' && state.operador !== 'none' && !ops.includes(state.operador)) return false;
+    // Búsqueda solo por nombre o código del programa (PRG-AAAA-NNN)
+    if(q && !`${p.name} ${p.id}`.toLowerCase().includes(q)) return false;
+    return true;
+  });
+}
+
+/* Adapta header y sidebar al rol activo. Para Gestor de programa
+   cambiamos título/subtítulo y label del nav. */
+function applyRoleHeader(){
+  const role = window.currentRole && window.currentRole();
+  const title = document.getElementById('pageTitle');
+  const sub   = document.getElementById('pageSub');
+  const navLbl = document.getElementById('navProgramasLbl');
+  const hero   = document.getElementById('progHero');
+  const gestorDD = document.getElementById('ddGestorWrap');
+  if(gestorDD) gestorDD.hidden = role === 'programa'; // es él mismo
+  if(hero) hero.hidden = true; // la tarjeta única se reemplazó por la lista
+  if(role === 'programa'){
+    if(title) title.textContent = 'Mis programas';
+    if(sub)   sub.textContent   = 'Los programas donde eres gestor de programa. Desde cada uno gestionas su equipo, incentivos, condiciones y códigos.';
+    if(navLbl) navLbl.textContent = 'Mis programas';
+  } else {
+    if(title) title.textContent = 'Programas de incentivos';
+    if(sub)   sub.textContent   = 'Administra todos los programas parametrizados. Cada programa tiene su propio rubro, condiciones de elegibilidad e inventario de códigos.';
+    if(navLbl) navLbl.textContent = 'Programas';
+    if(hero) hero.hidden = true;
+  }
+}
+
+/* Llena el prog-hero con los datos del primer programa asignado al rol.
+   Usa los mismos formatters/iconos que la lista para mantener consistencia. */
+function hydrateProgramHero(){
+  const ids = (window.getRoleAssignments && window.getRoleAssignments()) || [];
+  if(!ids.length) return;
+  const p = window.PROGRAMS_DATA.find(x => x.id === ids[0]);
+  if(!p) return;
+  const cat = window.getProgramCategory(p);
+  const ico = (window.CAT_ICONS && window.CAT_ICONS[cat]) || '';
+  const set = (id, txt) => { const el = document.getElementById(id); if(el) el.textContent = txt; };
+  const setHTML = (id, html) => { const el = document.getElementById(id); if(el) el.innerHTML = html; };
+  // Icono + colores categóricos del programa
+  const icoEl = document.getElementById('progHeroIco');
+  if(icoEl){
+    icoEl.style.background = p.iconBg || '#fff3e6';
+    icoEl.style.color = p.iconColor || '#d74009';
+    icoEl.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${ico}</svg>`;
+  }
+  set('progHeroId', p.id);
+  set('progHeroTitle', p.name);
+  const noFrom = !p.from || p.from === '—', noTo = !p.to || p.to === '—';
+  set('progHeroMeta', `${p.desc} · Vigencia ${noFrom && noTo ? 'sin fecha de cierre' : `${noFrom ? '—' : p.from} → ${noTo ? 'sin cierre' : p.to}`}`);
+  // Status badge — reutilizo el mapa global STATUS_META
+  const meta = STATUS_META[p.status] || STATUS_META.draft;
+  const badge = document.getElementById('progHeroBadge');
+  if(badge) badge.className = `naowee-badge naowee-badge--${meta.variant} naowee-badge--quiet naowee-badge--small`;
+  set('progHeroBadgeText', meta.label);
+  // KPIs financieros / inventario
+  const fmt = (v) => '$' + Number(v||0).toLocaleString('es-CO');
+  set('progHeroRubro', fmt(p.rubro));
+  set('progHeroRubroSub', `${p.codes.total.toLocaleString('es-CO')} códigos × ${fmt(p.rubro / Math.max(p.codes.total,1))}`);
+  const execPct = p.rubro > 0 ? Math.round((p.exec / p.rubro) * 100) : 0;
+  set('progHeroExec', fmt(p.exec));
+  const fill = document.getElementById('progHeroExecFill');
+  if(fill) fill.style.width = execPct + '%';
+  set('progHeroExecSub', `${execPct}% · ${p.codes.asig} asignaciones`);
+  set('progHeroInv', p.codes.avail);
+  set('progHeroRev', p.codes.rev);
+  const totalRevPct = p.codes.total > 0 ? ((p.codes.rev/p.codes.total)*100).toFixed(1) : '0.0';
+  set('progHeroRevSub', `${totalRevPct}% del total`);
+  // CTA → detalle completo
+  const cta = document.getElementById('progHeroCTA');
+  if(cta) cta.onclick = () => fadeAndGo(`incentivo-05-programa-detalle.html?id=${p.id}`);
+}
+
+function renderRows(){
+  const filtered = filteredPrograms();
+  const total = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(total / state.pageSize));
+  if(state.page > totalPages) state.page = totalPages;
+  const start = (state.page - 1) * state.pageSize;
+  const end = Math.min(start + state.pageSize, total);
+  const slice = filtered.slice(start, end);
+
+  const body = document.getElementById('prgBody');
+  if(!slice.length){
+    body.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:48px;color:var(--naowee-color-text-secondary,#646587)">Sin programas con estos filtros.</td></tr>`;
+  } else {
+    body.innerHTML = slice.map(p => {
+      const execPct = p.rubro ? Math.round((p.exec/p.rubro)*100) : 0;
+      const meta = STATUS_META[p.status];
+      const codesLow = p.codes.total > 0 && p.codes.avail > 0 && p.codes.avail/p.codes.total < 0.15;
+      return `
+        <tr onclick="fadeAndGo('incentivo-05-programa-detalle.html?id=${p.id}')">
+          <td>
+            <div class="prg-cell">
+              <div class="prg-icon" style="background:${p.iconBg};color:${p.iconColor}">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${window.CAT_ICONS[window.getProgramCategory(p)] || window.CAT_ICONS['Beca']}</svg>
+              </div>
+              <div class="prg-cell__body">
+                <div class="prg-cell__name">${p.name}</div>
+                <div class="prg-cell__desc">${p.desc}</div>
+                <div class="prg-cell__id">${p.id}</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <span class="naowee-badge naowee-badge--${meta.variant} naowee-badge--quiet naowee-badge--small">
+              <span class="naowee-badge__dot"></span>
+              ${meta.label}
+            </span>
+          </td>
+          <td>
+            <div class="rubro-cell">
+              <span class="rubro-cell__val">${p.rubro ? '$' + Number(p.rubro).toLocaleString('es-CO') : '—'}</span>
+              ${p.rubro ? `<div class="naowee-progress naowee-progress--positive"><div class="naowee-progress__fill" style="width:${execPct}%"></div></div>
+                <span class="rubro-cell__exec">${execPct}% · $${Number(p.exec||0).toLocaleString('es-CO')}</span>` : '<span class="rubro-cell__exec">Sin configurar</span>'}
+            </div>
+          </td>
+          <td>
+            ${p.codes.total === 0
+              ? '<span style="color:#9c9ebf;font-size:12.5px">—</span>'
+              : `<span class="codes-counter${codesLow ? ' codes-counter--low':''}"><span class="codes-counter__val">${p.codes.avail}</span><span class="codes-counter__total"> / ${p.codes.total}</span></span>`
+            }
+          </td>
+          <td>
+            <div class="vigencia-cell">
+              ${(!p.from || p.from === '—') && (!p.to || p.to === '—')
+                ? `<div class="vigencia-cell__from">Sin fecha de cierre</div>`
+                : `<div class="vigencia-cell__from">${p.from}</div><div class="vigencia-cell__to">→ ${!p.to || p.to === '—' ? 'sin cierre' : p.to}</div>`}
+            </div>
+          </td>
+          <td>
+            <div class="acciones-cell">
+              <span class="naowee-tooltip">
+                <button class="acciones-cell__btn" onclick="event.stopPropagation();fadeAndGo('incentivo-05-programa-detalle.html?id=${p.id}')" aria-label="Ver programa ${p.id}">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+                <span class="naowee-tooltip__content">Ver</span>
+              </span>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  document.getElementById('rowCountFoot').textContent = total === 0 ? 'Sin resultados' : `Mostrando ${start + 1}–${end} de ${total} programas`;
+  document.getElementById('pagInput').value = state.page;
+  document.getElementById('pagTotal').textContent = totalPages;
+  document.getElementById('pagPrev').disabled = state.page <= 1;
+  document.getElementById('pagNext').disabled = state.page >= totalPages;
+}
+
+function changePage(delta){
+  const total = filteredPrograms().length;
+  const totalPages = Math.max(1, Math.ceil(total / state.pageSize));
+  state.page = Math.max(1, Math.min(totalPages, state.page + delta));
+  renderRows();
+}
+
+document.addEventListener('input', e => {
+  if(e.target.id === 'pagInput'){
+    const v = parseInt(e.target.value, 10);
+    if(!isNaN(v)){
+      const total = filteredPrograms().length;
+      const totalPages = Math.max(1, Math.ceil(total / state.pageSize));
+      state.page = Math.max(1, Math.min(totalPages, v));
+      renderRows();
+    }
+  }
+});
+
+/* Diferir el primer render post-paint.
+   Deja que el browser pinte sidebar + header (con view-transition)
+   antes de hidratar la tabla — evita que la animación de la barra
+   naranja se vea tosca al venir de Dashboard.
+   Usamos setTimeout(0) porque rAF se throttle durante la transición
+   cross-document y la tabla quedaría vacía. */
+// El header de la página y el hero del programa dependen del rol activo.
+// profile-switcher.js invoca window.onRoleApplied(role) tras cargar/cambiar
+// el rol → garantiza que se ejecute en el orden correcto sin depender del
+// timing de setTimeout vs scripts deferred.
+window.onRoleApplied = function(role){
+  applyRoleHeader();
+  renderRows();
+};
+
+// Wizard llama esto al guardar borrador → re-sincroniza PROGRAMS desde
+// PROGRAMS_DATA (que ya fue mutado con unshift) y va a la primera página.
+window.onDraftSaved = function(){
+  PROGRAMS.length = 0;
+  window.PROGRAMS_DATA.forEach(p => PROGRAMS.push({
+    id: p.id, name: p.name, desc: p.shortDesc,
+    iconBg: p.iconBg, iconColor: p.iconColor,
+    status: p.status, rubro: p.rubro, exec: p.exec,
+    codes: p.codes, from: p.from, to: p.to, team: p.team || null
+  }));
+  state.page = 1;
+  renderTeamFilters();
+  renderRows();
+  refreshDemoReset();
+};
+// Al activar (o guardar cambios) también se refresca la lista.
+window.onProgramCreated = window.onDraftSaved;
+
+/* SOLO DEMO · Reiniciar: dos clics (el segundo confirma) para no borrar por error. */
+function refreshDemoReset(){
+  const btn = document.getElementById('btnDemoReset');
+  if(!btn) return;
+  const n = typeof window.demoProgramsCount === 'function' ? window.demoProgramsCount() : 0;
+  btn.hidden = !n;
+  btn.title = `Borra los ${n} programa(s) creados o editados en este navegador y las entregas registradas en la demo.`;
+}
+function demoResetClick(btn){
+  const label = btn.querySelector('.demo-reset__label');
+  if(!btn.dataset.armed){
+    btn.dataset.armed = '1';
+    btn.classList.add('is-armed');
+    label.textContent = `¿Borrar ${window.demoProgramsCount()} programa(s) creados? Clic para confirmar`;
+    clearTimeout(btn._t);
+    btn._t = setTimeout(() => { delete btn.dataset.armed; btn.classList.remove('is-armed'); label.textContent = 'Reiniciar demo'; }, 4000);
+    return;
+  }
+  window.resetDemoData();
+  location.reload();
+}
+setTimeout(refreshDemoReset, 0);
+// Render inmediato por si el switcher aún no ha cargado (fallback rápido).
+setTimeout(() => { applyRoleHeader(); renderTeamFilters(); renderRows(); }, 0);
+
+function fadeAndGo(url){window.location.href=url}
+</script>
+<script src="shared/programa-wizard.js?v=20260922194132" defer></script>
+<script src="shared/profile-switcher.js?v=20260922203322" defer></script>
+
+<script src="shared/footer-scroll.js" defer></script>
+<script src="shared/tour.js?v=20260922203322" defer></script>
+
+<!-- Footer flotante Naowee -->
+<div class="naowee-floating-footer" role="contentinfo" aria-label="Pie de página Naowee">
+  <img src="shared/logos/naowee.svg" alt="Naowee" class="naowee-floating-footer__logo"/>
+  <div class="naowee-floating-footer__sep"></div>
+  <span class="naowee-floating-footer__text">Todos los derechos reservados <strong>&copy; 2026</strong></span>
+</div>
+
+</body>
+</html>

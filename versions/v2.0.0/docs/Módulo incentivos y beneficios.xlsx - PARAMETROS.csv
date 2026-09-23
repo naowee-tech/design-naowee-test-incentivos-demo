@@ -1,0 +1,74 @@
+Seccion,Campo,Valor,Notas
+ALCANCE,Scope,Scope 1,"Parametrización por admin + asignación por operador en campo. Sin redención deportista, sin notificaciones, sin dashboard KPI."
+ALCANCE,Fuera de scope,Redención por deportista,No se construye tab incentivos en perfil SUID
+ALCANCE,Fuera de scope,Notificaciones email/SMS,Sólo aparece en el perfil del usuario del sistema
+ALCANCE,Fuera de scope,Dashboard KPIs,Identificado como nice-to-have pero no incluido
+ALCANCE,Fuera de scope,Rol visualizador,Nice-to-have fuera de scope 1
+ROLES,Administrador,"Gestor de incentivos — persona del ministerio, jerarquía nacional",Una sola persona centralizada
+ROLES,Operador,"Responsable en campo — designado por evento/programa",Múltiples distribuidos
+ROLES,Excluídos,"Deportistas, entrenadores",No interactúan con el módulo
+ROL-ADMIN,Responsabilidad,Parametrizar programas,Datos + rubro + tipos + condiciones + códigos
+ROL-ADMIN,Responsabilidad,Cargar códigos por masiva,Única vía aceptada (Excel)
+ROL-ADMIN,Responsabilidad,Revertir asignaciones,Con motivo obligatorio
+ROL-ADMIN,Responsabilidad,Editar/ampliar rubro y códigos,Mantener valor monetario unitario consistente
+ROL-OPERADOR,Responsabilidad,Buscar usuario por cédula,Principal; también nombre/tipo doc
+ROL-OPERADOR,Responsabilidad,Asignar incentivo al usuario elegible,Sistema valida condiciones automáticamente
+ROL-OPERADOR,Responsabilidad,Subir evidencia (foto o archivo),Foto del deportista recibiendo o certificado
+ROL-OPERADOR,Restricción,No puede revertir,Debe contactar al admin
+ROL-OPERADOR,Restricción,No puede editar programas ni cargar códigos,Sólo consulta + asigna
+ESTADOS-CODIGO,Sin asignación,Disponible,Inventario listo para usar
+ESTADOS-CODIGO,Asignado,Entregado a usuario,Marcado como usado
+ESTADOS-CODIGO,Revertido,Retornado al inventario,Sólo admin puede; requiere motivo
+ESTADOS-CODIGO,Vencido,POR DEFINIR,Vigencia del código pendiente de confirmar con ministerio
+ESTADOS-PROGRAMA,Borrador,POR CONFIRMAR,Supuesto razonable
+ESTADOS-PROGRAMA,Activo,Recibiendo asignaciones,Confirmado implícitamente
+ESTADOS-PROGRAMA,Pausado,POR CONFIRMAR,Supuesto razonable
+ESTADOS-PROGRAMA,Cerrado,POR CONFIRMAR,Supuesto razonable
+RUBRO,Definición,Cantidad de dinero asignada por ministerio al programa,Único por programa
+RUBRO,Contabilización,Descuento automático por asignación,El sistema lo lleva
+RUBRO,Ampliable,Sí,Agregando códigos con valor monetario consistente
+TIPOS-INCENTIVO,Categoría,Cualitativo,"ej. pase al parque, ingreso evento"
+TIPOS-INCENTIVO,Categoría,Monetario,"ej. beca $1.000.000, bono $500.000"
+TIPOS-INCENTIVO,Categoría,Ambos,Categoría cualitativa con valor asociado
+TIPOS-INCENTIVO,Ejemplos reales,"Bonos, becas, kits, transporte, inscripción, descuento, dinero, pases a parques",No hay lista cerrada
+CONDICIONES,Dimensión,Edad,"ej. mayor de 18"
+CONDICIONES,Dimensión,Género,-
+CONDICIONES,Dimensión,Estrato,-
+CONDICIONES,Dimensión,Disciplina,-
+CONDICIONES,Dimensión,Categoría deportiva,"ej. prejuvenil, juvenil"
+CONDICIONES,Dimensión,Zona,urbana / rural
+CONDICIONES,Dimensión,Logros,"ej. medalla oro/plata"
+CONDICIONES,Dimensión,Matrícula,activa / inactiva
+CONDICIONES,Combinación,AND / OR,Soporta reglas combinadas
+CODIGOS,Origen,Generados externamente por ministerio,Se cargan al sistema
+CODIGOS,Carga,Masiva vía Excel,Obligatorio; individual no es eficiente
+CODIGOS,Formato Excel,POR CONFIRMAR,Danna consulta — referencia Juegos Intercolegiados
+CODIGOS,Unicidad,Único por asignación,No se reusa entre programas
+CODIGOS,Vigencia,POR DEFINIR,Pendiente consulta ministerio
+CODIGOS,Asignación,POR DECIDIR,Automática (FIFO) vs manual (operador elige)
+ASIGNACION,Búsqueda,Por cédula (principal),"También tipo doc, nombre"
+ASIGNACION,Validación,Automática por condiciones del programa,Usuario no cumple = no aparece en resultados
+ASIGNACION,Evidencia,Foto o archivo,"Foto del deportista recibiendo O certificado/documento"
+ASIGNACION,Evidencia_tipo,NO es validación biométrica,Es registro de entrega
+ASIGNACION,Notificación,En perfil del sistema del usuario,NO email NO SMS
+REVERSION,Quién puede,Sólo administrador,Operador NO puede
+REVERSION,Requisito,Motivo obligatorio,Lista cerrada o libre — POR DEFINIR
+REVERSION,Ventana tiempo,POR DEFINIR,Supuesto actual: sin ventana
+REVERSION,Estado post,Código vuelve a Sin asignación,Reasignable
+MULTI-INCENTIVO,Acumulación,Permitida entre programas distintos,Un deportista puede tener varios vigentes
+MULTI-INCENTIVO,Exclusión,No existe regla "si A no B",Confirmado por Danna
+MULTI-INCENTIVO,Cupo por programa,POR DEFINIR,Supuesto: 1 por programa por persona
+AUDITORIA,Por asignación,"Quién, cuándo, dónde, dispositivo, foto avatar",Confirmado
+AUDITORIA,Exportes,"PDF, Excel, SVG",Confirmado
+KPIS-FUTUROS,Inventario disponible,Nice-to-have,Fuera scope 1
+KPIS-FUTUROS,Asignados,Nice-to-have,Fuera scope 1
+KPIS-FUTUROS,Revertidos / % reversión,Nice-to-have,Fuera scope 1
+KPIS-FUTUROS,% ejecución rubro,Nice-to-have,Fuera scope 1
+KPIS-FUTUROS,Alertas anulación excesiva,Nice-to-have,Fuera scope 1
+ADJUNTOS,Video reunión,Incentivos - 2026_04_22 14_00 GMT-05_00 - Recording.vtt,Transcripción literal
+ADJUNTOS,Notas Gemini,Incentivos_ 2026_04_22 13_59 GMT-05_00 - Notas de Gemini.md,Síntesis automática
+ADJUNTOS,BPMN módulo,FLUJO MODULO INCENTIVOS (1).pdf,2 carriles: Parametrización + Gestión
+ADJUNTOS,BPMN estados,FLUJO DE ESTADOS INCENTIVOS (1).pdf,Sin asignación → Asignado → Revertido → fin
+FLUJO-GENERAL,A-Parametrización,"1. Datos programa → 2. Rubro → 3. Tipos → 4. Condiciones → 5. Códigos (si aplica, masiva)",Admin
+FLUJO-GENERAL,B-Gestión,"1. Buscar usuario por cédula → 2. Validar condiciones → 3. Seleccionar tipo → 4. Asignar código → 5. Subir evidencia → 6. Confirmar",Operador en campo
+FLUJO-ESTADOS,Código,Sin asignación → Asignado → Revertido → Sin asignación (o fin),Transiciones permitidas

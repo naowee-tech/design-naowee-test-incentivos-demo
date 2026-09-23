@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>SUID – Incentivos · Reportería</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.4.0/dist/design-system.css"/>
+<link rel="stylesheet" href="shared/shell.css?v=20260922200101"/>
+<script src="shared/programs-data.js?v=20260922203322"></script>
+<script src="shared/profile-switcher.js?v=20260922203322"></script>
+
+<style>
+  .page-header{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:20px;flex-wrap:wrap}
+  .page-title{font-size:24px;font-weight:700;line-height:1.2;letter-spacing:-.01em;margin-bottom:4px;color:var(--naowee-color-text-primary,#282834)}
+  .page-sub{font-size:14px;color:var(--naowee-color-text-secondary,#646587);line-height:1.5;max-width:680px}
+
+  /* Toolbar dropdown — DS style (alineado a otras páginas) */
+  .toolbar-dd-wrap{position:relative;display:inline-flex}
+  .toolbar-dd{
+    position:relative;display:inline-flex;align-items:center;gap:8px;justify-content:space-between;
+    height:36px;padding:4px 12px 4px 14px;
+    background:#fff;border:1px solid #8788ab;border-radius:8px;
+    font-family:'Inter',sans-serif;font-size:12.5px;font-weight:500;
+    color:var(--naowee-color-text-primary,#282834);
+    cursor:pointer;transition:border-color .15s,box-shadow .15s;
+  }
+  .toolbar-dd:hover{border-color:#646587}
+  .toolbar-dd.open,.toolbar-dd:focus-visible{outline:none;border-color:var(--naowee-color-text-accent,#d74009);box-shadow:0 0 0 3px rgba(215,64,9,.15)}
+  .toolbar-dd svg{width:16px;height:16px;flex-shrink:0;color:var(--naowee-color-text-secondary,#646587);transition:transform .2s}
+  .toolbar-dd.open svg{transform:rotate(180deg)}
+  .toolbar-dd-menu{
+    position:absolute;top:calc(100% + 6px);left:0;z-index:50;
+    min-width:100%;background:#fff;white-space:nowrap;
+    border:1px solid var(--naowee-color-border-default,#e7e9f3);border-radius:10px;
+    box-shadow:0 12px 32px rgba(40,40,52,.12);padding:6px;
+    max-height:320px;overflow-y:auto;
+    opacity:0;transform:translateY(-6px);pointer-events:none;
+    transition:opacity .18s,transform .18s;
+  }
+  .toolbar-dd-wrap.open .toolbar-dd-menu{opacity:1;transform:translateY(0);pointer-events:auto}
+  .toolbar-dd-item{
+    display:flex;align-items:center;gap:10px;
+    padding:9px 10px;border-radius:6px;
+    font-size:13px;cursor:pointer;transition:background .12s;
+  }
+  .toolbar-dd-item:hover{background:#f5f6fa}
+  .toolbar-dd-item[aria-selected="true"]{background:#fff3e6;color:var(--naowee-color-text-accent,#d74009);font-weight:600}
+  .dd-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+  /* ══ Sección unificada: Resumen + selector de reporte ══ */
+  .summary-section{
+    background:#fff;border:1px solid var(--naowee-color-border-default,#e7e9f3);
+    border-radius:16px;padding:18px 20px 20px;margin-bottom:18px;
+  }
+  .summary-section__head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:14px;flex-wrap:wrap}
+  .summary-section__title{font-size:15px;font-weight:700;color:var(--naowee-color-text-primary,#282834)}
+  .summary-section__sub{font-size:12.5px;color:var(--naowee-color-text-secondary,#646587);margin-top:2px}
+
+  .summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .summary-grid--bare{margin-bottom:18px}
+  @media(max-width:900px){.summary-grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:560px){.summary-grid{grid-template-columns:1fr}}
+
+  .sum-card{
+    background:#fff;
+    border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;
+    transition:transform .15s,box-shadow .15s,border-color .15s,background .15s;
+  }
+  .sum-card__head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .sum-card__lbl{font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--naowee-color-text-secondary,#646587);line-height:1.3}
+  .sum-card__ico{width:32px;height:32px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;background:#eef5ff;color:#1f78d1}
+  .sum-card__ico--gold{background:linear-gradient(135deg,#fef3c7,#fde68a);color:#92400e}
+  .sum-card__ico--orange{background:#fff3e6;color:#d74009}
+  .sum-card__ico--green{background:#e6f4e7;color:#15803d}
+  .sum-card__ico--purple{background:#f3e8ff;color:#7c3aed}
+  .sum-card__ico svg{width:18px;height:18px}
+  .sum-card__val{font-size:24px;font-weight:700;line-height:1;letter-spacing:-.02em;color:var(--naowee-color-text-primary,#282834);font-variant-numeric:tabular-nums}
+  .sum-card__foot{font-size:11.5px;color:var(--naowee-color-text-secondary,#646587)}
+
+  /* Selector cards (clickables) */
+  .sum-card--select{cursor:pointer;background:#fff}
+  .sum-card--select:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(145,158,171,.12);border-color:#d0d4e6}
+  .sum-card--select.active{
+    border-color:var(--naowee-color-text-accent,#d74009);
+    box-shadow:0 0 0 3px rgba(215,64,9,.12);
+    background:#fff;
+  }
+  .sum-card--select .sum-card__lbl-row{display:flex;align-items:center;gap:8px}
+  .sum-card--select .selected-tag{
+    font-size:10px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;
+    color:#d74009;background:#fff3e6;padding:2px 8px;border-radius:9999px;display:none;
+  }
+  .sum-card--select.active .selected-tag{display:inline-flex}
+
+  .summary-divider{
+    border:none;border-top:1px dashed var(--naowee-color-border-default,#e7e9f3);
+    margin:14px 0 12px;
+  }
+  .summary-section__hint{font-size:11.5px;color:var(--naowee-color-text-secondary,#646587);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+  .summary-section__hint svg{width:14px;height:14px}
+
+  /* ══ Preview ══ */
+  .preview{
+    background:#fff;border:1px solid var(--naowee-color-border-default,#e7e9f3);
+    border-radius:16px;overflow:visible;position:relative;
+  }
+  .preview__body{border-bottom-left-radius:16px;border-bottom-right-radius:16px}
+  .filter-popover{z-index:200}
+  .preview__head{
+    padding:18px 20px 4px;
+  }
+  .preview__title-row{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+  .preview__title{font-size:16px;font-weight:700;color:var(--naowee-color-text-primary,#282834);line-height:1.3}
+  .preview__sub{font-size:12.5px;color:var(--naowee-color-text-secondary,#646587);margin-top:2px}
+  .preview__toolbar{
+    display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+    padding:14px 20px 16px;
+  }
+  .preview__filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;flex:1;min-width:0}
+  .preview__cta{display:flex;gap:10px;flex-shrink:0;align-items:center}
+
+  /* Filter button — usa naowee-btn--mute del DS, badge custom encima */
+  .filter-btn-wrap{position:relative;display:inline-flex}
+  .filter-btn{gap:8px}
+  .filter-btn svg.icon-funnel{width:16px;height:16px;color:var(--naowee-color-text-secondary,#646587)}
+  .filter-btn.has-active{
+    border-color:var(--naowee-color-text-accent,#d74009)!important;
+    color:var(--naowee-color-text-accent,#d74009)!important;
+    background:#fff7f2!important;
+  }
+  .filter-btn.has-active svg.icon-funnel{color:var(--naowee-color-text-accent,#d74009)}
+  .filter-btn.open,.filter-btn:focus-visible{
+    outline:none;
+    border-color:var(--naowee-color-text-accent,#d74009)!important;
+    box-shadow:0 0 0 3px rgba(215,64,9,.15)!important;
+  }
+  .filter-btn__badge{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:20px;height:20px;padding:0;line-height:1;text-align:center;
+    background:var(--naowee-color-text-accent,#d74009);color:#fff;border-radius:9999px;
+    font-family:'Inter',sans-serif;font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;
+    flex-shrink:0;
+  }
+
+  /* Tags al lado del filtro: igualar altura al botón filtro (~36-40px DS default) */
+  .preview__tags{display:inline-flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .preview__tags .naowee-tag{height:36px}
+
+  /* Filter popover */
+  .filter-popover{
+    position:absolute;top:calc(100% + 8px);left:0;z-index:60;
+    min-width:320px;max-width:360px;background:#fff;
+    border:1px solid var(--naowee-color-border-default,#e7e9f3);border-radius:12px;
+    box-shadow:0 16px 40px rgba(40,40,52,.16);padding:6px 0;
+    max-height:480px;overflow-y:auto;
+    opacity:0;transform:translateY(-6px);pointer-events:none;
+    transition:opacity .18s,transform .18s;
+  }
+  .filter-btn-wrap.open .filter-popover{opacity:1;transform:translateY(0);pointer-events:auto}
+  .fp-head{display:flex;justify-content:space-between;align-items:center;padding:10px 14px 8px}
+  .fp-title{font-size:13px;font-weight:700;color:var(--naowee-color-text-primary,#282834)}
+  .fp-clear{font-size:12px;color:var(--naowee-color-text-accent,#d74009);background:none;border:none;cursor:pointer;font-weight:600;padding:2px 6px}
+  .fp-clear:hover{text-decoration:underline}
+  .fp-group{padding:6px 6px 8px}
+  .fp-group__lbl{
+    font-size:10.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;
+    color:var(--naowee-color-text-secondary,#646587);padding:6px 10px 4px;
+  }
+  .fp-item{
+    display:flex;align-items:center;gap:10px;
+    padding:8px 10px;border-radius:6px;cursor:pointer;
+    font-size:13px;color:var(--naowee-color-text-primary,#282834);
+    transition:background .12s;
+  }
+  .fp-item:hover{background:#f5f6fa}
+  .fp-item__check{
+    width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;
+    border-radius:4px;border:1.5px solid #d0d4e6;background:#fff;color:transparent;
+    transition:background .12s,border-color .12s,color .12s;
+  }
+  .fp-item__check svg{width:11px;height:11px}
+  .fp-item.selected{color:var(--naowee-color-text-accent,#d74009);font-weight:600}
+  .fp-item.selected .fp-item__check{
+    background:var(--naowee-color-text-accent,#d74009);border-color:var(--naowee-color-text-accent,#d74009);color:#fff;
+  }
+  .fp-divider{border:none;border-top:1px solid var(--naowee-color-border-default,#e7e9f3);margin:2px 0}
+
+  .preview__tags{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .preview__tags-label{font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--naowee-color-text-secondary,#646587);margin-right:2px}
+  .preview__tags-clear{
+    font-size:12px;color:var(--naowee-color-text-accent,#d74009);background:none;border:none;
+    cursor:pointer;font-weight:600;padding:4px 6px;text-decoration:underline;
+  }
+  .preview__tags-clear:hover{opacity:.85}
+  .preview__body{overflow-x:auto;padding:14px 20px 0}
+
+  /* Tabla — header gris alineado al patrón de otras páginas (incentivo-12) */
+  table.rep{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
+  table.rep thead th{
+    font-family:'Inter',sans-serif;
+    font-size:11px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;
+    color:var(--naowee-color-text-secondary,#646587);
+    padding:12px 18px;text-align:left;background:#f5f6fa;border:none;white-space:nowrap;
+  }
+  table.rep thead th:first-child{border-top-left-radius:12px;border-bottom-left-radius:12px}
+  table.rep thead th:last-child{border-top-right-radius:12px;border-bottom-right-radius:12px}
+  table.rep tbody td{
+    padding:14px 18px;font-size:13px;vertical-align:middle;
+    color:var(--naowee-color-text-primary,#282834);
+    border-bottom:1px solid var(--naowee-color-border-default,#e7e9f3);
+  }
+  table.rep tbody tr:hover{background:#fafbfd}
+  table.rep tbody tr:last-child td{border-bottom:none}
+  .num{font-family:'Inter',sans-serif !important;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+  table.rep thead th.num{text-align:right;padding-right:18px}
+  table.rep tbody td.num{text-align:right;padding-right:18px;font-weight:500}
+  .medal-cell{font-size:13px;color:var(--naowee-color-text-primary,#282834);font-family:'Inter',sans-serif;display:inline-flex;align-items:center;gap:6px}
+  .doc-link{display:inline-flex;align-items:center;gap:6px;color:#1f78d1;text-decoration:none;font-weight:500}
+  .doc-link:hover{text-decoration:underline}
+  .doc-link svg{width:14px;height:14px}
+  .gold-pill{
+    display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:9999px;
+    background:linear-gradient(135deg,#fef3c7,#fde68a);color:#92400e;font-weight:700;font-size:11.5px;
+    border:1px solid #fcd34d;
+  }
+  .preview__body{padding-bottom:6px}
+  .empty{padding:48px 20px;text-align:center;color:var(--naowee-color-text-secondary,#646587);font-size:13px}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <button class="burger-btn" onclick="document.getElementById('sidebar').classList.toggle('collapsed')" aria-label="Toggle sidebar">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="#282834" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+      <img src="shared/logos/ministerio.svg" alt="Ministerio del Deporte" class="sb-logo-img"/>
+      <div class="logo-sep"></div>
+      <img src="shared/logos/suid.png" alt="SUID" class="sb-logo-img"/>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">INCENTIVOS</div>
+      <div class="nav-row" data-role="admin" onclick="fadeAndGo('incentivo-02-dashboard.html')">
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="11" rx="1.5"/><rect x="13" y="3" width="8" height="6" rx="1.5"/><rect x="3" y="16" width="8" height="5" rx="1.5"/><rect x="13" y="11" width="8" height="10" rx="1.5"/></svg></div>
+        <span class="lbl">Dashboard</span>
+      </div>
+      <div class="nav-row" data-role="all" onclick="fadeAndGo('incentivo-03-programas.html')">
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M6 7V5a1 1 0 011-1h10a1 1 0 011 1v2"/><line x1="3" y1="12" x2="21" y2="12"/></svg></div>
+        <span class="lbl">Programas</span>
+      </div>
+      <div class="nav-row" data-role="superadmin" onclick="fadeAndGo('incentivo-07-codigos.html')">
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 012-2h14a2 2 0 012 2v2a1.5 1.5 0 000 3v3a2 2 0 01-2 2H5a2 2 0 01-2-2v-3a1.5 1.5 0 000-3V8z"/><line x1="13" y1="6" x2="13" y2="9" stroke-dasharray="1.5 1.5"/><line x1="13" y1="11" x2="13" y2="13" stroke-dasharray="1.5 1.5"/><line x1="13" y1="15" x2="13" y2="18" stroke-dasharray="1.5 1.5"/></svg></div>
+        <span class="lbl">Códigos</span>
+      </div>
+      <div class="nav-row" data-role="superadmin" onclick="fadeAndGo('incentivo-12-asignaciones.html')">
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="1.5"/><circle cx="6" cy="12" r="1.5"/><circle cx="6" cy="18" r="1.5"/><line x1="6" y1="7.5" x2="6" y2="10.5"/><line x1="6" y1="13.5" x2="6" y2="16.5"/><line x1="11" y1="6" x2="20" y2="6"/><line x1="11" y1="12" x2="18" y2="12"/><line x1="11" y1="18" x2="16" y2="18"/></svg></div>
+        <span class="lbl">Historial</span>
+      </div>
+      <div class="nav-row active" data-role="admin">
+        <div class="active-bar"></div>
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d74009" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-5"/><circle cx="18" cy="9" r="1.5"/></svg></div>
+        <span class="lbl">Reportería</span>
+      </div>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="nav-row" onclick="fadeAndGo('incentivo-01-login.html')">
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <span class="lbl">Cerrar sesión</span>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="top-header">
+      <div class="profile-switcher">
+        <div class="user-chip">
+          <div class="ava"><div class="ava-ring" style="background:#c4b5fd;color:#4c1d95">DV</div><div class="ava-dot"></div></div>
+          <div class="user-info"><span class="user-name">Doug Vargas</span><span class="user-role">Gestor de incentivos</span></div>
+          <button class="user-chip__chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>
+        </div>
+      </div>
+    </header>
+
+    <div class="page">
+
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Reportería</h1>
+          <p class="page-sub">Consolida programas, bonos e incentivos entregados. Filtra por año, mes y programa, previsualiza el resultado y descarga el reporte para auditoría y rendición de cuentas.</p>
+        </div>
+      </div>
+
+      <!-- KPIs (sin container, directos sobre la página) -->
+      <div class="summary-grid summary-grid--bare">
+        <article class="sum-card">
+          <div class="sum-card__head">
+            <div class="sum-card__lbl">Beneficiarios</div>
+            <div class="sum-card__ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+            </div>
+          </div>
+          <div class="sum-card__val" id="kpiBenef">—</div>
+          <div class="sum-card__foot">deportistas premiados en el periodo</div>
+        </article>
+
+        <article class="sum-card">
+          <div class="sum-card__head">
+            <div class="sum-card__lbl">Valor entregado</div>
+            <div class="sum-card__ico sum-card__ico--green">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+            </div>
+          </div>
+          <div class="sum-card__val" id="kpiValor">—</div>
+          <div class="sum-card__foot">suma de incentivos asignados</div>
+        </article>
+
+        <article class="sum-card">
+          <div class="sum-card__head">
+            <div class="sum-card__lbl">Documentos</div>
+            <div class="sum-card__ico sum-card__ico--purple">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
+            </div>
+          </div>
+          <div class="sum-card__val" id="kpiDocs">—</div>
+          <div class="sum-card__foot">resoluciones / actos administrativos</div>
+        </article>
+      </div>
+
+      <!-- ═══ Preview / tabla ═══ -->
+      <section class="preview" id="preview">
+        <!-- Row 1: título + Descargar -->
+        <div class="preview__head">
+          <div class="preview__title-row">
+            <div>
+              <div class="preview__title" id="prevTitle">Reporte de medallas de oro</div>
+              <div class="preview__sub" id="prevSub">—</div>
+            </div>
+            <button id="btnDescargarReporte" class="naowee-btn naowee-btn--loud" onclick="downloadCSV()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+              Descargar reporte
+            </button>
+          </div>
+        </div>
+
+        <!-- Row 2 (debajo del divider): filtros + paginación -->
+        <div class="preview__toolbar">
+            <div class="preview__filters">
+              <div class="filter-btn-wrap" id="filterBtnWrap">
+                <button type="button" class="naowee-btn naowee-btn--mute filter-btn" id="filterBtn" onclick="toggleFilterPopover()">
+                  <svg class="icon-funnel" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                  <span>Filtros</span>
+                  <span class="filter-btn__badge" id="filterCount" style="display:none">0</span>
+                </button>
+                <div class="filter-popover" id="filterPopover">
+                  <div class="fp-head">
+                    <span class="fp-title">Filtros avanzados</span>
+                    <button class="fp-clear" onclick="resetFilters()">Limpiar todo</button>
+                  </div>
+                  <hr class="fp-divider"/>
+
+                  <div class="fp-group">
+                    <div class="fp-group__lbl">Año</div>
+                    <div id="fpAno"></div>
+                  </div>
+                  <hr class="fp-divider"/>
+
+                  <div class="fp-group">
+                    <div class="fp-group__lbl">Mes</div>
+                    <div id="fpMes"></div>
+                  </div>
+                  <hr class="fp-divider"/>
+
+                  <div class="fp-group">
+                    <div class="fp-group__lbl">Programa</div>
+                    <div id="fpProg"></div>
+                  </div>
+                  <hr class="fp-divider"/>
+
+                  <div class="fp-group">
+                    <div class="fp-group__lbl">Logro</div>
+                    <div id="fpLogro"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Active filter tags (DS) -->
+              <div class="preview__tags" id="prevTags"></div>
+            </div>
+
+            <div class="preview__cta">
+              <div class="naowee-pagination naowee-pagination--small">
+                <div class="naowee-pagination__pages">
+                  <span class="naowee-pagination__label">Página</span>
+                  <input type="text" class="naowee-pagination__input" id="pagInput" value="1" inputmode="numeric"/>
+                  <span class="naowee-pagination__total">de <strong id="pagTotal">1</strong></span>
+                </div>
+                <div class="naowee-pagination__controls">
+                  <button type="button" class="naowee-pagination__btn" id="pagPrev" onclick="changePage(-1)" aria-label="Anterior">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+                  </button>
+                  <button type="button" class="naowee-pagination__btn" id="pagNext" onclick="changePage(1)" aria-label="Siguiente">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        <div class="preview__body" id="prevBody"></div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<script>
+function fadeAndGo(href){
+  // Solo desvanece el área de contenido; sidebar y header quedan fijos.
+  const page = document.querySelector('.page');
+  if(page){ page.style.transition='opacity .2s'; page.style.opacity='0'; }
+  setTimeout(()=>location.href=href, 180);
+}
+
+const PROGRAMS = (window.PROGRAMS_DATA || []).filter(p => !p._userCreated || p.status === 'active' || p.status === 'finished');
+
+const NOMBRES = ['María Fernanda Cárdenas','Luis Eduardo Ríos','Valentina Restrepo','Andrés Felipe Quintero','Camila Arango','Juan Pablo Mora','Sofía Pineda','Daniel Hernández','Laura Camila Sánchez','Mateo Velásquez','Isabela Torres','Sebastián Jaramillo','Natalia Ospina','Carlos Andrés Gómez','Paula Andrea Ruiz','Felipe Cardona','Daniela Mejía','Santiago Vargas','Mariana Gutiérrez','Tomás Henao','Antonia Bedoya','Esteban Salazar','Manuela Ríos','Nicolás Patiño','Juliana Castaño','Emilio Restrepo','Renata Marín','Joaquín Acevedo','Alejandra Bustamante','Simón Posada'];
+const DEPTOS = ['Atlántico','Antioquia','Cundinamarca','Valle del Cauca','Cauca','Bolívar','Santander','Tolima','Risaralda','Quindío'];
+const DISCIPLINAS = ['Atletismo','Natación','Boxeo','Ciclismo','Levantamiento de pesas','Taekwondo','Patinaje','Karate','Lucha','Tiro deportivo','Bádminton','Esgrima'];
+const LOGROS = ['oro','plata','bronce'];
+
+function seed(s){let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return ()=>{h+=0x6D2B79F5;let t=h;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return ((t^t>>>14)>>>0)/4294967296}}
+
+function buildAssignments(){
+  const all = [];
+  PROGRAMS.forEach(p => {
+    const r = seed(p.id);
+    const n = Math.min(60, p.codes?.asig || 30);
+    const fromY = parseYear(p.from);
+    for (let i = 0; i < n; i++) {
+      const monthOffset = Math.floor(r() * 12);
+      const dayOffset = Math.floor(r() * 28) + 1;
+      const date = new Date(fromY, monthOffset, dayOffset);
+      const inc = p.incentives?.[Math.floor(r() * (p.incentives?.length || 1))] || {};
+      all.push({
+        id: `${p.id}-A${String(i+1).padStart(3,'0')}`,
+        programId: p.id,
+        programName: p.name,
+        actoAdmin: p.actoAdmin || '—',
+        date,
+        beneficiario: NOMBRES[Math.floor(r() * NOMBRES.length)],
+        cedula: (1000000000 + Math.floor(r() * 99999999)).toLocaleString('es-CO'),
+        depto: DEPTOS[Math.floor(r() * DEPTOS.length)],
+        disciplina: DISCIPLINAS[Math.floor(r() * DISCIPLINAS.length)],
+        logro: LOGROS[Math.floor(r() * LOGROS.length)],
+        valor: inc.value || p.unit || 0,
+        incentivo: inc.name || (p.incentives?.[0]?.name) || p.name,
+        categoria: inc.category || p.incentives?.[0]?.category || 'Incentivo'
+      });
+    }
+  });
+  return all;
+}
+function parseYear(s){const m=String(s||'').match(/(20\d{2})/);return m?+m[1]:2026}
+
+const ALL = buildAssignments();
+
+const state = { ano: '2026', mes: 'all', prog: 'all', logro: 'all', page: 1, pageSize: 10, _dataset: [] };
+
+function fmtCOP(n){return '$' + (Number(n)||0).toLocaleString('es-CO')}
+function fmtCompact(n){const v=Number(n)||0;if(v>=1e9)return '$'+(v/1e9).toFixed(2)+' MM';if(v>=1e6)return '$'+(v/1e6).toFixed(1)+'M';if(v>=1e3)return '$'+(v/1e3).toFixed(0)+'K';return fmtCOP(v)}
+function fmtDate(d){const dd=String(d.getDate()).padStart(2,'0');const M=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][d.getMonth()];return `${dd} ${M} ${d.getFullYear()}`}
+
+function describePeriod(){
+  const meses=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const a = state.ano==='all' ? 'todos los años' : state.ano;
+  const m = state.mes==='all' ? '' : meses[+state.mes] + ' ';
+  return `${m}${a}`.trim();
+}
+
+// ── Popover de filtros avanzados ──
+const MESES_FULL = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const CHECK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+
+function buildFpItem(val, label, group, currentVal, dot){
+  const sel = String(val) === String(currentVal);
+  const dotHtml = dot ? `<span class="dd-dot" style="background:${dot}"></span>` : '';
+  return `<div class="fp-item ${sel?'selected':''}" data-val="${val}" onclick="setFilter('${group}','${val}')">
+    <span class="fp-item__check">${CHECK_SVG}</span>${dotHtml}<span>${label}</span>
+  </div>`;
+}
+
+function populatePopover(){
+  // Año
+  const years = Array.from(new Set(ALL.map(a => a.date.getFullYear()))).sort();
+  document.getElementById('fpAno').innerHTML =
+    buildFpItem('all','Todos los años','ano',state.ano) +
+    years.map(y => buildFpItem(y, y, 'ano', state.ano)).join('');
+
+  // Mes
+  document.getElementById('fpMes').innerHTML =
+    buildFpItem('all','Todo el año','mes',state.mes) +
+    MESES_FULL.map((m,i) => buildFpItem(i, m, 'mes', state.mes)).join('');
+
+  // Programa
+  document.getElementById('fpProg').innerHTML =
+    buildFpItem('all','Todos los programas','prog',state.prog) +
+    PROGRAMS.map(p => buildFpItem(p.id, p.name, 'prog', state.prog, p.iconColor || '#d74009')).join('');
+
+  // Logro
+  document.getElementById('fpLogro').innerHTML =
+    buildFpItem('all','Cualquier logro','logro',state.logro) +
+    buildFpItem('oro','Medalla de oro','logro',state.logro,'#f59e0b') +
+    buildFpItem('plata','Medalla de plata','logro',state.logro,'#9ca3af') +
+    buildFpItem('bronce','Medalla de bronce','logro',state.logro,'#b45309');
+}
+
+function toggleFilterPopover(){
+  const wrap = document.getElementById('filterBtnWrap');
+  const btn = document.getElementById('filterBtn');
+  const wasOpen = wrap.classList.contains('open');
+  wrap.classList.toggle('open', !wasOpen);
+  btn.classList.toggle('open', !wasOpen);
+  if (!wasOpen) populatePopover();
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('#filterBtnWrap')) {
+    document.getElementById('filterBtnWrap').classList.remove('open');
+    document.getElementById('filterBtn').classList.remove('open');
+  }
+});
+
+function setFilter(group, val){
+  state[group] = val;
+  state.page = 1;
+  populatePopover(); // refresh checks
+  render();
+}
+
+function resetFilters(){
+  state.ano = '2026'; state.mes = 'all'; state.prog = 'all'; state.logro = 'all'; state.page = 1;
+  populatePopover();
+  render();
+}
+
+function activeFilterCount(){
+  let n = 0;
+  if (state.ano !== '2026') n++;
+  if (state.mes !== 'all') n++;
+  if (state.prog !== 'all') n++;
+  if (state.logro !== 'all') n++;
+  return n;
+}
+
+// ── Filtros ──
+function applyFilters(){
+  return ALL.filter(a => {
+    if (state.ano !== 'all' && String(a.date.getFullYear()) !== String(state.ano)) return false;
+    if (state.mes !== 'all' && String(a.date.getMonth()) !== String(state.mes)) return false;
+    if (state.prog !== 'all' && a.programId !== state.prog) return false;
+    if (state.logro !== 'all' && a.logro !== state.logro) return false;
+    return true;
+  });
+}
+
+// ── Render ──
+function render(){
+  const rows = applyFilters();
+  const valor = rows.reduce((s,r) => s + (r.valor||0), 0);
+  const docs = new Set(rows.map(r => r.actoAdmin).filter(d => d && d !== '—')).size;
+
+  document.getElementById('kpiBenef').textContent = rows.length.toLocaleString('es-CO');
+  document.getElementById('kpiValor').textContent = fmtCompact(valor);
+  document.getElementById('kpiDocs').textContent = docs;
+
+  state._dataset = rows;
+
+  const totalRows = rows.length;
+  const totalPages = Math.max(1, Math.ceil(totalRows / state.pageSize));
+  if (state.page > totalPages) state.page = totalPages;
+  const start = (state.page - 1) * state.pageSize;
+  const end = Math.min(start + state.pageSize, totalRows);
+  const slice = rows.slice(start, end);
+
+  // Título dinámico según los filtros
+  const logroLabel = { oro:'medallas de oro', plata:'medallas de plata', bronce:'medallas de bronce' }[state.logro];
+  document.getElementById('prevTitle').textContent = logroLabel
+    ? `Reporte de ${logroLabel}`
+    : 'Reporte de incentivos';
+  document.getElementById('prevSub').textContent = `${describePeriod()} · ${totalRows} registro${totalRows===1?'':'s'}`;
+
+  const body = document.getElementById('prevBody');
+  body.innerHTML = slice.length
+    ? renderOroTable(slice)
+    : `<div class="empty">No hay registros para los filtros seleccionados.</div>`;
+
+  document.getElementById('pagInput').value = state.page;
+  document.getElementById('pagTotal').textContent = totalPages;
+  document.getElementById('pagPrev').disabled = state.page <= 1;
+  document.getElementById('pagNext').disabled = state.page >= totalPages;
+
+  renderActiveTags();
+}
+
+function renderActiveTags(){
+  const logros = { oro:'Medalla de oro', plata:'Medalla de plata', bronce:'Medalla de bronce' };
+  const tags = [];
+  // Cualquier selección no-default produce un tag — incluye el año por
+  // default (2026) porque el usuario lo ve seleccionado en el popover y
+  // espera ver el filtro reflejado afuera.
+  if (state.ano === 'all') tags.push({ k:'ano', def:'all', label:'Todos los años' });
+  else tags.push({ k:'ano', def:'all', label:'Año: '+state.ano });
+  if (state.mes !== 'all') tags.push({ k:'mes', def:'all', label:MESES_FULL[+state.mes] });
+  if (state.prog !== 'all') {
+    const p = PROGRAMS.find(x => x.id === state.prog);
+    tags.push({ k:'prog', def:'all', label:p?.name || state.prog });
+  }
+  if (state.logro !== 'all') tags.push({ k:'logro', def:'all', label:logros[state.logro] || state.logro });
+
+  // Badge en el botón
+  const count = tags.length;
+  const badge = document.getElementById('filterCount');
+  badge.textContent = count;
+  badge.style.display = count ? 'inline-flex' : 'none';
+  document.getElementById('filterBtn').classList.toggle('has-active', count > 0);
+
+  // Tags al lado del botón
+  const wrap = document.getElementById('prevTags');
+  if (!count) { wrap.innerHTML = ''; return; }
+  wrap.innerHTML = tags.map(t => `
+    <span class="naowee-tag naowee-tag--accent naowee-tag--small">
+      <span class="naowee-tag__label">${t.label}</span>
+      <span class="naowee-tag__active-area" role="button" tabindex="0" onclick="setFilter('${t.k}','${t.def}')" onkeydown="if(event.key==='Enter'||event.key===' '){setFilter('${t.k}','${t.def}')}">
+        <span class="naowee-tag__close" aria-label="Quitar filtro">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </span>
+      </span>
+    </span>`).join('');
+}
+
+function changePage(delta){
+  const totalPages = Math.max(1, Math.ceil((state._dataset || []).length / state.pageSize));
+  state.page = Math.max(1, Math.min(totalPages, state.page + delta));
+  render();
+}
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('pagInput').addEventListener('change', e => {
+    const v = parseInt(e.target.value, 10) || 1;
+    const totalPages = Math.max(1, Math.ceil((state._dataset || []).length / state.pageSize));
+    state.page = Math.max(1, Math.min(totalPages, v));
+    render();
+  });
+});
+
+function medalCell(logro){
+  const emoji = logro==='oro' ? '🥇' : logro==='plata' ? '🥈' : '🥉';
+  const label = logro==='oro' ? 'Oro' : logro==='plata' ? 'Plata' : 'Bronce';
+  return `<span class="medal-cell"><span aria-hidden="true">${emoji}</span>${label}</span>`;
+}
+
+function renderOroTable(rows){
+  return `<table class="rep">
+    <thead><tr>
+      <th>Beneficiario</th><th>Documento</th><th>Disciplina</th><th>Departamento</th>
+      <th>Logro</th><th>Programa</th><th>Resolución</th><th>Fecha</th><th class="num">Valor</th>
+    </tr></thead>
+    <tbody>${rows.map(r => `
+      <tr>
+        <td>${r.beneficiario}</td>
+        <td>${r.cedula}</td>
+        <td>${r.disciplina}</td>
+        <td>${r.depto}</td>
+        <td>${medalCell(r.logro)}</td>
+        <td>${r.programName}</td>
+        <td><a class="doc-link" href="#" onclick="alert('Demo: descarga de ${r.actoAdmin}');return false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          ${r.actoAdmin}
+        </a></td>
+        <td>${fmtDate(r.date)}</td>
+        <td class="num">${fmtCOP(r.valor)}</td>
+      </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+// ── Descarga CSV ──
+function downloadCSV(){
+  const data = state._dataset || [];
+  if (!data.length) { alert('No hay datos para descargar con los filtros actuales.'); return; }
+  const logros = { oro:'Oro', plata:'Plata', bronce:'Bronce' };
+  const headers = ['Beneficiario','Documento','Disciplina','Departamento','Logro','Programa','Resolución','Fecha','Valor (COP)'];
+  const rows = data.map(r => [r.beneficiario, r.cedula, r.disciplina, r.depto, logros[r.logro] || r.logro, r.programName, r.actoAdmin, fmtDate(r.date), r.valor]);
+  const csv = [headers, ...rows].map(line => line.map(cell => {
+    const s = String(cell ?? ''); return /[",;\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s;
+  }).join(';')).join('\n');
+  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const title = document.getElementById('prevTitle').textContent;
+  const name = `${title.replace(/\s+/g,'-').toLowerCase()}-${describePeriod().replace(/\s+/g,'-')}.csv`;
+  a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
+// Init
+populatePopover();
+render();
+
+</script>
+<script src="shared/footer-scroll.js" defer></script>
+<script src="shared/tour.js?v=20260922203322" defer></script>
+
+<!-- Footer flotante Naowee -->
+<div class="naowee-floating-footer" role="contentinfo" aria-label="Pie de página Naowee">
+  <img src="shared/logos/naowee.svg" alt="Naowee" class="naowee-floating-footer__logo"/>
+  <div class="naowee-floating-footer__sep"></div>
+  <span class="naowee-floating-footer__text">Todos los derechos reservados <strong>&copy; 2026</strong></span>
+</div>
+</body>
+</html>
