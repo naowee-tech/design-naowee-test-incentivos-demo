@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Naowee Incentivos — Índice</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+
+<!-- Design System (pinned v1.4.0) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.4.0/dist/design-system.css"/>
+
+<!-- Shell layout -->
+<link rel="stylesheet" href="shared/shell.css?v=20260922200101"/>
+
+<style>
+  /* ═══ Index-specific ═══ */
+  .index-hero{
+    margin-bottom:28px;
+    padding:24px 28px;
+    background:linear-gradient(135deg,#002B5B 0%,#003e82 60%,#d74009 180%);
+    color:#fff;
+    border-radius:var(--radius-xl);
+    box-shadow:var(--shadow-card);
+    position:relative;
+    overflow:hidden;
+  }
+  .index-hero::after{
+    content:"";position:absolute;top:-60px;right:-60px;
+    width:240px;height:240px;border-radius:50%;
+    background:radial-gradient(circle,rgba(255,117,0,.35),transparent 70%);
+    pointer-events:none;
+  }
+  .index-hero h1{font-size:28px;font-weight:800;letter-spacing:-.02em;margin-bottom:6px}
+  .index-hero p{font-size:14px;opacity:.88;max-width:640px;line-height:1.55}
+  .index-hero .v{
+    display:inline-block;margin-top:12px;
+    font-family:'SF Mono',monospace;font-size:11px;font-weight:600;
+    color:#fff;background:rgba(255,255,255,.18);
+    padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.2);
+  }
+
+  /* Filter bar */
+  .index-filters{
+    display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+    margin-bottom:20px;
+  }
+  .filter-pill{
+    font-size:12px;font-weight:600;color:var(--text-secondary);
+    padding:8px 14px;border-radius:var(--radius-full);
+    background:#fff;border:1px solid var(--border);cursor:pointer;
+    transition:all .15s;
+    display:inline-flex;align-items:center;gap:6px;
+  }
+  .filter-pill:hover{border-color:var(--border-dark);color:var(--text-primary)}
+  .filter-pill.active{
+    background:var(--orange-bg);border-color:var(--orange-border);
+    color:var(--accent);
+  }
+  .filter-pill .count{
+    font-family:'SF Mono',monospace;font-size:10px;
+    color:var(--text-secondary);opacity:.7;
+  }
+  .filter-pill.active .count{color:var(--accent);opacity:1}
+
+  /* Section heading */
+  .section-heading{
+    display:flex;align-items:center;gap:10px;
+    margin:24px 0 14px;
+    font-size:11px;font-weight:700;letter-spacing:.6px;
+    color:#b5b9d4;text-transform:uppercase;
+  }
+  .section-heading::after{
+    content:"";flex:1;height:1px;background:var(--border);
+  }
+  .section-heading .hh-count{
+    font-family:'SF Mono',monospace;font-size:10px;font-weight:600;
+    color:var(--text-secondary);letter-spacing:0;
+  }
+
+  /* Grid */
+  .inc-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+    gap:16px;
+  }
+  .inc-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius-xl);
+    box-shadow:var(--shadow-card);
+    padding:20px;cursor:pointer;
+    transition:transform .15s,box-shadow .15s,border-color .15s;
+    display:flex;flex-direction:column;gap:12px;
+    min-height:160px;position:relative;
+    text-decoration:none;color:inherit;
+  }
+  .inc-card:hover{
+    transform:translateY(-2px);
+    box-shadow:0 10px 28px rgba(145,158,171,.22);
+    border-color:var(--border-dark);
+  }
+  .inc-card__head{
+    display:flex;align-items:flex-start;justify-content:space-between;gap:10px;
+  }
+  .inc-num{
+    font-family:'SF Mono',monospace;font-size:11px;font-weight:700;
+    color:var(--text-secondary);letter-spacing:.3px;
+  }
+  .inc-tag{
+    font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;
+    padding:3px 8px;border-radius:var(--radius-full);
+    white-space:nowrap;
+  }
+  .inc-tag--acceso { background:#eef5ff; color:#1f78d1 }
+  .inc-tag--admin  { background:var(--orange-bg); color:var(--accent) }
+  .inc-tag--operacion { background:var(--green-bg); color:var(--green) }
+
+  .inc-title{font-size:15px;font-weight:700;color:var(--text-primary);line-height:1.3}
+  .inc-desc{font-size:12.5px;color:var(--text-secondary);line-height:1.5;flex:1}
+  .inc-footer{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-top:4px;padding-top:12px;border-top:1px dashed var(--border);
+    font-size:12px;
+  }
+  .inc-link{font-weight:700;color:var(--accent);font-size:12px}
+  .inc-status{
+    display:inline-flex;align-items:center;gap:5px;
+    font-size:10px;font-weight:700;color:var(--text-secondary);
+    text-transform:uppercase;letter-spacing:.3px;
+  }
+  .inc-status::before{
+    content:"";width:6px;height:6px;border-radius:50%;
+    background:var(--border-dark);
+  }
+  .inc-card--ready .inc-status::before{background:var(--green)}
+  .inc-card--ready .inc-status{color:var(--green)}
+  .inc-card--wip{opacity:.82;background:repeating-linear-gradient(135deg,#fff,#fff 22px,#fafbfd 22px,#fafbfd 44px)}
+  .inc-card--wip:hover{opacity:1}
+  .inc-card--ready .inc-status::before{background:var(--green)}
+  .inc-card--ready .inc-status{color:var(--green)}
+
+  /* Info footer card */
+  .info-footer{
+    margin-top:28px;padding:18px 22px;
+    background:#fff;border:1px solid var(--border);
+    border-radius:var(--radius-lg);
+    font-size:12.5px;color:var(--text-secondary);line-height:1.55;
+    display:flex;flex-direction:column;gap:6px;
+  }
+  .info-footer strong{color:var(--text-primary);font-size:13px}
+  .info-footer code{
+    font-family:'SF Mono',monospace;font-size:11.5px;
+    color:var(--accent);background:#fff5ed;
+    padding:1px 6px;border-radius:4px;
+  }
+  .info-footer a{color:var(--accent);font-weight:600}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <button class="burger-btn" onclick="document.getElementById('sidebar').classList.toggle('collapsed')" aria-label="Toggle sidebar">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="#282834" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+      <svg class="naowee-logo" viewBox="0 0 180 34" fill="none"><text x="0" y="24" font-family="Inter" font-weight="800" font-size="22" fill="#002B5B">Naowee</text></svg>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section">INCENTIVOS</div>
+      <div class="nav-row active">
+        <div class="active-bar"></div>
+        <div class="icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1.5" stroke="#d74009" stroke-width="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5" stroke="#d74009" stroke-width="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5" stroke="#d74009" stroke-width="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5" stroke="#d74009" stroke-width="1.5"/></svg>
+        </div>
+        <span class="lbl">Índice</span>
+      </div>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <div class="nav-row" id="btnLogout">
+        <div class="icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <span class="lbl">Cerrar sesión</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <div class="main">
+
+    <header class="top-header">
+      <div class="profile-switcher" id="profileSwitcher">
+        <div class="user-chip" onclick="toggleProfileDD(event)">
+          <div class="ava">
+            <div class="ava-ring" id="avaRing" style="background:#c4b5fd;color:#4c1d95">DV</div>
+            <div class="ava-dot"></div>
+          </div>
+          <div class="user-info">
+            <span class="user-name">Doug Vargas</span>
+            <span class="user-role" id="userRoleLabel">Administrador</span>
+          </div>
+          <button class="user-chip__chevron" type="button" aria-label="Cambiar rol">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+        </div>
+
+        <div class="profile-dd" id="profileDD">
+          <div class="profile-dd__label">Cambiar de perfil</div>
+          <div class="profile-dd__item active" data-role="admin" onclick="switchRole('admin')">
+            <div class="ava"><div class="ava-ring" style="background:#c4b5fd;color:#4c1d95;width:28px;height:28px;font-size:11px">DV</div></div>
+            <div class="role-meta"><strong>Administrador</strong><small>Parametriza programas e incentivos</small></div>
+            <svg class="dd-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="profile-dd__item" data-role="gestor" onclick="switchRole('gestor')">
+            <div class="ava"><div class="ava-ring" style="background:#ffdfb5;color:#92400e;width:28px;height:28px;font-size:11px">DV</div></div>
+            <div class="role-meta"><strong>Gestor</strong><small>Asigna y revierte incentivos</small></div>
+            <svg class="dd-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="page">
+
+      <div class="index-hero">
+        <h1>Incentivos</h1>
+        <p>Demo UI/UX del módulo de incentivos del SUID — parametrización de programas, generación de códigos y asignación a beneficiarios con trazabilidad por estado.</p>
+        <span class="v">v0.1 · WIP · DS v1.4.0</span>
+      </div>
+
+      <!-- Filtros -->
+      <div class="index-filters" id="indexFilters">
+        <button class="filter-pill active" data-filter="all">Todas <span class="count">13</span></button>
+        <button class="filter-pill" data-filter="acceso">Acceso <span class="count">1</span></button>
+        <button class="filter-pill" data-filter="admin">Admin <span class="count">6</span></button>
+        <button class="filter-pill" data-filter="operacion">Operación <span class="count">6</span></button>
+      </div>
+
+      <!-- ═══ ACCESO ═══ -->
+      <div class="section-heading" data-section="acceso">
+        <span>Acceso</span><span class="hh-count">01</span>
+      </div>
+      <div class="inc-grid" data-section="acceso">
+        <a href="incentivo-01-login.html" class="inc-card inc-card--ready" data-cat="acceso">
+          <div class="inc-card__head">
+            <span class="inc-num">01</span>
+            <span class="inc-tag inc-tag--acceso">Acceso</span>
+          </div>
+          <div class="inc-title">Login SUID</div>
+          <div class="inc-desc">Panel split con visual brand izquierda + form derecha. Selector de perfil para demo (Gestor / Operador) y redirige al flujo correcto.</div>
+          <div class="inc-footer"><span class="inc-link">Abrir →</span><span class="inc-status">Listo</span></div>
+        </a>
+      </div>
+
+      <!-- ═══ ADMIN · PARAMETRIZACIÓN ═══ -->
+      <div class="section-heading" data-section="admin">
+        <span>Administración · Parametrización</span><span class="hh-count">02 – 07</span>
+      </div>
+      <div class="inc-grid" data-section="admin">
+
+        <a href="incentivo-02-dashboard.html" class="inc-card inc-card--ready" data-cat="admin">
+          <div class="inc-card__head"><span class="inc-num">02</span><span class="inc-tag inc-tag--admin">Admin</span></div>
+          <div class="inc-title">Dashboard</div>
+          <div class="inc-desc">4 KPIs + 2 alertas activas, programas activos con barras de ejecución, feed de actividad y distribución geográfica por región.</div>
+          <div class="inc-footer"><span class="inc-link">Abrir →</span><span class="inc-status">Listo</span></div>
+        </a>
+
+        <a href="incentivo-03-programas.html" class="inc-card inc-card--ready" data-cat="admin">
+          <div class="inc-card__head"><span class="inc-num">03</span><span class="inc-tag inc-tag--admin">Admin</span></div>
+          <div class="inc-title">Programas (lista)</div>
+          <div class="inc-desc">Tabla con 8 programas (activos / pausados / borrador / cerrados), filtros segmentados, buscador y CTA "Nuevo programa".</div>
+          <div class="inc-footer"><span class="inc-link">Abrir →</span><span class="inc-status">Listo</span></div>
+        </a>
+
+        <a href="incentivo-04-programa-crear.html" class="inc-card inc-card--ready" data-cat="admin">
+          <div class="inc-card__head"><span class="inc-num">04</span><span class="inc-tag inc-tag--admin">Admin</span></div>
+          <div class="inc-title">Crear programa (wizard)</div>
+          <div class="inc-desc">5 pasos: Datos → Rubro → Tipos → Condiciones (constructor AND/OR) → Códigos (masiva o manual). Stepper navegable.</div>
+          <div class="inc-footer"><span class="inc-link">Abrir →</span><span class="inc-status">Listo</span></div>
+        </a>
+
+        <a href="incentivo-05-programa-detalle.html?activated=1" class="inc-card inc-card--ready" data-cat="admin">
+          <div class="inc-card__head"><span class="inc-num">05</span><span class="inc-tag inc-tag--admin">Admin</span></div>
+          <div class="inc-title">Detalle del programa</div>
+          <div class="inc-desc">Header con rubro + estado, 4 mini-KPIs, 5 tabs (Resumen · Condiciones · Códigos · Asignaciones · Historial) y banner de activación.</div>
+          <div class="inc-footer"><span class="inc-link">Abrir →</span><span class="inc-status">Listo</span></div>
+        </a>
+
+        <a href="incentivo-06-codigos-carga.html" class="inc-card inc-card--ready" data-cat="admin">
+          <div class="inc-card__head"><span class="inc-num">06</span><span class="inc-tag inc-tag--admin">Admin</span></div>
+          <div class="inc-title">Cargar códigos (masiva/manual)</div>
+          <div class="inc-desc">Tabs masiva/manual. Uploader Excel/CSV con validación (50 válidos, 1 duplicado, 1 inválido). Sidebar con reglas del cargue.</div>
+          <div class="inc-footer"><span class="inc-link">Abrir →</span><span class="inc-status">Listo</span></div>
+        </a>
+
+        <a href="incentivo-07-codigos.html" class="inc-card inc-card--ready" data-cat="admin">
+          <div class="inc-card__head"><span class="inc-num">07</span><span class="inc-tag inc-tag--admin">Admin</span></div>
+          <div class="inc-title">Inventario de códigos</div>
+          <div class="inc-desc">1.030 códigos globales, filtros por estado + programa, búsqueda por deportista/código. Tabla con paginación y exportación.</div>
+          <div class="inc-footer"><span class="inc-link">Abrir →</span><span class="inc-status">Listo</span></div>
+        </a>
+
+      </div>
+
+      <!-- ═══ OPERACIÓN · GESTIÓN ═══ -->
+      <div class="section-heading" data-section="operacion">
+        <span>Operación · Gestión de incentivos</span><span class="hh-count">08 – 13</span>
+      </div>
+      <div class="inc-grid" data-section="operacion">
+
+        <a href="incentivo-08-asignar-buscar.html" class="inc-card inc-card--ready" data-cat="operacion">
+          <div class="inc-card__head"><span class="inc-num">08</span><span class="inc-tag inc-tag--operacion">Operación</span></div>
+          <div class="inc-title">Buscar deportista</div>
+          <div class="inc-desc">Búsqueda por cédula con validación automática de condiciones. 3 estados: aplica (2 incentivos), no cumple, no encontrado. Ficha con evaluación de reglas.</div>
+          <div class="inc-footer"><span class="inc-link">Abrir →</span><span class="inc-status">Listo</span></div>
+        </a>
+
+        <a href="incentivo-10-asignar-tipo.html" class="inc-card inc-card--ready" data-cat="operacion">
+          <div class="inc-card__head"><span class="inc-num">10</span><span class="inc-tag inc-tag--operacion">Operación</span></div>
+          <div class="inc-title">Seleccionar incentivo + código</div>
+          <div class="inc-desc">Selección manual del tipo aplicable y del código del inventario (filtros por tipo, buscador). Panel lateral con resumen en tiempo real.</div>
+          <div class="inc-footer"><span class="inc-link">Abrir →</span><span class="inc-status">Listo</span></div>
+        </a>
+
+        <a href="incentivo-09-validar-foto.html" class="inc-card inc-card--ready" data-cat="operacion">
+          <div class="inc-card__head"><span class="inc-num">09</span><span class="inc-tag inc-tag--operacion">Operación</span></div>
+          <div class="inc-title">Evidencia de entrega</div>
+          <div class="inc-desc">Tabs: foto en vivo o archivo. Uploader con drag-and-drop, preview con metadata, observación opcional. Cambia estado a <em>Asignado</em>.</div>
+          <div class="inc-footer"><span class="inc-link">Abrir →</span><span class="inc-status">Listo</span></div>
+        </a>
+
+        <a href="incentivo-11-asignar-exito.html" class="inc-card inc-card--ready" data-cat="operacion">
+          <div class="inc-card__head"><span class="inc-num">11</span><span class="inc-tag inc-tag--operacion">Operación</span></div>
+          <div class="inc-title">Asignación exitosa</div>
+          <div class="inc-desc">Confirmación con confetti, comprobante con ID, transición de estado Otorgado → Asignado. Acciones: imprimir, nueva asignación, ver historial.</div>
+          <div class="inc-footer"><span class="inc-link">Abrir →</span><span class="inc-status">Listo</span></div>
+        </a>
+
+        <a href="incentivo-12-asignaciones.html" class="inc-card inc-card--ready" data-cat="operacion">
+          <div class="inc-card__head"><span class="inc-num">12</span><span class="inc-tag inc-tag--operacion">Operación</span></div>
+          <div class="inc-title">Historial y reporte</div>
+          <div class="inc-desc">Filtros por periodo, programa, región, municipio y estado. 4 KPIs, distribución geográfica con drill-down (región → muni → ciudad), top operadores y tabla detallada con reversión inline.</div>
+          <div class="inc-footer"><span class="inc-link">Abrir →</span><span class="inc-status">Listo</span></div>
+        </a>
+
+        <a href="incentivo-13-revertir.html" class="inc-card inc-card--ready" data-cat="operacion">
+          <div class="inc-card__head"><span class="inc-num">13</span><span class="inc-tag inc-tag--operacion">Operación</span></div>
+          <div class="inc-title">Reversión registrada</div>
+          <div class="inc-desc">Confirmación tras revertir. Muestra comprobante, motivo, transición Asignado → Revertido, y explica los 4 efectos automáticos (inventario, rubro, auditoría, notificación).</div>
+          <div class="inc-footer"><span class="inc-link">Abrir →</span><span class="inc-status">Listo</span></div>
+        </a>
+
+      </div>
+
+      <!-- Info card -->
+      <div class="info-footer">
+        <strong>Stack</strong>
+        HTML + CSS + JS vanilla. Sin build. Design System consumido via jsDelivr pinneado a
+        <a href="https://github.com/naowee-tech/naowee-design-system/releases/tag/v1.4.0">@v1.4.0</a>.
+        Playground: <a href="https://naowee-tech.github.io/naowee-design-system/playground.html">playground</a>.
+        Template base: <code>incentivo-template.html</code>. Puerto local: <code>4500</code>.
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ═══ Filters ═══ */
+document.querySelectorAll('.filter-pill').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const f = btn.dataset.filter;
+    document.querySelectorAll('.filter-pill').forEach(b => b.classList.toggle('active', b === btn));
+    document.querySelectorAll('.inc-card').forEach(card => {
+      card.style.display = (f === 'all' || card.dataset.cat === f) ? '' : 'none';
+    });
+    document.querySelectorAll('.section-heading, .inc-grid').forEach(el => {
+      const s = el.dataset.section;
+      el.style.display = (f === 'all' || s === f) ? '' : 'none';
+    });
+  });
+});
+
+/* ═══ Profile switcher ═══ */
+const ROLES = {
+  admin:  { name:'Doug Vargas', label:'Administrador', initials:'DV', bg:'#c4b5fd', fg:'#4c1d95' },
+  gestor: { name:'Doug Vargas', label:'Gestor',        initials:'DV', bg:'#ffdfb5', fg:'#92400e' }
+};
+function currentRole(){ return localStorage.getItem('naowee-incentivos-role') || 'admin'; }
+function applyRole(role){
+  const r = ROLES[role] || ROLES.admin;
+  const ring = document.getElementById('avaRing');
+  if(ring){ ring.textContent = r.initials; ring.style.background = r.bg; ring.style.color = r.fg; }
+  const lbl = document.getElementById('userRoleLabel');
+  if(lbl) lbl.textContent = r.label;
+  document.querySelectorAll('.profile-dd__item').forEach(el => {
+    el.classList.toggle('active', el.dataset.role === role);
+  });
+}
+function switchRole(role){
+  localStorage.setItem('naowee-incentivos-role', role);
+  applyRole(role);
+  document.getElementById('profileSwitcher')?.classList.remove('open');
+}
+function toggleProfileDD(ev){
+  ev.stopPropagation();
+  document.getElementById('profileSwitcher')?.classList.toggle('open');
+}
+document.addEventListener('click', (e) => {
+  const sw = document.getElementById('profileSwitcher');
+  if(sw && !sw.contains(e.target)) sw.classList.remove('open');
+});
+
+/* ═══ Logout ═══ */
+function fadeAndGo(url){ window.location.href = url; }
+document.getElementById('btnLogout')?.addEventListener('click', () => {
+  fadeAndGo('incentivo-01-login.html');
+});
+
+applyRole(currentRole());
+</script>
+
+
+<script src="shared/profile-switcher.js?v=20260923080917" defer></script>
+
+<script src="shared/footer-scroll.js" defer></script>
+
+<!-- Footer flotante Naowee -->
+<div class="naowee-floating-footer" role="contentinfo" aria-label="Pie de página Naowee">
+  <img src="shared/logos/naowee.svg" alt="Naowee" class="naowee-floating-footer__logo"/>
+  <div class="naowee-floating-footer__sep"></div>
+  <span class="naowee-floating-footer__text">Todos los derechos reservados <strong>&copy; 2026</strong></span>
+</div>
+
+</body>
+</html>

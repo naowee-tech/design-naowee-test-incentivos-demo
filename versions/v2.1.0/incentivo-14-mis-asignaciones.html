@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>SUID – Incentivos · Mis asignaciones</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.4.0/dist/design-system.css"/>
+<link rel="stylesheet" href="shared/shell.css?v=20260922200101"/>
+<script src="shared/programs-data.js?v=20260923080917"></script>
+<script src="shared/operador-entregas.js?v=20260923080917"></script>
+<script src="shared/operador-programa.js?v=20260923080917"></script>
+
+<style>
+  .page-header{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:24px;flex-wrap:wrap}
+  .page-title{font-size:24px;font-weight:700;line-height:1.2;letter-spacing:-.01em;margin-bottom:4px;color:var(--naowee-color-text-primary,#282834)}
+  .page-sub{font-size:14px;color:var(--naowee-color-text-secondary,#646587);line-height:1.5;max-width:640px}
+  .page-header__actions{display:flex;gap:10px;align-items:center}
+
+  /* Op identity banner — refuerza que es la vista personal del operador */
+  .op-banner{
+    display:flex;align-items:center;gap:14px;padding:14px 18px;
+    margin-bottom:20px;
+    background:linear-gradient(160deg,#fff 0%,#fff8f2 100%);
+    border-radius:14px;
+    box-shadow:inset 0 0 0 1px rgba(215,64,9,.14);
+  }
+  .op-banner__ava{
+    width:44px;height:44px;border-radius:50%;flex-shrink:0;
+    background:#ffdfb5;color:#92400e;
+    display:inline-flex;align-items:center;justify-content:center;
+    font-size:14px;font-weight:700;
+  }
+  .op-banner__body{flex:1;min-width:0}
+  .op-banner__name{
+    font-size:14px;font-weight:700;color:var(--naowee-color-text-primary,#282834);line-height:1.2;
+  }
+  .op-banner__sub{
+    font-size:12px;color:var(--naowee-color-text-secondary,#646587);margin-top:2px;
+    display:flex;gap:8px;flex-wrap:wrap;
+  }
+  .op-banner__sub strong{color:var(--naowee-color-text-primary,#282834);font-weight:600}
+  .op-banner__tag{
+    display:inline-flex;align-items:center;gap:6px;
+    padding:4px 10px;border-radius:9999px;
+    background:#fff3e6;color:var(--naowee-color-text-accent,#d74009);
+    font-size:11px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;
+  }
+  .op-banner__tag::before{
+    content:"";width:6px;height:6px;border-radius:50%;
+    background:var(--naowee-color-text-accent,#d74009);
+  }
+
+  /* KPI cards */
+  .kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
+  .kpi-card[role="button"]{cursor:pointer;transition:border-color .15s,box-shadow .15s}
+  .kpi-card[role="button"]:hover{border-color:#f5b98a}
+  .kpi-card.is-active{border-color:var(--naowee-color-text-accent,#d74009);box-shadow:0 0 0 1px var(--naowee-color-text-accent,#d74009)}
+  @media(max-width:1100px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
+  .kpi-card{
+    background:#fff;border:1px solid var(--naowee-color-border-default,#e7e9f3);
+    border-radius:16px;padding:18px 20px;
+    display:flex;flex-direction:column;gap:12px;
+    transition:transform .15s,box-shadow .15s;
+  }
+  .kpi-card:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(145,158,171,.12)}
+  .kpi-card__top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+  .kpi-card__lbl{font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--naowee-color-text-secondary,#646587);line-height:1.3}
+  .kpi-card__ico{width:40px;height:40px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+  .kpi-card__ico svg{width:20px;height:20px}
+  .kpi-card__ico--brand{background:#eef5ff;color:#1f78d1}
+  .kpi-card__ico--positive{background:#e6f4e7;color:#15803d}
+  .kpi-card__ico--caution{background:#fff3e6;color:#d74009}
+  .kpi-card__ico--info{background:#f3e8ff;color:#7c3aed}
+  .kpi-card__ico--negative{background:#ffe4ee;color:#be185d}
+  .kpi-card__val{font-family:'Inter',sans-serif;font-size:30px;font-weight:700;line-height:1;letter-spacing:-.02em;color:var(--naowee-color-text-primary,#282834)}
+  .kpi-card__val--money{font-size:24px}
+  .kpi-card__foot{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--naowee-color-text-secondary,#646587);margin-top:2px}
+  .kpi-trend{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:9999px;font-size:10.5px;font-weight:700}
+  .kpi-trend--up{background:#e6f4e7;color:#15803d}
+  .kpi-trend--down{background:#fff0ee;color:#b42318}
+  .kpi-trend--neutral{background:#f5f6fa;color:var(--naowee-color-text-secondary,#646587)}
+
+  /* Tablet */
+  .tablet{
+    border:1px solid var(--naowee-color-border-default,#e7e9f3);
+    border-radius:16px;padding:20px;background:#fff;
+    display:flex;flex-direction:column;gap:18px;
+  }
+  .tablet-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .tablet-toolbar__left{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+
+  .tablet .naowee-searchbox--pill{width:280px;max-width:100%}
+  .tablet .naowee-searchbox--pill .naowee-searchbox__input-wrap{border-radius:9999px;height:36px;padding:4px 12px}
+
+  /* Toolbar dropdown */
+  .toolbar-dd-wrap{position:relative;display:inline-flex}
+  .toolbar-dd{
+    position:relative;display:inline-flex;align-items:center;gap:8px;justify-content:space-between;
+    height:36px;padding:4px 12px 4px 14px;
+    background:#fff;border:1px solid #8788ab;border-radius:8px;
+    font-family:'Inter',sans-serif;font-size:12.5px;font-weight:500;
+    color:var(--naowee-color-text-primary,#282834);
+    cursor:pointer;transition:border-color .15s,box-shadow .15s;
+  }
+  .toolbar-dd:hover{border-color:#646587}
+  .toolbar-dd.open,.toolbar-dd:focus-visible{outline:none;border-color:var(--naowee-color-text-accent,#d74009);box-shadow:0 0 0 3px rgba(215,64,9,.15)}
+  .toolbar-dd svg{width:16px;height:16px;flex-shrink:0;color:var(--naowee-color-text-secondary,#646587);transition:transform .2s}
+  .toolbar-dd.open svg{transform:rotate(180deg)}
+  .toolbar-dd-menu{
+    position:absolute;top:calc(100% + 6px);left:0;z-index:50;
+    min-width:100%;background:#fff;white-space:nowrap;
+    border:1px solid var(--naowee-color-border-default,#e7e9f3);border-radius:10px;
+    box-shadow:0 12px 32px rgba(40,40,52,.12);padding:6px;
+    max-height:320px;overflow-y:auto;
+    opacity:0;transform:translateY(-6px);pointer-events:none;
+    transition:opacity .18s,transform .18s;
+  }
+  .toolbar-dd-wrap.open .toolbar-dd-menu{opacity:1;transform:translateY(0);pointer-events:auto}
+  .toolbar-dd-item{
+    display:flex;align-items:center;gap:10px;
+    padding:9px 10px;border-radius:6px;
+    font-size:13px;cursor:pointer;transition:background .12s;
+  }
+  .toolbar-dd-item:hover{background:#f5f6fa}
+  .toolbar-dd-item[aria-selected="true"]{background:#fff3e6;color:var(--naowee-color-text-accent,#d74009);font-weight:600}
+  .dd-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+  /* Period segment usa naowee-segment del DS */
+  .period-segment{height:36px}
+
+  /* Pagination */
+  .naowee-pagination{display:flex;align-items:center;gap:0;font-family:'Inter',sans-serif}
+  .naowee-pagination__pages{display:flex;align-items:center;gap:6px}
+  .naowee-pagination__label,.naowee-pagination__total{font-size:12px;line-height:16px;color:var(--naowee-color-text-secondary,#646587);white-space:nowrap}
+  .naowee-pagination__input{
+    width:48px;height:32px;border:1px solid var(--naowee-color-border-default,#e7e9f3);
+    border-radius:8px;text-align:center;font:inherit;font-size:12px;font-weight:400;
+    color:var(--naowee-color-text-primary,#282834);outline:none;background:#fff;padding:4px 6px;
+  }
+  .naowee-pagination__input:focus{border-width:2px;border-color:var(--naowee-color-text-accent,#d74009);padding:3px 5px}
+  .naowee-pagination__total strong{color:var(--naowee-color-text-primary,#282834);font-weight:600}
+  .naowee-pagination__controls{display:flex;gap:6px;margin-left:8px}
+  .naowee-pagination__btn{
+    width:32px;height:32px;border:none;border-radius:8px;background:#fff3e6;cursor:pointer;
+    display:inline-flex;align-items:center;justify-content:center;
+    color:var(--naowee-color-text-accent,#d74009);transition:background .15s;flex-shrink:0;padding:0;
+  }
+  .naowee-pagination__btn:hover:not(:disabled){background:#ffdaa3}
+  .naowee-pagination__btn:disabled{opacity:.35;cursor:not-allowed;pointer-events:none}
+  .naowee-pagination__btn svg{width:16px;height:16px}
+
+  /* Table */
+  .asig-table{width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed}
+  .asig-table thead th{
+    font-family:'Inter',sans-serif;
+    font-size:11px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;
+    color:var(--naowee-color-text-secondary,#646587);
+    padding:12px 18px;text-align:left;background:#f5f6fa;border:none;
+  }
+  .asig-table thead th:first-child{border-top-left-radius:12px;border-bottom-left-radius:12px}
+  .asig-table thead th:last-child{border-top-right-radius:12px;border-bottom-right-radius:12px}
+  .asig-table tbody td{
+    padding:14px 18px;font-size:13px;vertical-align:middle;
+    border-bottom:1px solid var(--naowee-color-border-default,#e7e9f3);
+  }
+  .asig-table tbody tr{cursor:pointer;transition:background .12s}
+  .asig-table tbody tr:hover{background:#fafbfd}
+  .asig-table tbody tr:last-child td{border-bottom:none}
+  .asig-table code{font-family:'SF Mono',monospace;font-size:12px;color:var(--naowee-color-text-accent,#d74009)}
+  .asig-table .code-link{text-decoration:none;color:inherit;transition:color .15s}
+  .asig-table .code-link:hover code{text-decoration:underline;text-underline-offset:3px}
+  .asig-table .code-link:focus-visible{outline:2px solid var(--naowee-color-text-accent,#d74009);outline-offset:2px;border-radius:3px}
+
+  /* Column widths (sin código ni valor: el operador no ve valores y el código no va en resúmenes) */
+  .asig-table th:nth-child(1),.asig-table td:nth-child(1){width:11%}
+  .asig-table th:nth-child(2),.asig-table td:nth-child(2){width:25%}
+  .asig-table th:nth-child(3),.asig-table td:nth-child(3){width:21%}
+  .asig-table th:nth-child(4),.asig-table td:nth-child(4){width:15%}
+  .asig-table th:nth-child(5),.asig-table td:nth-child(5){width:28%;text-align:right;padding-right:18px}
+  .asig-table tbody td{padding-left:12px;padding-right:12px}
+  .asig-table .prg-mini__id{font-family:'Inter',sans-serif;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .asig-table .benef-cell__cc{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .row-actions{display:inline-flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+  .row-actions .naowee-btn{white-space:nowrap}
+  .estado-sub{font-size:11px;color:var(--naowee-color-text-secondary,#646587);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  tr.is-new td{background:#fffaf5}
+
+  /* Modales (DS naowee-modal) */
+  .naowee-modal__body{padding:0 32px}
+  .dl-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:4px 0 18px}
+  .dl-item{padding:10px 14px;background:#fafbfd;border:1px solid var(--naowee-color-border-default,#e7e9f3);border-radius:10px;min-width:0}
+  .dl-item dt{font-size:10px;font-weight:700;letter-spacing:.4px;color:#9c9ebf;text-transform:uppercase;margin-bottom:2px}
+  .dl-item dd{font-size:13px;font-weight:600;color:var(--naowee-color-text-primary,#282834);overflow-wrap:anywhere}
+  .dl-item--full{grid-column:1 / -1}
+  .timeline{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+  .timeline li{display:grid;grid-template-columns:12px 1fr;gap:12px;font-size:12.5px;color:var(--naowee-color-text-primary,#282834);line-height:1.45}
+  .timeline .tl-dot{width:10px;height:10px;border-radius:50%;margin-top:4px;background:#15803d}
+  .timeline .tl-dot--caution{background:#d97706}
+  .timeline .tl-dot--negative{background:#b42318}
+  .timeline small{display:block;color:var(--naowee-color-text-secondary,#646587);font-size:11.5px}
+  .tl-title{font-size:11px;font-weight:700;letter-spacing:.6px;color:#9c9ebf;text-transform:uppercase;margin:0 0 10px}
+  .motivos{display:flex;flex-direction:column;gap:8px;margin:6px 0 16px}
+  .motivo-opt{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid var(--naowee-color-border-default,#e7e9f3);border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;color:var(--naowee-color-text-primary,#282834);background:#fff;text-align:left;font-family:inherit}
+  .motivo-opt.is-selected{border-color:var(--naowee-color-text-accent,#d74009);background:#fff7f2}
+  .motivo-opt .naowee-radio{pointer-events:none}
+  .field-lbl{display:block;font-size:12.5px;font-weight:600;color:var(--naowee-color-text-primary,#282834);margin-bottom:6px}
+  .field-lbl .req{color:#b42318}
+  .form-error{margin-top:12px}
+  .code-result{margin-top:14px}
+  .naowee-modal textarea{width:100%;min-height:72px;resize:vertical;font-family:inherit}
+  [hidden]{display:none !important}
+
+  /* Cells */
+  .fecha-cell{font-size:12.5px;color:var(--naowee-color-text-primary,#282834)}
+  .fecha-cell__hour{font-size:11px;color:var(--naowee-color-text-secondary,#646587);margin-top:2px}
+
+  .benef-cell{display:flex;align-items:center;gap:10px;min-width:0}
+  /* Avatar deportista — variante DS neutra (blanco con borde gris) para
+     no competir cromáticamente con los thumbnails coloridos del programa */
+  .av-sm{
+    width:32px;height:32px;border-radius:50%;
+    display:inline-flex;align-items:center;justify-content:center;
+    font-size:11px;font-weight:700;flex-shrink:0;
+    background:#fff;
+    color:var(--naowee-color-text-primary,#282834);
+    border:1px solid var(--naowee-color-border-default,#e7e9f3);
+  }
+  /* Variantes de color obsoletas: se neutralizan a la base para evitar
+     ruido visual con los iconos del programa */
+  .av-sm--purple,.av-sm--orange,.av-sm--green,
+  .av-sm--blue,.av-sm--pink,.av-sm--teal{background:#fff;color:var(--naowee-color-text-primary,#282834)}
+  .benef-cell__body{min-width:0}
+  .benef-cell__name{font-weight:600;color:var(--naowee-color-text-primary,#282834);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .benef-cell__cc{font-size:11.5px;color:var(--naowee-color-text-secondary,#646587);margin-top:1px}
+
+  .prg-mini{display:flex;align-items:center;gap:10px;min-width:0}
+  .prg-mini__ico{
+    width:28px;height:28px;border-radius:8px;flex-shrink:0;
+    display:inline-flex;align-items:center;justify-content:center;
+  }
+  .prg-mini__ico svg{width:15px;height:15px}
+  .prg-mini__body{min-width:0}
+  .prg-mini__name{font-weight:600;color:var(--naowee-color-text-primary,#282834);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .prg-mini__id{font-family:'SF Mono',monospace;font-size:10.5px;color:#9c9ebf;margin-top:1px}
+
+  .valor-cell{font-weight:700;color:var(--naowee-color-text-primary,#282834);font-variant-numeric:tabular-nums}
+  .valor-cell.muted{color:#9c9ebf;font-weight:400}
+
+  .tablet-foot{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:var(--naowee-color-text-secondary,#646587)}
+  .closed-tag{display:inline-flex;align-items:center;font-size:11.5px;font-weight:600;color:#646587;background:#f1f1f6;border-radius:999px;padding:3px 9px;white-space:nowrap}
+  .dd-sub{font-size:11px;color:#9c9ebf;margin-left:6px}
+  .row-actions{align-items:center;flex-wrap:nowrap}
+  .row-chev{color:#9c9ebf;display:inline-flex;margin-left:4px}
+  .asig-table tbody tr{cursor:pointer}
+  .asig-table tbody tr:hover .row-chev{color:var(--naowee-color-text-accent,#d74009)}
+  .code-hit{display:inline-block;margin-top:4px;font-family:'SF Mono',ui-monospace,monospace;font-size:11px;font-weight:600;background:#fff3e6;color:#b45309;border-radius:6px;padding:2px 7px}
+  .dl-item dd.mono{font-family:'SF Mono',ui-monospace,monospace}
+  .tablet-toolbar .naowee-searchbox{min-width:320px}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- ═══ SIDEBAR (operador) ═══ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <button class="burger-btn" onclick="document.getElementById('sidebar').classList.toggle('collapsed')" aria-label="Toggle sidebar">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="#282834" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+      <img src="shared/logos/ministerio.svg" alt="Ministerio del Deporte" class="sb-logo-img"/>
+      <div class="logo-sep"></div>
+      <img src="shared/logos/suid.png" alt="SUID" class="sb-logo-img"/>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">INCENTIVOS</div>
+      <div class="nav-row" onclick="fadeAndGo('incentivo-08-asignar-buscar.html')">
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg></div>
+        <span class="lbl">Asignar incentivo</span>
+      </div>
+      <div class="nav-row active">
+        <div class="active-bar"></div>
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d74009" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7h13M8 12h13M8 17h13"/><circle cx="4" cy="7" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="17" r="1"/></svg></div>
+        <span class="lbl">Mis asignaciones</span>
+      </div>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="nav-row" onclick="fadeAndGo('incentivo-01-login.html')">
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <span class="lbl">Cerrar sesión</span>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="top-header">
+      <div class="profile-switcher">
+        <div class="user-chip">
+          <div class="ava"><div class="ava-ring" style="background:#ffdfb5;color:#92400e">JR</div><div class="ava-dot"></div></div>
+          <div class="user-info"><span class="user-name">Juan Rodríguez</span><span class="user-role">Operador</span></div>
+          <button class="user-chip__chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>
+        </div>
+      </div>
+    </header>
+
+    <div class="page">
+
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Mis asignaciones</h1>
+          <p class="page-sub">Tus entregas en campo. Sube las evidencias pendientes o revierte una entrega errada.</p>
+        </div>
+      </div>
+
+      <!-- KPI cards -->
+      <div class="kpi-grid">
+        <article class="kpi-card" role="button" tabindex="0">
+          <div class="kpi-card__top">
+            <div class="kpi-card__lbl">Incentivos entregados</div>
+            <div class="kpi-card__ico kpi-card__ico--brand">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+          </div>
+          <div class="kpi-card__val" id="kpiTotal" data-kpi="all">—</div>
+          <div class="kpi-card__foot"><span>Acumulado en mi gestión</span></div>
+        </article>
+
+        <article class="kpi-card" role="button" tabindex="0">
+          <div class="kpi-card__top">
+            <div class="kpi-card__lbl">Evidencia pendiente</div>
+            <div class="kpi-card__ico kpi-card__ico--caution">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            </div>
+          </div>
+          <!-- Valor monetario retirado: el operador no ve valores (feedback Danna). -->
+          <div class="kpi-card__val" id="kpiPend">—</div>
+          <div class="kpi-card__foot"><span>Entregas sin foto de evidencia</span></div>
+        </article>
+
+
+        <article class="kpi-card" role="button" tabindex="0">
+          <div class="kpi-card__top">
+            <div class="kpi-card__lbl">Revertidas</div>
+            <div class="kpi-card__ico kpi-card__ico--negative">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+            </div>
+          </div>
+          <div class="kpi-card__val" id="kpiRev">—</div>
+          <div class="kpi-card__foot"><span>Entregas deshechas por error</span></div>
+        </article>
+      </div>
+
+      <!-- Tablet -->
+      <section class="tablet">
+        <div class="tablet-toolbar">
+          <div class="tablet-toolbar__left">
+            <div class="naowee-searchbox naowee-searchbox--small naowee-searchbox--pill">
+              <div class="naowee-searchbox__input-wrap">
+                <span class="naowee-searchbox__icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                </span>
+                <input type="text" class="naowee-searchbox__input" placeholder="Buscar beneficiario, documento, incentivo o código" id="searchInput"/>
+                <button type="button" class="naowee-searchbox__clear" onclick="clearSearch('searchInput')" aria-label="Limpiar">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="naowee-segment period-segment" role="tablist">
+              <div class="naowee-segment__pill"></div>
+              <button type="button" class="naowee-segment__item" data-period="today" onclick="setPeriod('today', this)">Hoy</button>
+              <button type="button" class="naowee-segment__item" data-period="7d" onclick="setPeriod('7d', this)">7 días</button>
+              <button type="button" class="naowee-segment__item" data-period="30d" onclick="setPeriod('30d', this)">30 días</button>
+              <button type="button" class="naowee-segment__item naowee-segment__item--active" data-period="all" onclick="setPeriod('all', this)">Todo</button>
+            </div>
+
+            <div class="toolbar-dd-wrap" id="ddPrgWrap">
+              <button type="button" class="toolbar-dd" onclick="toggleDD('ddPrgWrap')">
+                <span id="ddPrgLabel">Programa: Todos</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="toolbar-dd-menu" role="listbox" id="ddPrgMenu"></div>
+            </div>
+
+            <div class="toolbar-dd-wrap" id="ddEstadoWrap">
+              <button type="button" class="toolbar-dd" onclick="toggleDD('ddEstadoWrap')">
+                <span id="ddEstadoLabel">Estado: Todos</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="toolbar-dd-menu" role="listbox">
+                <div class="toolbar-dd-item" role="option" aria-selected="true" data-val="all" onclick="setEstado('all','Estado: Todos')">Todos</div>
+                <div class="toolbar-dd-item" role="option" data-val="asig" onclick="setEstado('asig','Entregados')"><span class="dd-dot" style="background:#15803d"></span>Entregados</div>
+                <div class="toolbar-dd-item" role="option" data-val="pend" onclick="setEstado('pend','Evidencia pendiente')"><span class="dd-dot" style="background:#d97706"></span>Evidencia pendiente</div>
+                <div class="toolbar-dd-item" role="option" data-val="rev" onclick="setEstado('rev','Revertidos')"><span class="dd-dot" style="background:#9e0015"></span>Revertidos</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="naowee-pagination naowee-pagination--small">
+            <div class="naowee-pagination__pages">
+              <span class="naowee-pagination__label">Página</span>
+              <input type="text" class="naowee-pagination__input" id="pagInput" value="1" inputmode="numeric"/>
+              <span class="naowee-pagination__total">de <strong id="pagTotal">1</strong></span>
+            </div>
+            <div class="naowee-pagination__controls">
+              <button type="button" class="naowee-pagination__btn" id="pagPrev" onclick="changePage(-1)" aria-label="Anterior">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+              </button>
+              <button type="button" class="naowee-pagination__btn" id="pagNext" onclick="changePage(1)" aria-label="Siguiente">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <table class="asig-table">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Beneficiario</th>
+              <th>Incentivo</th>
+              <th>Estado</th>
+              <th aria-label="Acciones"></th>
+            </tr>
+          </thead>
+          <tbody id="asigBody"></tbody>
+        </table>
+
+        <div class="tablet-foot">
+          <div id="rowCountFoot">—</div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══ Modal: detalle de la asignación (reemplaza el salto a incentivo-05, que es del gestor) ═══ -->
+<div class="naowee-modal-overlay" id="detailModal" aria-hidden="true">
+  <div class="naowee-modal" role="dialog" aria-modal="true" aria-labelledby="dtTitle">
+    <div class="naowee-modal__header">
+      <div class="naowee-modal__title-group">
+        <h2 class="naowee-modal__title" id="dtTitle">Detalle</h2>
+        <p class="naowee-modal__subtitle" id="dtSub"></p>
+      </div>
+      <button class="naowee-modal__dismiss" aria-label="Cerrar" onclick="closeModal('detailModal')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="naowee-modal__body" id="dtBody"></div>
+    <div class="naowee-modal__footer naowee-modal__footer--end" id="dtFooter"></div>
+  </div>
+</div>
+
+<!-- ═══ Modal: revertir asignación (operador) ═══
+     PENDIENTE: el permiso de reversión para el rol OPERADOR está por confirmar en la matriz de roles y permisos
+     (Danna lo afirmó en la reunión 22-09, 00:30:59). -->
+<div class="naowee-modal-overlay" id="revertModal" aria-hidden="true">
+  <div class="naowee-modal" role="dialog" aria-modal="true" aria-labelledby="rvTitle">
+    <div class="naowee-modal__header">
+      <div class="naowee-modal__title-group">
+        <h2 class="naowee-modal__title" id="rvTitle">Revertir asignación</h2>
+        <p class="naowee-modal__subtitle" id="rvSub"></p>
+      </div>
+      <button class="naowee-modal__dismiss" aria-label="Cerrar" onclick="closeModal('revertModal')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="naowee-modal__body">
+      <span class="field-lbl">Motivo de la reversión <span class="req">*</span></span>
+      <div class="motivos" id="rvMotivos" role="radiogroup"></div>
+      <div class="naowee-textfield naowee-textfield--textarea">
+        <label class="naowee-textfield__label naowee-textfield__label--required" for="rvDetalle">Detalle</label>
+        <div class="naowee-textfield__input-wrap"><textarea class="naowee-textfield__input" id="rvDetalle" rows="3" maxlength="400" placeholder="Describe qué pasó y qué acción de seguimiento se tomó."></textarea></div>
+      </div>
+      <div class="naowee-message naowee-message--informative" style="margin-top:14px">
+        <div class="naowee-message__header"><div class="naowee-message__text">El incentivo vuelve a quedar disponible (y el código, si aplica, vuelve al inventario). La reversión queda en el historial con tu nombre, fecha y motivo.</div></div>
+      </div>
+      <div class="naowee-message naowee-message--negative form-error" id="rvError" hidden>
+        <div class="naowee-message__header"><div class="naowee-message__text" id="rvErrorText"></div></div>
+      </div>
+    </div>
+    <div class="naowee-modal__footer naowee-modal__footer--end">
+      <button class="naowee-btn naowee-btn--mute naowee-btn--medium" onclick="closeModal('revertModal')">Cancelar</button>
+      <button class="naowee-btn naowee-btn--loud naowee-btn--medium" id="btnRvConfirm" onclick="doRevert()">Revertir asignación</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   MIS ASIGNACIONES — vista personal del operador (Juan Rodríguez)
+   Ajustes reunión 22-09-2026:
+   · Sin navegación a la ficha del programa (incentivo-05 es del gestor y
+     rebotaba al operador a "Asignar" — "problema en la navegación", 00:29:22).
+     El detalle se abre aquí mismo en un modal.
+   · Estado "Evidencia pendiente" + acción "Subir evidencia" (00:27:10).
+   · Acción "Revertir" visible por fila, motivo obligatorio, queda en el historial (00:30:59).
+   · Sin valores monetarios ni códigos en la tabla (solo en "Consultar código").
+   ═══════════════════════════════════════════════════════════════ */
+const CURRENT_OPERATOR = 'Juan Rodríguez';
+const LEDGER_KEY = 'inc-op-ledger';
+function ledgerAll(){ try{ return JSON.parse(localStorage.getItem(LEDGER_KEY) || '{}') || {}; }catch(e){ return {}; } }
+function ledgerPut(rec){ try{ const all = ledgerAll(); all[rec.id] = Object.assign({}, all[rec.id] || {}, rec); localStorage.setItem(LEDGER_KEY, JSON.stringify(all)); }catch(e){} }
+
+const INC = {
+  'bono-dep': { name:'Bono Deportivo',                  bg:'#fff3e6', fg:'#d74009', path:'<circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>' },
+  'credito':  { name:'Crédito Condonable ICETEX',       bg:'#eef5ff', fg:'#1f78d1', path:'<path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1 2.7 3 6 3s6-2 6-3v-5"/>' },
+  'kit':      { name:'Kit de implementación deportiva', bg:'#e6f4f1', fg:'#0d9488', path:'<rect x="5" y="8" width="14" height="12" rx="2"/><path d="M9 8V5a3 3 0 016 0v3"/>' },
+  'bono-transp': { name:'Bono transporte mensual',       bg:'#fff3e6', fg:'#d74009', path:'<rect x="3" y="6" width="18" height="11" rx="2"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/>' },
+  'bono-alim':   { name:'Bono alimentación en competencia', bg:'#fef6e0', fg:'#b45309', path:'<path d="M3 2v7a3 3 0 003 3v10M9 2v7M6 2v7"/><path d="M18 22V2a4 4 0 00-4 4v7h4"/>' },
+  'bono-indig':  { name:'Bono participación · Olimpiadas indígenas', bg:'#fff3e6', fg:'#d74009', path:'<circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>' }
+};
+const TYPE_LBL = { deportista:'Deportista', paradeportista:'Paradeportista', 'docente-entrenador':'Docente entrenador', 'docente-asistente':'Docente asistente', institucion:'Institución educativa', organizacion:'Organización' };
+
+let ALL = [];
+function loadAll(){
+  const L = ledgerAll();
+  const rows = buildStatic().map(r => L[r.id] ? Object.assign({}, r, L[r.id]) : r);
+  Object.values(L).filter(r => r.isNew && r.doc).forEach(r => {
+    rows.push(Object.assign({ level: r.level || 'deportista', dt: r.ts }, r));
+  });
+  rows.forEach(r => {
+    r.incName = r.incName || (INC[r.incId] || {}).name || 'Incentivo';
+    r.initials = r.initials || r.name.split(' ').map(x => x[0]).slice(0,2).join('');
+    r.view = r.estado === 'rev' ? 'rev' : (r.evidence ? 'asig' : 'pend');
+    r.prgId = r.prgId || r.programId || JIN_ID;
+    const prg = OperatorProgram.byId(r.prgId);
+    r.prgName = (prg && prg.name) || r.programName || 'Programa';
+    /* Programa cerrado: la entrega queda solo para consulta. */
+    r.prgClosed = !!prg && prg.status !== 'active';
+  });
+  rows.sort((a,b) => b.dt - a.dt);
+  ALL = rows;
+}
+
+const state = { prg: 'all', estado: 'all', period: 'all', search: '', page: 1, pageSize: 10 };
+
+/* Filtro por programa: todos los programas donde el operador está o estuvo
+   (los cerrados se marcan y quedan solo para consulta). */
+function buildPrgMenu(){
+  const list = OperatorProgram.programsOf(false);
+  const item = (val, label, sub) => `<div class="toolbar-dd-item" role="option" aria-selected="${state.prg === val ? 'true' : 'false'}" data-val="${val}" onclick="setPrg('${val}')">${label}${sub ? ` <small class="dd-sub">${sub}</small>` : ''}</div>`;
+  document.getElementById('ddPrgMenu').innerHTML = item('all', 'Todos')
+    + list.map(p => item(p.id, p.name, p.status === 'active' ? '' : 'Cerrado')).join('');
+}
+function setPrg(val){
+  state.prg = val; state.page = 1;
+  const p = OperatorProgram.byId(val);
+  document.getElementById('ddPrgLabel').textContent = val === 'all' ? 'Programa: Todos' : p.name;
+  buildPrgMenu();
+  toggleDD('ddPrgWrap'); updateKPIs(); render();
+}
+function inPrg(a){ return state.prg === 'all' || a.prgId === state.prg; }
+
+function updateKPIs(){
+  const base = ALL.filter(inPrg);
+  const act = base.filter(a => a.estado !== 'rev');
+  const rev = base.length - act.length;
+  document.getElementById('kpiTotal').textContent = act.length.toLocaleString('es-CO');
+  document.getElementById('kpiPend').textContent = act.filter(a => !a.evidence).length.toLocaleString('es-CO');
+  document.getElementById('kpiRev').textContent = rev.toLocaleString('es-CO');
+  syncKpiActive();
+}
+
+/* ═════ Dropdowns toolbar ═════ */
+function toggleDD(wrapId){
+  const wrap = document.getElementById(wrapId);
+  if(!wrap) return;
+  const wasOpen = wrap.classList.contains('open');
+  document.querySelectorAll('.toolbar-dd-wrap.open').forEach(w => w.classList.remove('open'));
+  document.querySelectorAll('.toolbar-dd.open').forEach(b => b.classList.remove('open'));
+  if(!wasOpen){ wrap.classList.add('open'); wrap.querySelector('.toolbar-dd').classList.add('open'); }
+}
+document.addEventListener('click', e => {
+  if(!e.target.closest('.toolbar-dd-wrap')){
+    document.querySelectorAll('.toolbar-dd-wrap.open').forEach(w => w.classList.remove('open'));
+    document.querySelectorAll('.toolbar-dd.open').forEach(b => b.classList.remove('open'));
+  }
+});
+/* Las tarjetas filtran la tabla y quedan sincronizadas con el filtro de estado. */
+const ESTADO_LBL = { all:'Estado: Todos', asig:'Entregados', pend:'Evidencia pendiente', rev:'Revertidos' };
+function applyEstado(val){
+  state.estado = val; state.page = 1;
+  document.getElementById('ddEstadoLabel').textContent = ESTADO_LBL[val];
+  document.querySelectorAll('#ddEstadoWrap .toolbar-dd-item').forEach(it => it.setAttribute('aria-selected', it.dataset.val === val ? 'true' : 'false'));
+  syncKpiActive(); render();
+}
+function syncKpiActive(){
+  const map = { kpiTotal:'all', kpiPend:'pend', kpiRev:'rev' };
+  Object.entries(map).forEach(([id, v]) => { const c = document.getElementById(id)?.closest('.kpi-card'); if(c) c.classList.toggle('is-active', v !== 'all' && state.estado === v); });
+}
+(function wireKpis(){
+  const map = { kpiTotal:'all', kpiPend:'pend', kpiRev:'rev' };
+  Object.entries(map).forEach(([id, v]) => {
+    const c = document.getElementById(id)?.closest('.kpi-card'); if(!c) return;
+    const go = () => applyEstado(state.estado === v ? 'all' : v);
+    c.addEventListener('click', go);
+    c.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); go(); } });
+  });
+})();
+function setEstado(val, label){
+  state.estado = val; state.page = 1;
+  document.getElementById('ddEstadoLabel').textContent = label;
+  document.querySelectorAll('#ddEstadoWrap .toolbar-dd-item').forEach(it => it.setAttribute('aria-selected', it.dataset.val === val ? 'true' : 'false'));
+  toggleDD('ddEstadoWrap'); syncKpiActive(); render();
+}
+function setPeriod(val, el){
+  state.period = val; state.page = 1;
+  const seg = el.closest('.naowee-segment');
+  seg?.querySelectorAll('.naowee-segment__item').forEach(t => t.classList.remove('naowee-segment__item--active'));
+  el.classList.add('naowee-segment__item--active');
+  movePeriodPill(el);
+  render();
+}
+function movePeriodPill(item){
+  const seg = item.closest('.naowee-segment'); if(!seg) return;
+  const pill = seg.querySelector('.naowee-segment__pill'); if(!pill) return;
+  const r = item.getBoundingClientRect(), pr = seg.getBoundingClientRect();
+  if(!r.width || !pr.width) return;
+  pill.style.width = r.width + 'px';
+  pill.style.setProperty('--segment-pill-x', (r.left - pr.left - (parseFloat(getComputedStyle(seg).borderLeftWidth) || 0)) + 'px');
+}
+function clearSearch(id){
+  const inp = document.getElementById(id);
+  if(!inp) return;
+  inp.value = '';
+  inp.dispatchEvent(new Event('input', { bubbles: true }));
+  inp.focus();
+}
+
+function inPeriod(a){
+  if(state.period === 'all') return true;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const days = { today:0, '7d':7, '30d':30 }[state.period];
+  return a.dt >= today.getTime() - days * 86400000;
+}
+function filtered(){
+  return ALL.filter(a => {
+    if(!inPrg(a)) return false;
+    if(state.estado !== 'all' && a.view !== state.estado) return false;
+    if(!inPeriod(a)) return false;
+    if(state.search){
+      const q = state.search.toLowerCase();
+      if(!`${a.name} ${a.doc} ${a.incName} ${a.prgName} ${a.code || ''}`.toLowerCase().includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+const BADGE = {
+  asig: '<span class="naowee-badge naowee-badge--positive naowee-badge--quiet naowee-badge--small">Entregado</span>',
+  pend: '<span class="naowee-badge naowee-badge--caution naowee-badge--quiet naowee-badge--small">Evidencia pendiente</span>',
+  rev:  '<span class="naowee-badge naowee-badge--negative naowee-badge--quiet naowee-badge--small">Revertido</span>'
+};
+const IC_UP = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>';
+const IC_REV = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>';
+
+/* Una sola acción visible: subir la evidencia que falta. El resto (detalle, revertir)
+   está en el detalle, que se abre con clic en la fila. */
+const IC_CHEV = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
+function rowActions(a){
+  const up = (!a.prgClosed && a.view === 'pend') ? `<button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--small" onclick="event.stopPropagation();goUploadEvidence('${a.id}')">${IC_UP} Subir evidencia</button>` : '';
+  const closed = a.prgClosed ? '<span class="closed-tag" title="El programa está cerrado: sus entregas son solo de consulta">Solo consulta</span>' : '';
+  return `<div class="row-actions">${up}${closed}<span class="row-chev" aria-hidden="true">${IC_CHEV}</span></div>`;
+}
+/* Buscar por código: la tabla no muestra códigos; si la búsqueda coincide con uno, se ve en esa fila. */
+function codeHit(a){
+  const q = (state.search || '').toLowerCase();
+  return q.length >= 3 && a.code && a.code.toLowerCase().includes(q);
+}
+
+function render(){
+  const list = filtered();
+  const total = list.length;
+  const totalPages = Math.max(1, Math.ceil(total / state.pageSize));
+  if(state.page > totalPages) state.page = totalPages;
+  const start = (state.page - 1) * state.pageSize;
+  const end = Math.min(start + state.pageSize, total);
+  const body = document.getElementById('asigBody');
+  if(!total){
+    body.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:48px;color:#9c9ebf">Sin asignaciones con estos filtros.</td></tr>`;
+  } else {
+    body.innerHTML = list.slice(start, end).map(a => {
+      const inc = INC[a.incId] || INC['bono-dep'];
+      return `
+      <tr class="${a.isNew ? 'is-new' : ''}" onclick="openDetail('${a.id}')" tabindex="0" onkeydown="if(event.key==='Enter')openDetail('${a.id}')">
+        <td><div class="fecha-cell">${a.fecha}</div><div class="fecha-cell__hour">${a.hora}</div></td>
+        <td>
+          <div class="benef-cell">
+            <div class="av-sm">${a.initials}</div>
+            <div class="benef-cell__body">
+              <div class="benef-cell__name">${a.name}</div>
+              <div class="benef-cell__cc">${a.docType} ${a.doc} · ${TYPE_LBL[a.level] || ''}</div>
+            </div>
+          </div>
+        </td>
+        <td>
+          <div class="prg-mini">
+            <div class="prg-mini__ico" style="background:${inc.bg};color:${inc.fg}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${inc.path}</svg></div>
+            <div class="prg-mini__body"><div class="prg-mini__name">${a.incName}</div><div class="prg-mini__id">${a.prgName}${a.prgClosed ? ' · cerrado' : ''}</div>${codeHit(a) ? `<span class="code-hit">Código ${a.code}</span>` : ''}</div>
+          </div>
+        </td>
+        <td>${BADGE[a.view]}${a.view === 'rev' && a.motivo ? `<div class="estado-sub" title="${a.motivo}">${a.motivo}</div>` : ''}</td>
+        <td>${rowActions(a)}</td>
+      </tr>`;
+    }).join('');
+  }
+  document.getElementById('rowCountFoot').textContent = total === 0 ? 'Sin resultados' : `Mostrando ${start + 1}–${end} de ${total.toLocaleString('es-CO')} asignaciones`;
+  document.getElementById('pagInput').value = state.page;
+  document.getElementById('pagTotal').textContent = totalPages;
+  document.getElementById('pagPrev').disabled = state.page <= 1;
+  document.getElementById('pagNext').disabled = state.page >= totalPages;
+}
+function changePage(delta){
+  const totalPages = Math.max(1, Math.ceil(filtered().length / state.pageSize));
+  state.page = Math.max(1, Math.min(totalPages, state.page + delta));
+  render();
+}
+document.addEventListener('input', e => {
+  if(e.target.id === 'searchInput'){ state.search = e.target.value.trim(); state.page = 1; render(); }
+  if(e.target.id === 'pagInput'){
+    const v = parseInt(e.target.value, 10);
+    if(!isNaN(v)){ const tp = Math.max(1, Math.ceil(filtered().length / state.pageSize)); state.page = Math.max(1, Math.min(tp, v)); render(); }
+  }
+});
+
+/* ═════ Modales ═════ */
+function openModal(id){ const m = document.getElementById(id); if(m){ m.classList.add('open'); m.setAttribute('aria-hidden','false'); } }
+function closeModal(id){ const m = document.getElementById(id); if(m){ m.classList.remove('open'); m.setAttribute('aria-hidden','true'); } }
+document.addEventListener('keydown', e => { if(e.key === 'Escape') document.querySelectorAll('.naowee-modal-overlay.open').forEach(m => closeModal(m.id)); });
+document.querySelectorAll('.naowee-modal-overlay').forEach(ov => ov.addEventListener('click', e => { if(e.target === ov) closeModal(ov.id); }));
+
+function byId(id){ return ALL.find(a => a.id === id); }
+
+function openDetail(id){
+  const a = byId(id); if(!a) return;
+  document.getElementById('dtTitle').textContent = a.name;
+  document.getElementById('dtSub').textContent = `${a.docType} ${a.doc} · ${TYPE_LBL[a.level] || ''}`;
+  const tl = [`<li><span class="tl-dot"></span><div><strong>Asignado</strong> por ${a.operator || CURRENT_OPERATOR} · Operador<small>${a.fecha} · ${a.hora}</small></div></li>`];
+  if(a.evidence) tl.push(`<li><span class="tl-dot"></span><div><strong>Evidencia registrada</strong> · ${a.evidence}<small>${a.evidenceAt || a.fecha}</small></div></li>`);
+  else if(a.estado !== 'rev') tl.push(`<li><span class="tl-dot tl-dot--caution"></span><div><strong>Evidencia pendiente</strong><small>Aún no se ha subido la foto de la entrega</small></div></li>`);
+  if(a.estado === 'rev') tl.push(`<li><span class="tl-dot tl-dot--negative"></span><div><strong>Revertido</strong> por ${a.revertedBy || '—'} · ${a.motivo || ''}${a.detalle ? `<small>“${a.detalle}”</small>` : ''}<small>${a.revertedAt || ''}</small></div></li>`);
+  document.getElementById('dtBody').innerHTML = `
+    <dl class="dl-grid">
+      <div class="dl-item"><dt>Incentivo</dt><dd>${a.incName}</dd></div>
+      <div class="dl-item"><dt>Programa</dt><dd>${a.prgName}${a.prgClosed ? ' <span class="closed-tag">Cerrado · solo consulta</span>' : ''}</dd></div>
+      <div class="dl-item"><dt>Estado</dt><dd>${BADGE[a.view]}</dd></div>
+      <div class="dl-item"><dt>Departamento</dt><dd>${a.zone || '—'}</dd></div>
+      ${a.code ? `<div class="dl-item"><dt>Código</dt><dd class="mono">${a.code}</dd></div>` : ''}
+      ${a.obs || a.evidenceObs ? `<div class="dl-item dl-item--full"><dt>Observaciones</dt><dd>${a.obs || a.evidenceObs}</dd></div>` : ''}
+    </dl>
+    <p class="tl-title">Historial</p>
+    <ul class="timeline">${tl.join('')}</ul>`;
+  const f = [];
+  f.push(`<button class="naowee-btn naowee-btn--mute naowee-btn--medium" onclick="closeModal('detailModal')">Cerrar</button>`);
+  if(!a.prgClosed && a.estado !== 'rev') f.push(`<button class="naowee-btn naowee-btn--mute naowee-btn--medium" onclick="closeModal('detailModal');openRevert('${a.id}')">${IC_REV} Revertir</button>`);
+  if(!a.prgClosed && a.view === 'pend') f.push(`<button class="naowee-btn naowee-btn--loud naowee-btn--medium" onclick="goUploadEvidence('${a.id}')">${IC_UP} Subir evidencia</button>`);
+  document.getElementById('dtFooter').innerHTML = f.join('');
+  openModal('detailModal');
+}
+
+function goUploadEvidence(id){
+  const a = byId(id); if(!a) return;
+  sessionStorage.setItem('inc-assignment', JSON.stringify({
+    evidenceOnly: true, recId: a.id, from: 'mis-asignaciones', name: a.name, doc: a.doc, docType: a.docType,
+    initials: a.initials, role: a.level && a.level.startsWith('docente') ? 'coach' : (a.level === 'institucion' || a.level === 'organizacion' ? 'institution' : 'athlete'),
+    level: a.level, zone: a.zone, incentive: { id: a.incId, name: a.incName }, assignedAt: `${a.fecha} · ${a.hora}`,
+    programId: a.prgId, programName: a.prgName
+  }));
+  window.location.href = 'incentivo-09-validar-foto.html?evidencia=1';
+}
+
+/* ═════ Revertir (operador) — motivo obligatorio, queda en el historial ═════
+   PENDIENTE: confirmar en la matriz de roles y permisos que el OPERADOR puede revertir.
+   Danna lo confirmó verbalmente en la reunión 22-09 (00:30:59: "El operador sí, todo debe quedar en el historial"). */
+let revertId = null, revertMotivo = null;
+const MOTIVOS = ['Error en la asignación','Beneficiario no elegible','Devolución del beneficiario','Datos del beneficiario incorrectos','Otro motivo'];
+function openRevert(id){
+  const a = byId(id); if(!a || a.estado === 'rev' || a.prgClosed) return;
+  revertId = id; revertMotivo = null;
+  document.getElementById('rvSub').textContent = `${a.incName} · ${a.name} (${a.docType} ${a.doc})`;
+  document.getElementById('rvMotivos').innerHTML = MOTIVOS.map(m => `
+    <button type="button" class="motivo-opt" role="radio" aria-checked="false" data-m="${m}" onclick="pickMotivo(this)">
+      <span class="naowee-radio"><span class="naowee-radio__circle"></span></span>${m}
+    </button>`).join('');
+  document.getElementById('rvDetalle').value = '';
+  document.getElementById('rvError').hidden = true;
+  openModal('revertModal');
+}
+function pickMotivo(el){
+  revertMotivo = el.dataset.m;
+  document.querySelectorAll('#rvMotivos .motivo-opt').forEach(o => {
+    const on = o === el;
+    o.classList.toggle('is-selected', on); o.setAttribute('aria-checked', on ? 'true' : 'false');
+    o.querySelector('.naowee-radio').classList.toggle('naowee-radio--selected', on);
+  });
+}
+function doRevert(){
+  const a = byId(revertId); if(!a) return;
+  const detalle = document.getElementById('rvDetalle').value.trim();
+  const err = document.getElementById('rvError');
+  if(!revertMotivo || !detalle){
+    document.getElementById('rvErrorText').textContent = !revertMotivo ? 'Selecciona el motivo de la reversión.' : 'Describe el detalle de la reversión (obligatorio).';
+    err.hidden = false; return;
+  }
+  const now = new Date();
+  const when = `${String(now.getDate()).padStart(2,'0')} ${MES[now.getMonth()]} ${now.getFullYear()} · ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  ledgerPut({ id: a.id, estado: 'rev', motivo: revertMotivo, detalle, revertedBy: `${CURRENT_OPERATOR} · Operador`, revertedAt: when });
+  sessionStorage.setItem('revert-complete', JSON.stringify({
+    from: 'mis-asignaciones', name: a.name, initials: a.initials, doc: a.doc, docType: a.docType,
+    prog: a.incName, date: `${a.fecha} · ${a.hora}`, motivo: `${revertMotivo} — ${detalle}`, region: a.zone,
+    revertedBy: `${CURRENT_OPERATOR} · Operador`, hasCode: !!a.code
+  }));
+  window.location.href = 'incentivo-13-revertir.html?from=mis-asignaciones';
+}
+
+loadAll();
+buildPrgMenu();
+updateKPIs();
+/* ?estado=pend permite llegar filtrado desde otros enlaces */
+(function(){ const e = new URLSearchParams(location.search).get('estado'); if(e && ['asig','pend','rev'].includes(e)){ state.estado = e; const it = document.querySelector(`#ddEstadoWrap .toolbar-dd-item[data-val="${e}"]`); if(it){ document.getElementById('ddEstadoLabel').textContent = it.textContent.trim(); document.querySelectorAll('#ddEstadoWrap .toolbar-dd-item').forEach(x => x.setAttribute('aria-selected', x === it ? 'true' : 'false')); } } })();
+render();
+requestAnimationFrame(() => {
+  const active = document.querySelector('.period-segment .naowee-segment__item--active');
+  if(active) movePeriodPill(active);
+});
+function fadeAndGo(url){ window.location.href = url; }
+</script>
+
+<script src="shared/profile-switcher.js?v=20260923080917" defer></script>
+
+<script src="shared/footer-scroll.js" defer></script>
+<script src="shared/tour.js?v=20260923080917" defer></script>
+
+<!-- Footer flotante Naowee -->
+<div class="naowee-floating-footer" role="contentinfo" aria-label="Pie de página Naowee">
+  <img src="shared/logos/naowee.svg" alt="Naowee" class="naowee-floating-footer__logo"/>
+  <div class="naowee-floating-footer__sep"></div>
+  <span class="naowee-floating-footer__text">Todos los derechos reservados <strong>&copy; 2026</strong></span>
+</div>
+
+</body>
+</html>

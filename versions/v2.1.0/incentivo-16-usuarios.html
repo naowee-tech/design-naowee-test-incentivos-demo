@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>SUID – Incentivos · Usuarios</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.4.0/dist/design-system.css"/>
+<link rel="stylesheet" href="shared/shell.css?v=20260922200101"/>
+
+<style>
+  /* Los componentes fijan display; el atributo hidden debe ganar siempre. */
+  [hidden]{display:none !important}
+  /* SOLO DEMO · botón Reiniciar demo */
+  .demo-reset{
+    display:inline-flex;align-items:center;gap:6px;cursor:pointer;
+    border:1px dashed #d9a441;background:#fff8e6;color:#8a5a00;
+    border-radius:999px;padding:4px 12px 4px 4px;font:inherit;font-size:12.5px;font-weight:600;
+  }
+  .demo-reset.is-armed{border-style:solid;border-color:#b42318;background:#fff0ee;color:#b42318}
+  .demo-reset:focus-visible{outline:2px solid var(--naowee-color-text-accent,#d74009);outline-offset:2px}
+
+  .page-header{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:24px;flex-wrap:wrap}
+  .page-title{font-size:24px;font-weight:700;line-height:1.2;letter-spacing:-.01em;margin-bottom:4px;color:var(--naowee-color-text-primary,#282834)}
+  .page-sub{font-size:14px;color:var(--naowee-color-text-secondary,#646587);line-height:1.5;max-width:640px}
+  .page-header__actions{display:flex;gap:10px;align-items:center}
+
+  /* ═════ TABLET (patrón escenarios-11) ═════ */
+  .tablet{
+    border:1px solid var(--naowee-color-border-default,#e7e9f3);
+    border-radius:16px;padding:20px;background:#fff;
+    display:flex;flex-direction:column;gap:18px;
+  }
+  .tablet-toolbar{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:12px;flex-wrap:wrap;
+  }
+  .tablet-toolbar__left{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+
+  /* Search pill */
+  .tablet .naowee-searchbox--pill{width:340px;max-width:100%}
+  .tablet .naowee-searchbox--pill .naowee-searchbox__input-wrap{
+    border-radius:9999px;height:36px;padding:4px 12px;
+  }
+
+  /* Toolbar dropdown (filter) */
+  .toolbar-dd-wrap{position:relative;display:inline-flex}
+  .toolbar-dd{
+    position:relative;display:inline-flex;align-items:center;gap:8px;justify-content:space-between;
+    height:36px;padding:4px 12px 4px 14px;
+    background:#fff;border:1px solid #8788ab;border-radius:8px;
+    font-family:'Inter',sans-serif;font-size:12.5px;font-weight:500;
+    color:var(--naowee-color-text-primary,#282834);
+    cursor:pointer;transition:border-color .15s,box-shadow .15s;
+  }
+  .toolbar-dd:hover{border-color:#646587}
+  .toolbar-dd.open,.toolbar-dd:focus-visible{
+    outline:none;border-color:var(--naowee-color-text-accent,#d74009);
+    box-shadow:0 0 0 3px rgba(215,64,9,.15);
+  }
+  .toolbar-dd svg{width:16px;height:16px;flex-shrink:0;color:var(--naowee-color-text-secondary,#646587);transition:transform .2s}
+  .toolbar-dd.open svg{transform:rotate(180deg)}
+  .toolbar-dd-menu{
+    position:absolute;top:calc(100% + 6px);left:0;z-index:50;
+    min-width:100%;background:#fff;white-space:nowrap;
+    border:1px solid var(--naowee-color-border-default,#e7e9f3);border-radius:10px;
+    box-shadow:0 12px 32px rgba(40,40,52,.12);padding:6px;
+    opacity:0;transform:translateY(-6px);pointer-events:none;
+    transition:opacity .18s,transform .18s;
+  }
+  .toolbar-dd-wrap.open .toolbar-dd-menu{opacity:1;transform:translateY(0);pointer-events:auto}
+  .toolbar-dd-item{
+    display:flex;align-items:center;gap:10px;
+    padding:9px 10px;border-radius:6px;
+    font-size:13px;cursor:pointer;transition:background .12s;
+  }
+  .toolbar-dd-item:hover{background:#f5f6fa}
+  .toolbar-dd-item[aria-selected="true"]{
+    background:#fff3e6;color:var(--naowee-color-text-accent,#d74009);font-weight:600;
+  }
+  .toolbar-dd-item .dd-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .toolbar-dd-item .dd-count{
+    margin-left:auto;font-size:10.5px;font-weight:700;
+    padding:1px 7px;border-radius:9999px;
+    background:#f5f6fa;color:var(--naowee-color-text-secondary,#646587);
+  }
+  .toolbar-dd-item[aria-selected="true"] .dd-count{background:#fff;color:var(--naowee-color-text-accent,#d74009)}
+
+  /* Pagination DS small */
+  .naowee-pagination{display:flex;align-items:center;gap:0;font-family:'Inter',sans-serif}
+  .naowee-pagination__pages{display:flex;align-items:center;gap:6px}
+  .naowee-pagination__label,.naowee-pagination__total{font-size:12px;line-height:16px;color:var(--naowee-color-text-secondary,#646587);white-space:nowrap}
+  .naowee-pagination__input{
+    width:48px;height:32px;border:1px solid var(--naowee-color-border-default,#e7e9f3);
+    border-radius:8px;text-align:center;font:inherit;font-size:12px;font-weight:400;
+    color:var(--naowee-color-text-primary,#282834);outline:none;background:#fff;
+    padding:4px 6px;transition:border-color .15s;
+  }
+  .naowee-pagination__input:focus{border-width:2px;border-color:var(--naowee-color-text-accent,#d74009);padding:3px 5px}
+  .naowee-pagination__total strong{color:var(--naowee-color-text-primary,#282834);font-weight:600}
+  .naowee-pagination__controls{display:flex;gap:6px;margin-left:8px}
+  .naowee-pagination__btn{
+    width:32px;height:32px;border:none;border-radius:8px;
+    background:#fff3e6;cursor:pointer;
+    display:inline-flex;align-items:center;justify-content:center;
+    color:var(--naowee-color-text-accent,#d74009);transition:background .15s;
+    flex-shrink:0;padding:0;
+  }
+  .naowee-pagination__btn:hover:not(:disabled){background:#ffdaa3}
+  .naowee-pagination__btn:disabled{opacity:.35;cursor:not-allowed;pointer-events:none}
+  .naowee-pagination__btn svg{width:16px;height:16px}
+
+  /* ═════ TABLA (header rounded, sin stroke, low-contrast hover) ═════ */
+  .prg-table{width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed}
+  .prg-table thead th{
+    font-family:'Inter',sans-serif;
+    font-size:11px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;
+    color:var(--naowee-color-text-secondary,#646587);
+    padding:12px 18px;text-align:left;
+    background:#f5f6fa;border:none;
+  }
+  .prg-table thead th:first-child{border-top-left-radius:12px;border-bottom-left-radius:12px}
+  .prg-table thead th:last-child{border-top-right-radius:12px;border-bottom-right-radius:12px}
+  .prg-table tbody td{
+    padding:16px 18px;font-size:13px;vertical-align:middle;
+    border-bottom:1px solid var(--naowee-color-border-default,#e7e9f3);
+  }
+  .prg-table tbody tr{cursor:pointer;transition:background .12s}
+  .prg-table tbody tr:hover{background:#fafbfd}
+  .prg-table tbody tr:last-child td{border-bottom:none}
+
+  /* Column widths */
+  .prg-table th:nth-child(1),.prg-table td:nth-child(1){width:30%}
+  .prg-table th:nth-child(2),.prg-table td:nth-child(2){width:12%}
+  .prg-table th:nth-child(3),.prg-table td:nth-child(3){width:20%}
+  .prg-table th:nth-child(4),.prg-table td:nth-child(4){width:12%}
+  .prg-table th:nth-child(5),.prg-table td:nth-child(5){width:14%}
+  .prg-table th:nth-child(6),.prg-table td:nth-child(6){width:12%;text-align:right;padding-right:32px}
+
+  /* Program cell */
+  .prg-cell{display:flex;align-items:center;gap:12px;min-width:0}
+  .prg-icon{
+    width:36px;height:36px;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .prg-cell__body{min-width:0}
+  .prg-cell__name{font-weight:700;color:var(--naowee-color-text-primary,#282834);font-size:13.5px}
+  .prg-cell__desc{font-size:11.5px;color:var(--naowee-color-text-secondary,#646587);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .prg-cell__id{font-family:'SF Mono',monospace;font-size:10.5px;color:#9c9ebf;font-weight:500;margin-top:2px}
+
+  /* Rubro cell */
+  .rubro-cell{display:flex;flex-direction:column;gap:6px}
+  .rubro-cell__val{font-family:'Inter',sans-serif;font-size:13.5px;font-weight:700;color:var(--naowee-color-text-primary,#282834)}
+  .rubro-cell__exec{font-size:11px;color:var(--naowee-color-text-secondary,#646587)}
+  .rubro-cell .naowee-progress{width:100%;max-width:160px;height:4px}
+
+  /* Codes counter (no badge) */
+  .codes-counter{
+    font-family:'Inter',sans-serif;
+    font-size:13px;font-weight:600;
+    color:var(--naowee-color-text-primary,#282834);
+  }
+  .codes-counter__total{color:var(--naowee-color-text-secondary,#646587);font-weight:400}
+  .codes-counter--low .codes-counter__val{color:#b42318}
+
+  /* Vigencia */
+  .vigencia-cell{font-size:12.5px}
+  .vigencia-cell__from{color:var(--naowee-color-text-primary,#282834);font-weight:500}
+  .vigencia-cell__to{color:var(--naowee-color-text-secondary,#646587);margin-top:2px;font-size:11.5px}
+
+  /* ═════ Hero card del Gestor de programa ═════
+     Vista enfocada de un solo programa: header (icono + ID/badge + título +
+     meta + CTA) y bottom (4 KPIs separados por dividers verticales sutiles
+     con énfasis en "Ejecutado"). Patrón consistente con el detalle del
+     programa para que el cambio de rol sea inmediatamente reconocible. */
+  .prog-hero{
+    background:#fff;border:1px solid var(--naowee-color-border-default,#e7e9f3);
+    border-radius:16px;margin-bottom:24px;overflow:hidden;
+    box-shadow:0 1px 2px rgba(40,40,52,.03);
+  }
+  .prog-hero__head{
+    display:grid;grid-template-columns:64px 1fr auto;gap:20px;align-items:center;
+    padding:24px 28px;
+  }
+  .prog-hero__ico{
+    width:64px;height:64px;border-radius:14px;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:inset 0 0 0 1px rgba(215,64,9,.12);
+  }
+  .prog-hero__ico svg{width:32px;height:32px}
+  .prog-hero__main{min-width:0}
+  .prog-hero__id-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .prog-hero__id{
+    font-family:'SF Mono',monospace;font-size:11px;
+    color:var(--naowee-color-text-secondary,#646587);font-weight:600;letter-spacing:.4px;
+  }
+  .prog-hero__title{
+    font-size:22px;font-weight:800;letter-spacing:-.01em;line-height:1.2;
+    color:var(--naowee-color-text-primary,#282834);margin:2px 0 6px;
+  }
+  .prog-hero__meta{
+    font-size:13px;color:var(--naowee-color-text-secondary,#646587);line-height:1.4;
+  }
+  .prog-hero__divider{
+    height:1px;background:var(--naowee-color-border-default,#e7e9f3);margin:0 28px;
+  }
+  .prog-hero__kpis{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:0;padding:18px 4px;
+  }
+  @media(max-width:900px){.prog-hero__kpis{grid-template-columns:repeat(2,1fr)}}
+  .prog-hero__kpi{
+    padding:6px 24px;position:relative;
+  }
+  .prog-hero__kpi + .prog-hero__kpi::before{
+    content:"";position:absolute;left:0;top:8px;bottom:8px;width:1px;
+    background:var(--naowee-color-border-default,#e7e9f3);
+  }
+  .prog-hero__kpi-lbl{
+    font-size:10.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;
+    color:var(--naowee-color-text-secondary,#646587);
+  }
+  .prog-hero__kpi-val{
+    font-family:'Inter',sans-serif;font-size:24px;font-weight:700;
+    color:var(--naowee-color-text-primary,#282834);
+    letter-spacing:-.02em;margin-top:4px;line-height:1.1;
+  }
+  .prog-hero__kpi-sub{font-size:11.5px;color:var(--naowee-color-text-secondary,#646587);margin-top:2px}
+  .prog-hero__kpi--accent .prog-hero__kpi-val{font-size:28px;color:var(--naowee-color-text-accent,#d74009)}
+
+  /* Acciones — botón único Editar accent naranja, tooltip via .naowee-tooltip del DS */
+  .acciones-cell{display:flex;gap:4px;justify-content:flex-end}
+  .acciones-cell__btn{
+    width:32px;height:32px;border:none;background:transparent;
+    border-radius:8px;color:var(--naowee-color-text-accent,#d74009);
+    cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
+    transition:background .15s,color .15s;
+  }
+  .acciones-cell__btn:hover{background:#fff3e6}
+
+  .tablet-foot{
+    display:flex;justify-content:space-between;align-items:center;
+    font-size:12.5px;color:var(--naowee-color-text-secondary,#646587);
+  }
+  /* ═══ Usuarios ═══ */
+  .us-table th:nth-child(1),.us-table td:nth-child(1){width:28%}
+  .us-table th:nth-child(2),.us-table td:nth-child(2){width:15%}
+  .us-table th:nth-child(3),.us-table td:nth-child(3){width:25%}
+  .us-table th:nth-child(4),.us-table td:nth-child(4){width:12%}
+  .us-table th:nth-child(5),.us-table td:nth-child(5){width:14%}
+  .us-table th:nth-child(6),.us-table td:nth-child(6){width:6%;overflow:visible;text-align:right}
+  .us-table tbody tr{cursor:default}
+  .us-table tbody tr.is-inactive td{opacity:.6}
+  .us-table tbody tr.is-inactive td:last-child{opacity:1}
+  .us-cell{display:flex;align-items:center;gap:12px;min-width:0}
+  .us-ava{width:34px;height:34px;border-radius:50%;background:#f1f1f6;color:#646587;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .us-cell__body{min-width:0}
+  .us-cell__name{font-size:13.5px;font-weight:700;color:#282834;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .us-cell__sub{font-size:11.5px;color:#646587;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .small{font-size:11.5px}
+  .muted{color:#9c9ebf;font-size:12px}
+  .role-pill{display:inline-block;font-size:11.5px;font-weight:700;border-radius:999px;padding:3px 10px;white-space:nowrap}
+  .role-pill--superadmin{background:#fde8e8;color:#7f1d1d}
+  .role-pill--administrador{background:#fce7f3;color:#9d174d}
+  .role-pill--gestor_incentivos{background:#ede9fe;color:#4c1d95}
+  .role-pill--gestor_programa{background:#dbeafe;color:#1e3a8a}
+  .role-pill--operador{background:#ffedd5;color:#92400e}
+  .prg-chips{display:flex;flex-wrap:wrap;gap:4px}
+  .prg-chip{font-size:11.5px;font-weight:600;background:#f5f6fa;color:#282834;border-radius:6px;padding:3px 8px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .row-menu{position:relative;display:inline-block}
+  .row-menu__btn{width:32px;height:32px;border-radius:8px;border:none;background:transparent;color:#646587;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+  .row-menu__btn:hover,.row-menu.open .row-menu__btn{background:#f1f1f6;color:#282834}
+  .row-menu__list{position:absolute;right:0;top:36px;min-width:190px;background:#fff;border:1px solid #e7e9f3;border-radius:12px;box-shadow:0 12px 32px rgba(20,20,32,.14);padding:6px;display:none;z-index:40;text-align:left}
+  .row-menu.open .row-menu__list{display:block}
+  .row-menu__list button{display:block;width:100%;text-align:left;border:none;background:none;padding:9px 12px;border-radius:8px;font:inherit;font-size:13px;color:#282834;cursor:pointer}
+  .row-menu__list button:hover{background:#f5f6fa}
+  .row-menu__list button.danger{color:#9e0015}
+  .us-toast{position:fixed;left:50%;bottom:84px;transform:translate(-50%,20px);background:#282834;color:#fff;font-size:13px;font-weight:600;padding:12px 18px;border-radius:12px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:13000;max-width:min(560px,calc(100vw - 32px))}
+  .us-toast.show{opacity:1;transform:translate(-50%,0)}
+  [hidden]{display:none !important}
+  .reassign{display:flex;flex-direction:column;gap:12px;margin-top:12px}
+  .us-btn-loud:disabled{opacity:.45;cursor:not-allowed}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <button class="burger-btn" onclick="document.getElementById('sidebar').classList.toggle('collapsed')" aria-label="Toggle sidebar">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="#282834" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+      <img src="shared/logos/ministerio.svg" alt="Ministerio del Deporte" class="sb-logo-img"/>
+      <div class="logo-sep"></div>
+      <img src="shared/logos/suid.png" alt="SUID" class="sb-logo-img"/>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">INCENTIVOS</div>
+      <div class="nav-row" data-role="admin programa" onclick="fadeAndGo('incentivo-02-dashboard.html')">
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="11" rx="1.5"/><rect x="13" y="3" width="8" height="6" rx="1.5"/><rect x="3" y="16" width="8" height="5" rx="1.5"/><rect x="13" y="11" width="8" height="10" rx="1.5"/></svg></div>
+        <span class="lbl">Dashboard</span>
+      </div>
+      <div class="nav-row" data-role="admin programa" onclick="fadeAndGo('incentivo-03-programas.html')">
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M6 7V5a1 1 0 011-1h10a1 1 0 011 1v2"/><line x1="3" y1="12" x2="21" y2="12"/></svg></div>
+        <span class="lbl">Programas</span>
+      </div>
+      <div class="nav-row" data-role="superadmin" onclick="fadeAndGo('incentivo-07-codigos.html')">
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 012-2h14a2 2 0 012 2v2a1.5 1.5 0 000 3v3a2 2 0 01-2 2H5a2 2 0 01-2-2v-3a1.5 1.5 0 000-3V8z"/><line x1="13" y1="6" x2="13" y2="9" stroke-dasharray="1.5 1.5"/><line x1="13" y1="11" x2="13" y2="13" stroke-dasharray="1.5 1.5"/><line x1="13" y1="15" x2="13" y2="18" stroke-dasharray="1.5 1.5"/></svg></div>
+        <span class="lbl">Códigos</span>
+      </div>
+      <div class="nav-row" data-role="superadmin" onclick="fadeAndGo('incentivo-12-asignaciones.html')">
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="1.5"/><circle cx="6" cy="12" r="1.5"/><circle cx="6" cy="18" r="1.5"/><line x1="6" y1="7.5" x2="6" y2="10.5"/><line x1="6" y1="13.5" x2="6" y2="16.5"/><line x1="11" y1="6" x2="20" y2="6"/><line x1="11" y1="12" x2="18" y2="12"/><line x1="11" y1="18" x2="16" y2="18"/></svg></div>
+        <span class="lbl">Historial</span>
+      </div>
+      <div class="nav-row" data-role="admin" onclick="fadeAndGo('incentivo-15-reporteria.html')">
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-5"/><circle cx="18" cy="9" r="1.5"/></svg></div>
+        <span class="lbl">Reportería</span>
+      </div>
+      <div class="nav-row active" data-role="admin programa">
+        <div class="active-bar"></div>
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d74009" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
+        <span class="lbl">Usuarios</span>
+      </div>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="nav-row" onclick="fadeAndGo('incentivo-01-login.html')">
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <span class="lbl">Cerrar sesión</span>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="top-header">
+      <div class="profile-switcher">
+        <div class="user-chip">
+          <div class="ava"><div class="ava-ring" style="background:#c4b5fd;color:#4c1d95">DV</div><div class="ava-dot"></div></div>
+          <div class="user-info"><span class="user-name">Doug Vargas</span><span class="user-role">Gestor de incentivos</span></div>
+          <button class="user-chip__chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>
+        </div>
+      </div>
+    </header>
+
+    <div class="page">
+
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Usuarios</h1>
+          <p class="page-sub" id="pageSub">Quién tiene acceso al módulo. Creas y administras los roles que están por debajo del tuyo.</p>
+        </div>
+        <div class="page-header__actions">
+          <button id="btnCrearUsuario" class="naowee-btn naowee-btn--loud naowee-btn--large" onclick="newUser()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Crear usuario
+          </button>
+        </div>
+      </div>
+
+      <section class="tablet">
+        <div class="tablet-toolbar">
+          <div class="tablet-toolbar__left">
+            <div class="naowee-searchbox naowee-searchbox--small naowee-searchbox--pill">
+              <div class="naowee-searchbox__input-wrap">
+                <span class="naowee-searchbox__icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                </span>
+                <input type="text" class="naowee-searchbox__input" placeholder="Buscar por nombre, documento o correo" id="searchInput" oninput="state.search=this.value.trim();state.page=1;render()"/>
+              </div>
+            </div>
+            <div class="toolbar-dd-wrap" id="ddRoleWrap">
+              <button type="button" class="toolbar-dd" onclick="toggleDD('ddRoleWrap')"><span id="ddRoleLabel">Rol: Todos</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>
+              <div class="toolbar-dd-menu" role="listbox" id="ddRoleMenu"></div>
+            </div>
+            <div class="toolbar-dd-wrap" id="ddStatusWrap">
+              <button type="button" class="toolbar-dd" onclick="toggleDD('ddStatusWrap')"><span id="ddStatusLabel">Estado: Todos</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>
+              <div class="toolbar-dd-menu" role="listbox" id="ddStatusMenu"></div>
+            </div>
+            <div class="toolbar-dd-wrap" id="ddPrgWrap">
+              <button type="button" class="toolbar-dd" onclick="toggleDD('ddPrgWrap')"><span id="ddPrgLabel">Programa: Todos</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>
+              <div class="toolbar-dd-menu" role="listbox" id="ddPrgMenu"></div>
+            </div>
+          </div>
+        </div>
+
+        <table class="prg-table us-table">
+          <thead>
+            <tr><th>Usuario</th><th>Rol</th><th>Programas</th><th>Estado</th><th>Creado por</th><th aria-label="Acciones"></th></tr>
+          </thead>
+          <tbody id="usBody"></tbody>
+        </table>
+        <div class="tablet-foot"><div id="rowCountFoot">—</div></div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<!-- Confirmación de desactivar (sin diálogos del navegador) -->
+<div class="us-ov" id="deactOverlay">
+  <div class="us-modal" role="dialog" aria-modal="true" aria-labelledby="deactTitle">
+    <div class="us-modal__head"><h2 id="deactTitle">Desactivar usuario</h2><p id="deactSub"></p></div>
+    <div class="us-modal__body"><div class="full" id="deactBody" style="font-size:13px;color:#282834;line-height:1.5"></div></div>
+    <div class="us-modal__foot">
+      <button type="button" class="us-btn-mute" onclick="closeDeact()">Cancelar</button>
+      <button type="button" class="us-btn-loud" id="deactConfirm">Desactivar</button>
+    </div>
+  </div>
+</div>
+
+<div class="us-toast" id="usToast" role="status" aria-live="polite"></div>
+
+<script src="shared/programs-data.js?v=20260923080917"></script>
+<script src="shared/usuarios.js?v=20260923091419"></script>
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   USUARIOS — jerarquía del módulo (shared/usuarios.js).
+   Cada rol crea y administra los roles que están por debajo del suyo.
+   El operador no tiene esta pantalla.
+   ═══════════════════════════════════════════════════════════════ */
+const U = window.IncUsers;
+const state = { search:'', role:'all', status:'all', prg:'all', page:1 };
+const STATUS = {
+  active:   { lbl:'Activo',   badge:'<span class="naowee-badge naowee-badge--positive naowee-badge--quiet naowee-badge--small">Activo</span>' },
+  invited:  { lbl:'Invitado', badge:'<span class="naowee-badge naowee-badge--caution naowee-badge--quiet naowee-badge--small">Invitado</span>' },
+  inactive: { lbl:'Inactivo', badge:'<span class="naowee-badge naowee-badge--neutral naowee-badge--quiet naowee-badge--small">Inactivo</span>' }
+};
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function initials(n){ return String(n || '').split(/\s+/).filter(Boolean).slice(0, 2).map(x => x[0]).join('').toUpperCase(); }
+
+function toggleDD(wrapId){
+  const wrap = document.getElementById(wrapId); if(!wrap) return;
+  const wasOpen = wrap.classList.contains('open');
+  document.querySelectorAll('.toolbar-dd-wrap.open').forEach(w => w.classList.remove('open'));
+  document.querySelectorAll('.toolbar-dd.open').forEach(b => b.classList.remove('open'));
+  if(!wasOpen){ wrap.classList.add('open'); wrap.querySelector('.toolbar-dd').classList.add('open'); }
+}
+document.addEventListener('click', e => {
+  if(!e.target.closest('.toolbar-dd-wrap')){
+    document.querySelectorAll('.toolbar-dd-wrap.open').forEach(w => w.classList.remove('open'));
+    document.querySelectorAll('.toolbar-dd.open').forEach(b => b.classList.remove('open'));
+  }
+  if(!e.target.closest('.row-menu')) document.querySelectorAll('.row-menu.open').forEach(m => m.classList.remove('open'));
+});
+function menuHTML(id, items, cur, fn){
+  document.getElementById(id).innerHTML = items.map(([v, l]) =>
+    `<div class="toolbar-dd-item" role="option" aria-selected="${v === cur}" onclick="${fn}('${v}')">${esc(l)}</div>`).join('');
+}
+function buildFilters(){
+  const v = U.viewer();
+  const roles = U.ROLE_ORDER.filter(r => U.visible().some(u => u.role === r));
+  menuHTML('ddRoleMenu', [['all','Todos']].concat(roles.map(r => [r, U.ROLE_LABEL[r]])), state.role, 'setRole');
+  menuHTML('ddStatusMenu', [['all','Todos'], ['active','Activos'], ['invited','Invitados'], ['inactive','Inactivos']], state.status, 'setStatus');
+  const prgs = v.role === 'gestor_programa' ? U.assignablePrograms() : (window.PROGRAMS_DATA || []);
+  menuHTML('ddPrgMenu', [['all','Todos']].concat(prgs.map(p => [p.id, p.name])), state.prg, 'setPrg');
+}
+function setRole(v){ state.role = v; state.page = 1; document.getElementById('ddRoleLabel').textContent = v === 'all' ? 'Rol: Todos' : U.ROLE_LABEL[v]; toggleDD('ddRoleWrap'); buildFilters(); render(); }
+function setStatus(v){ state.status = v; state.page = 1; document.getElementById('ddStatusLabel').textContent = v === 'all' ? 'Estado: Todos' : STATUS[v].lbl + 's'; toggleDD('ddStatusWrap'); buildFilters(); render(); }
+function setPrg(v){ state.prg = v; state.page = 1; const p = (window.PROGRAMS_DATA || []).find(x => x.id === v); document.getElementById('ddPrgLabel').textContent = v === 'all' ? 'Programa: Todos' : p.name; toggleDD('ddPrgWrap'); buildFilters(); render(); }
+
+function filtered(){
+  const q = state.search.toLowerCase();
+  return U.visible().filter(u => {
+    if(state.role !== 'all' && u.role !== state.role) return false;
+    if(state.status !== 'all' && u.status !== state.status) return false;
+    if(state.prg !== 'all' && !U.programsOf(u).some(p => p.id === state.prg)) return false;
+    if(q && !`${u.name} ${u.doc} ${u.email}`.toLowerCase().includes(q)) return false;
+    return true;
+  }).sort((a, b) => U.rank(a.role) - U.rank(b.role) || a.name.localeCompare(b.name));
+}
+
+const IC_DOTS = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>';
+function actions(u){
+  const v = U.viewer();
+  if(!U.canManage(v, u)) return '';
+  const items = [`<button type="button" onclick="editUser('${u.key}')">Editar</button>`];
+  if(u.status === 'invited') items.push(`<button type="button" onclick="resend('${u.key}')">Reenviar invitación</button>`);
+  if(u.status === 'inactive') items.push(`<button type="button" onclick="reactivate('${u.key}')">Reactivar</button>`);
+  else items.push(`<button type="button" class="danger" onclick="askDeactivate('${u.key}')">Desactivar</button>`);
+  return `<div class="row-menu"><button type="button" class="row-menu__btn" aria-label="Acciones de ${esc(u.name)}" onclick="event.stopPropagation();toggleRowMenu(this)">${IC_DOTS}</button><div class="row-menu__list">${items.join('')}</div></div>`;
+}
+function toggleRowMenu(btn){
+  const m = btn.closest('.row-menu'); const was = m.classList.contains('open');
+  document.querySelectorAll('.row-menu.open').forEach(x => x.classList.remove('open'));
+  if(!was) m.classList.add('open');
+}
+function render(){
+  const list = filtered();
+  const creator = k => { const c = k && U.byKey(k); return c ? c.name : '—'; };
+  document.getElementById('usBody').innerHTML = list.length ? list.map(u => {
+    const prgs = U.programsOf(u);
+    const prgCell = (u.role === 'gestor_programa' || u.role === 'operador')
+      ? (prgs.length ? prgs.map(p => `<span class="prg-chip" title="${esc(p.id)}">${esc(p.name)}</span>`).join('') : '<span class="muted">Sin programa</span>')
+      : '<span class="muted">Todos</span>';
+    return `<tr class="${u.status === 'inactive' ? 'is-inactive' : ''}">
+      <td><div class="us-cell"><div class="us-ava">${initials(u.name)}</div><div class="us-cell__body"><div class="us-cell__name">${esc(u.name)}</div><div class="us-cell__sub">${esc(u.email)} · CC ${esc(u.doc)}</div></div></div></td>
+      <td><span class="role-pill role-pill--${u.role}">${U.ROLE_LABEL[u.role]}</span></td>
+      <td><div class="prg-chips">${prgCell}</div></td>
+      <td>${STATUS[u.status].badge}${u.status === 'invited' ? `<div class="muted small">Invitado el ${esc(u.invitedAt || u.createdAt)}</div>` : ''}</td>
+      <td><div class="us-cell__name small">${esc(creator(u.createdBy))}</div><div class="muted small">${esc(u.createdAt)}</div></td>
+      <td>${actions(u)}</td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="6" style="text-align:center;padding:48px;color:#9c9ebf;cursor:default">Sin usuarios con estos filtros.</td></tr>`;
+  document.getElementById('rowCountFoot').textContent = `${list.length} usuario${list.length === 1 ? '' : 's'}`;
+}
+
+function toast(msg){
+  const t = document.getElementById('usToast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 3200);
+}
+function newUser(){
+  U.openForm({ onSaved: u => { buildFilters(); render(); toast(`Usuario creado: ${u.name}, ${U.ROLE_LABEL[u.role].toLowerCase()}. La invitación llega a ${u.email}.`); } });
+}
+function editUser(k){
+  const u = U.byKey(k); if(!u) return;
+  U.openForm({ user: u, onSaved: nu => { buildFilters(); render(); toast(`Cambios guardados para ${nu.name}.`); } });
+}
+function resend(k){ U.resendInvite(k); render(); toast(`Invitación reenviada a ${U.byKey(k).email}.`); }
+function reactivate(k){ U.reactivate(k); render(); toast(`Cuenta reactivada: ${U.byKey(k).name}. Asígnale los programas donde deba trabajar.`); }
+let deactKey = null;
+function askDeactivate(k){
+  const u = U.byKey(k); if(!u) return;
+  deactKey = k;
+  const prgs = U.programsOf(u).filter(p => p.status !== 'closed');
+  document.getElementById('deactSub').textContent = `${u.name} · ${U.ROLE_LABEL[u.role]}`;
+  let body = 'No podrá entrar al módulo. Lo que hizo (entregas, cambios e historial) se conserva.';
+  const btn = document.getElementById('deactConfirm');
+  btn.disabled = false;
+  if(prgs.length && u.role === 'gestor_programa'){
+    /* Un programa no queda sin gestor: se elige el nuevo de cada uno antes de desactivar. */
+    const others = U.all().filter(x => x.role === 'gestor_programa' && x.key !== u.key && x.status !== 'inactive');
+    if(!others.length){
+      body += `<br/><br/><strong>No hay otro gestor de programa</strong> a quien pasarle ${prgs.length === 1 ? 'su programa' : 'sus programas'}. Crea uno primero.`;
+      btn.disabled = true;
+    } else {
+      body += `<br/><br/>Antes, elige quién gestiona ${prgs.length === 1 ? 'su programa' : 'cada uno de sus programas'}:`
+        + `<div class="reassign">${prgs.map(p => `
+          <div class="us-fld"><label for="ra-${esc(p.id)}">${esc(p.name)} <span class="opt">${esc(p.id)}</span></label>
+            <select id="ra-${esc(p.id)}" data-prg="${esc(p.id)}" onchange="syncDeactBtn()">
+              <option value="">Elige el nuevo gestor</option>
+              ${others.map(o => `<option value="${esc(o.key)}">${esc(o.name)}${o.status === 'invited' ? ' (invitado)' : ''}</option>`).join('')}
+            </select></div>`).join('')}</div>`;
+      btn.disabled = true;
+    }
+  } else if(prgs.length){
+    body += `<br/><br/>Sale del equipo de: ${prgs.map(p => esc(p.name)).join(', ')}.`;
+  }
+  document.getElementById('deactBody').innerHTML = body;
+  document.getElementById('deactOverlay').classList.add('open');
+}
+function reassignMap(){
+  const map = {};
+  document.querySelectorAll('#deactBody select[data-prg]').forEach(s => { if(s.value) map[s.dataset.prg] = s.value; });
+  return map;
+}
+function syncDeactBtn(){
+  const sels = document.querySelectorAll('#deactBody select[data-prg]');
+  document.getElementById('deactConfirm').disabled = Array.from(sels).some(s => !s.value);
+}
+function closeDeact(){ document.getElementById('deactOverlay').classList.remove('open'); deactKey = null; }
+document.getElementById('deactConfirm').addEventListener('click', () => {
+  const u = U.byKey(deactKey); if(!u) return closeDeact();
+  const map = reassignMap();
+  if(!U.reassignAndDeactivate(deactKey, map)) return;
+  const n = Object.keys(map).length;
+  closeDeact(); buildFilters(); render();
+  toast(`Cuenta desactivada: ${u.name}.${n ? ` ${n === 1 ? 'Su programa tiene' : 'Sus programas tienen'} nuevo gestor.` : ''}`);
+});
+document.getElementById('deactOverlay').addEventListener('click', e => { if(e.target.id === 'deactOverlay') closeDeact(); });
+
+/* El operador no tiene esta pantalla. */
+function initPage(){
+  const v = U.viewer();
+  if(v.role === 'operador'){ window.location.replace('incentivo-08-asignar-buscar.html'); return; }
+  const below = U.rolesBelow(v.role).map(r => U.ROLE_LABEL[r].toLowerCase());
+  document.getElementById('pageSub').textContent = v.role === 'gestor_programa'
+    ? 'Los operadores de tus programas. Puedes crear operadores y asignarlos a tus programas.'
+    : `Quién tiene acceso al módulo. Puedes crear: ${below.join(', ')}.`;
+  buildFilters(); render();
+}
+window.onRoleApplied = () => { initPage(); };
+initPage();
+function fadeAndGo(url){ window.location.href = url; }
+</script>
+<script src="shared/profile-switcher.js?v=20260923080917" defer></script>
+<script src="shared/footer-scroll.js" defer></script>
+<script src="shared/tour.js?v=20260923080917" defer></script>
+
+<!-- Footer flotante Naowee -->
+<div class="naowee-floating-footer" role="contentinfo" aria-label="Pie de página Naowee">
+  <img src="shared/logos/naowee.svg" alt="Naowee" class="naowee-floating-footer__logo"/>
+  <div class="naowee-floating-footer__sep"></div>
+  <span class="naowee-floating-footer__text">Todos los derechos reservados <strong>&copy; 2026</strong></span>
+</div>
+
+</body>
+</html>

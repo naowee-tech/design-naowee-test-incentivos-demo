@@ -1,0 +1,2562 @@
+WEBVTT
+Kind: captions
+Language: es
+
+00:00:01.079 --> 00:00:06.799
+No, sí, total,
+pero bueno.
+
+00:00:05.359 --> 00:00:11.440
+Bueno, bueno, espero que te mejores ahí
+para eso es tomar agua, si no estoy mal.
+
+00:00:08.360 --> 00:00:16.400
+Creo que le mandan a tomar agua a uno.
+Sí, igual tú mejora tú.
+
+00:00:14.679 --> 00:00:20.320
+Bueno, ahí te saco el espacio por lo que
+estábamos hablando ayer, ¿te acuerdas?
+
+00:00:18.080 --> 00:00:24.119
+eh para porque ya iba a empezar a hacer
+incentivo. Ya yo estuve revisando el
+
+00:00:22.519 --> 00:00:28.519
+visual, digamos que con la información
+que tú me diste ayer en la mañana, yo
+
+00:00:26.320 --> 00:00:33.640
+digamos tengo más ideas, pero obviamente
+me surgieron más preguntas.
+
+00:00:30.759 --> 00:00:37.719
+Eh, entonces la idea sería yo te yo saco
+unas preguntas, la idea sería que tú me
+
+00:00:35.960 --> 00:00:42.960
+las vayas respondiendo las que puedas,
+las que no tengas, pues yo las que tengo
+
+00:00:40.280 --> 00:00:48.719
+así fueron las que te mandé, que son
+como, por ejemplo, la del rol, eh, ¿qué
+
+00:00:45.920 --> 00:00:54.719
+roles hay? Porque en el Visual, en el
+aquí en el Excel, déjame lo busco, vi
+
+00:00:51.640 --> 00:00:59.480
+que hay operador. Sí,
+sí, solamente operador y administrador.
+
+00:00:57.600 --> 00:01:05.040
+O sea, no no hay nada.
+Sí, porque por aquí yo había visto como
+
+00:01:01.320 --> 00:01:08.720
+creo que otro como un tercero e
+el responsable en campo. Entonces, no
+
+00:01:07.560 --> 00:01:14.640
+sé, el responsable en campo vendría
+siendo el operador.
+
+00:01:11.840 --> 00:01:18.920
+Dame un momento. Eh, validación en
+campo. Confartte con quiero validar
+
+00:01:16.799 --> 00:01:27.880
+identidad de participantes.
+Sií, ese es ese es como,
+
+00:01:22.680 --> 00:01:34.720
+o sea, el operador más que todo es como
+esa persona que vamos a a designar para
+
+00:01:30.720 --> 00:01:44.799
+apoyar el tema de de los incentivos
+y ya el responsable del campo es eh en
+
+00:01:38.320 --> 00:01:48.320
+campo es quien entrega como tal la el
+incentivo, o sea, que hace como la
+
+00:01:46.960 --> 00:01:53.360
+acción,
+pero Ese ese es, o sea, el flujo el
+
+00:01:50.840 --> 00:01:57.000
+flujo normal es el niño el deportista
+gana la competencia y el
+
+00:01:55.240 --> 00:02:04.240
+si quieres poner el flujo
+y y lo vemos así. Sí.
+
+00:02:01.960 --> 00:02:11.920
+Eh, digamos que parametrizar datos del
+programa, eso es como Ajá. El evento
+
+00:02:08.479 --> 00:02:16.040
+como tal que se tenga que va a utilizar
+el módulo de incentivos.
+
+00:02:14.400 --> 00:02:24.840
+Eh, ah, bueno, el módulo de incentivos
+está también orientado,
+
+00:02:21.080 --> 00:02:30.599
+no solo como a eventos como tal, sino
+programas que lance el ministerio,
+
+00:02:28.120 --> 00:02:37.640
+¿sí me entiendes? como
+eh no sé, beneficios con eh menores de
+
+00:02:35.640 --> 00:02:42.519
+edad, no sé, o sea, ese tipo de
+programas que lanza ministerio. Se
+
+00:02:39.760 --> 00:02:44.879
+ahí también irían los incentivos,
+abarcaría eso.
+
+00:02:43.360 --> 00:02:49.720
+Sí,
+sí. O sea, es es como la creación del
+
+00:02:47.959 --> 00:02:54.200
+programa, si me entiendes.
+Sí, sí, eso ahorita eso ahorita si
+
+00:02:52.400 --> 00:02:58.040
+quieres lo hablamos porque ahí dentro
+tengo las preguntas acerca de eso que
+
+00:02:56.040 --> 00:03:01.599
+eso sí está un poquito más claro,
+pero por ejemplo yo estaba tratando de
+
+00:02:59.440 --> 00:03:05.319
+entender era en el deportista gana la
+medalla, entonces le dan un tiquete
+
+00:03:03.319 --> 00:03:07.720
+grande que un cheque y le dicen ese es
+el de campo. Ese es el que tú dices que
+
+00:03:06.720 --> 00:03:11.159
+es de campo.
+Y él le toca la foto y él esa foto la
+
+00:03:09.640 --> 00:03:18.519
+manda a un registro, o sea, la sub se la
+da al administrador o a o a quien sea,
+
+00:03:14.200 --> 00:03:21.799
+no sé. no se la registra allí en la
+en la plataforma.
+
+00:03:20.319 --> 00:03:26.040
+Exactamente. Por eso aquí está. Bueno,
+entonces la la creación del tipo de
+
+00:03:23.480 --> 00:03:33.760
+incentivo ya es lo que me estás
+preguntando, que si voy a dar bonos,
+
+00:03:30.239 --> 00:03:40.560
+becas, no sé, cada uno de los incentivos
+pues tiene un precio porque ni modo que
+
+00:03:37.360 --> 00:03:45.799
+un incentivo que no que no valga nada
+para el ministerio siempre va a costar
+
+00:03:43.080 --> 00:03:53.519
+así un peso. Entonces están los tipos de
+incentivos y se tiene el rubro como tal.
+
+00:03:51.280 --> 00:03:58.000
+y de ahí se va descontando.
+Pero volvamos al tema de los roles, por
+
+00:03:56.040 --> 00:04:02.640
+ejemplo, ya me dijiste que entonces el
+que el que el que opera en campo tiene
+
+00:04:00.760 --> 00:04:08.519
+que subir la foto, o sea, que se loguea
+a la plataforma con ese rol, busca al
+
+00:04:05.760 --> 00:04:12.280
+deportista y al encontrarlo le dice,
+"Yo hemos llegado allá."
+
+00:04:10.879 --> 00:04:16.400
+Sí, pero pero es que quiero entender
+primero eso porque ese es el inicio del
+
+00:04:13.879 --> 00:04:20.880
+flujo eh del todo. O sea, si me doy
+cuenta, él es el que hace todo antes de
+
+00:04:18.799 --> 00:04:25.160
+que obviamente la otra parte del flujo
+es el el admin, es el que crea todo este
+
+00:04:23.440 --> 00:04:28.919
+parámetro que está acá arriba. Ese es
+otro, eso ahorita lo vemos. sino que
+
+00:04:26.960 --> 00:04:31.400
+quiero entender esto desde acá abajo
+porque
+
+00:04:29.720 --> 00:04:34.800
+así sabemos que hay tres roles o dos
+roles
+
+00:04:32.360 --> 00:04:39.400
+por lo que estoy viendo ahora veo dos
+por ahora, eh, administrador y y campo,
+
+00:04:38.160 --> 00:04:44.360
+a menos que el de campo sea el mismo
+operador.
+
+00:04:41.080 --> 00:04:48.600
+Yo creo que más bien sí,
+pero pero pero pero pero
+
+00:04:49.240 --> 00:04:57.440
+sí, o sea,
+genera automáticamente transvalidación
+
+00:04:54.800 --> 00:05:07.160
+de usuario puesto, incluye datos de
+artista. Bueno, mira, eh, digamos que
+
+00:05:04.039 --> 00:05:15.320
+te explico como ese ese ya como en la
+práctica. Entonces,
+
+00:05:09.160 --> 00:05:22.560
+esa parte, digamos que hay tantos eh eh
+incentivos que tienen una categoría de
+
+00:05:19.400 --> 00:05:29.280
+que son para prejuveniles, no sé, con
+medallas de oro, digamos así.
+
+00:05:25.440 --> 00:05:36.319
+Esa sería una condición de ese yo voy a
+voy a regalar 3 millones de pesos para
+
+00:05:32.440 --> 00:05:38.039
+deportistas que ganen oro y son eh
+prejuvenil
+
+00:05:36.720 --> 00:05:42.960
+prejuvenil. Mm.
+Pero entonces yo también voy a dar ese
+
+00:05:41.000 --> 00:05:49.680
+mismo bono
+para juvenil, pero 4,000ones de pesos,
+
+00:05:46.919 --> 00:05:54.120
+no sé, una cosa así. Okay.
+Eh, listo. se hace el desarrollo de las
+
+00:05:52.319 --> 00:06:00.360
+competencias
+y cuando ellos van ganando y ya se van a
+
+00:05:58.039 --> 00:06:06.479
+ya se van a retirar, o sea, cuando ya
+finaliza su competencia como tal, porque
+
+00:06:03.160 --> 00:06:09.639
+recordemos que por lo menos para juegos
+eh te estoy colocando el ejemplo de
+
+00:06:07.919 --> 00:06:17.840
+juegos, claro, que es el que tengo la
+experiencia, eh, se va van se dan como
+
+00:06:14.639 --> 00:06:21.199
+por entradas, o sea, esta semana entran
+tantos deportes, la otra semana entran
+
+00:06:19.800 --> 00:06:27.599
+tantos deportes.
+Entonces, cuando ya vayan saliendo,
+
+00:06:23.800 --> 00:06:34.560
+ellos llegan a reclamar su bonificación,
+porque esto es reclamando,
+
+00:06:31.000 --> 00:06:42.199
+¿ya? O sea, ellos son los que se acercan
+a la oficina de eso, o sea, el puesto
+
+00:06:38.199 --> 00:06:46.560
+donde el punto de el deportista es el
+que se acerca a la oficina.
+
+00:06:44.000 --> 00:06:52.319
+Es correcto. Y también el personal de
+apoyo.
+
+00:06:48.120 --> 00:06:56.479
+Entonces le dicen, "Buenas tardes. Aquí
+entregan la la cédula y validan."
+
+00:06:54.720 --> 00:07:01.759
+Entonces, validan. ¿Qué era lo que
+hacíamos? Validar en plataforma
+
+00:06:59.360 --> 00:07:08.400
+que en qué campeonó. Sí.
+Sí, esto exactamente
+
+00:07:04.000 --> 00:07:10.560
+eso se validaba como tal que la
+este
+
+00:07:08.680 --> 00:07:16.240
+pero hay como una oportunidad, ¿no? De
+de mejorar eso. Entonces, porque yo en
+
+00:07:13.199 --> 00:07:20.039
+vez de tener en el módulo de incentivos
+una búsqueda general, eso es una de las
+
+00:07:18.199 --> 00:07:24.680
+preguntas que te tenía. En la búsqueda
+solamente es a nivel de la suite o a
+
+00:07:22.800 --> 00:07:29.599
+nivel de la del evento? O sea, que
+busque la cédula y busque cigarro al
+
+00:07:26.759 --> 00:07:35.199
+por lo menos. Bueno, para, o sea, para
+juegos intercolegiados es solamente de
+
+00:07:31.720 --> 00:07:40.319
+los eventos, solamente de ese evento.
+Ya, por eso se puede seleccionar como
+
+00:07:38.400 --> 00:07:47.159
+que un evento, por así decirlo, en la
+parametrización, no sé, cuando se
+
+00:07:42.960 --> 00:07:52.080
+parametriza el evento, ¿te acuerdas? Mm.
+Si yo digo que va a haber incentivos, a
+
+00:07:49.159 --> 00:07:58.520
+mí se me debe activar ese módulo y debe
+tomar los usuarios pues de ese evento.
+
+00:07:56.280 --> 00:08:02.879
+No va a participar, no va a participar
+yo.
+
+00:08:00.120 --> 00:08:09.599
+Si no Exactamente.
+Entonces, eh se validaba en plataforma
+
+00:08:06.479 --> 00:08:14.360
+la condición del deportista,
+o sea, en el estado como tal.
+
+00:08:17.319 --> 00:08:27.400
+Ahí te perdí.
+No sé qué pasó. Bueno, eh, que se me
+
+00:08:24.759 --> 00:08:36.080
+puso como rara la pantalla. No me digas
+que se va a poner negro. Bueno, e,
+
+00:08:32.719 --> 00:08:40.919
+¿qué te decía? Ah, bueno, se validaba la
+condición, que la idea es que con las
+
+00:08:38.320 --> 00:08:47.760
+condiciones que yo te puse de que se
+debe configurar las reglas de eso, es
+
+00:08:44.120 --> 00:08:53.200
+como, por ejemplo, debe ser mayor eh
+para que cumple este beneficio debe ser
+
+00:08:50.600 --> 00:08:57.480
+mayor de 18 años. Ya tú sabes que en la
+lista te van a salir los usuarios que
+
+00:08:55.399 --> 00:09:00.680
+sean mayores de 18 años.
+Claro.
+
+00:08:57.760 --> 00:09:04.200
+Debe estar en la etapa en la categoría
+prejuvenil. Solo me van a salir los de
+
+00:09:02.720 --> 00:09:10.279
+prejuvenil.
+Debe haber sido ganador de medalla de
+
+00:09:07.480 --> 00:09:14.399
+oro o de plata, digamos así.
+Esos son los que van a aplicar.
+
+00:09:12.120 --> 00:09:19.320
+Entonces, a él se le buscaban esas
+categorías
+
+00:09:16.200 --> 00:09:28.480
+y a ellos se les asignaba un código, que
+es el código que yo te estoy diciendo.
+
+00:09:21.760 --> 00:09:33.640
+O sea, si si dan 3 pesos y cada bono es
+un peso, entonces son tres códigos.
+
+00:09:31.760 --> 00:09:38.640
+Sí.
+Entonces
+
+00:09:35.279 --> 00:09:45.560
+yo viene el deportista, yo lo valido y
+yo le asigno el segundo código y yo se
+
+00:09:43.160 --> 00:09:51.360
+lo asigno.
+Ya le tomo sus datos, tomó el registro,
+
+00:09:49.560 --> 00:09:56.720
+eh, el que vimos que la ser nos
+presentó, no sé si te acuerdas, que se
+
+00:09:53.959 --> 00:10:02.880
+hace el registro, se asigna y se debe
+tomar un, o sea, se debe cargar como una
+
+00:09:59.160 --> 00:10:07.959
+foto, que es donde yo le estoy dando el
+mm
+
+00:10:04.480 --> 00:10:15.320
+Entonces, digamos, por ejemplo,
+van a hacer una pecas, no sé,
+
+00:10:12.120 --> 00:10:22.640
+un programa de una pecas. Entonces, la
+idea es que eh como no se entrega como
+
+00:10:19.680 --> 00:10:29.360
+tal, no sé, el mismo día, no sé si de
+pronto la persona que opera, o sea, ya
+
+00:10:26.320 --> 00:10:33.360
+te estoy hablando como de otro
+otro ejemplo, ¿no?, de juegos
+
+00:10:31.240 --> 00:10:38.399
+intercolegiados,
+suba, no sé, digamos, como la matrícula
+
+00:10:36.600 --> 00:10:44.200
+financiada,
+o sea, el registro que se puede subir
+
+00:10:41.639 --> 00:10:48.200
+después de
+eso es todo.
+
+00:10:44.920 --> 00:10:51.320
+Okay. Okay. Al final es fotografía o un
+archivo porque la beca, como dices tú,
+
+00:10:49.800 --> 00:10:53.240
+no necesariamente tiene que ser que se
+le está entregando el incentivo, sino
+
+00:10:52.959 --> 00:10:56.120
+que
+Exactamente,
+
+00:10:54.440 --> 00:11:01.920
+se le está entregando un certificado o
+algo y y él lo tiene que subir. Bueno,
+
+00:10:59.360 --> 00:11:06.040
+toca ver ese caso también.
+Así es. descargarlo, es cargar un un
+
+00:11:04.519 --> 00:11:10.200
+archivo.
+Okay. Entonces, al momento serían dos
+
+00:11:08.040 --> 00:11:14.240
+roles, el admin, que el administrador va
+a ser un gestor de incentivos, y el
+
+00:11:12.560 --> 00:11:17.920
+operador que en campo que es la persona
+que
+
+00:11:14.519 --> 00:11:24.040
+Exactamente. Este que dice acá que
+validar en campo, el responsable en
+
+00:11:20.959 --> 00:11:27.040
+campo, déjalo como operador.
+Operador.
+
+00:11:27.360 --> 00:11:33.200
+Bueno, no me deja, pero ya lo tengo. E
+bueno, listo,
+
+00:11:31.560 --> 00:11:37.320
+listo. Bueno, ahí ahí se abre la
+parametrización varios varios cosas
+
+00:11:35.040 --> 00:11:41.360
+porque digamos que acá
+eh en la parametización entonces cuando
+
+00:11:39.240 --> 00:11:44.639
+uno va creando el rubro, ahorita
+hablamos del rubro, la creación de tipos
+
+00:11:42.720 --> 00:11:49.079
+de incentivos sería beca, sería como
+dices tú, un bono de, no sé, de
+
+00:11:46.880 --> 00:11:52.680
+recreación. Entonces eso abriría
+diferentes campos porque lo que dices
+
+00:11:50.600 --> 00:11:57.639
+tú, una beca de pronto diferentes tipos
+de de parámetros que se le piden para
+
+00:11:54.880 --> 00:12:01.399
+que aplique o ese tipo de cosas. Eh,
+entonces aquí se abrirían unas ramitas e
+
+00:11:59.959 --> 00:12:04.800
+creación de condiciones, incentivos, lo
+que dijiste.
+
+00:12:01.920 --> 00:12:09.839
+Pero digamos que en ese, o sea, por lo
+menos el rubro es un precio, o sea, es
+
+00:12:08.279 --> 00:12:14.880
+un número ya
+que que lo pone el gestor de de
+
+00:12:12.920 --> 00:12:20.279
+incentivos ya sabe, hay 100 millones de
+pesos para esto. Es lo que entiendo.
+
+00:12:16.600 --> 00:12:25.240
+Exactamente. Porque el ministerio ya
+ellos tienen ese pues ese dato, ¿sí me
+
+00:12:23.320 --> 00:12:29.120
+entiendes? Y ese rubro tiene que tener
+un tipo como una característica como que
+
+00:12:27.519 --> 00:12:33.839
+en la lista es una lista desplegable que
+diga ponle tu
+
+00:12:31.639 --> 00:12:37.519
+evento social como como acción social
+100 millones de pesos como algo como una
+
+00:12:36.399 --> 00:12:43.800
+característica o algo.
+No, no, no. Simplemente rubro
+
+00:12:40.480 --> 00:12:47.720
+rubro y el el
+precio, o sea, el número, tantos
+
+00:12:46.079 --> 00:12:53.399
+millones de pesos.
+Y ahí en las historias de usuario sale
+
+00:12:50.120 --> 00:12:59.839
+como, o sea, por cada asignación
+se va como eh teniendo la trazabilidad
+
+00:12:56.040 --> 00:13:03.160
+de del descuento
+como tal, o sea,
+
+00:13:01.600 --> 00:13:06.959
+se va,
+son 100 tiquetes de 1 millón y son 100
+
+00:13:05.160 --> 00:13:09.600
+millones. Eh, pues ya obviamente si se
+entregaron cinco quedan 95 millones. Eso
+
+00:13:08.959 --> 00:13:13.079
+es lo que te
+exactamente
+
+00:13:10.920 --> 00:13:17.600
+eso queda en la en la la reportería, en
+la auditoría,
+
+00:13:14.519 --> 00:13:22.959
+el conteo, la contabilización de de esos
+incentivos asignados.
+
+00:13:19.959 --> 00:13:26.040
+Okay. Eh, condiciones, ya dijimos
+creación de código en los códigos.
+
+00:13:24.880 --> 00:13:29.639
+Bueno, yo tengo las preguntas, si
+quieres vamos uno a uno porque ahí las
+
+00:13:27.760 --> 00:13:32.120
+preguntas caen eso. Son varias
+preguntas, pero no creo que sea
+
+00:13:30.959 --> 00:13:38.120
+complicadas que
+que no andemos tanto, que tiremos tanto
+
+00:13:34.240 --> 00:13:41.880
+tiempo. Eh, déjame ver aquí. Bueno, aquí
+yo tenía quién es el usuario final de
+
+00:13:39.600 --> 00:13:44.959
+los de los incentivos. Al final serían
+los deportistas, ¿no? Tú me dijiste
+
+00:13:43.440 --> 00:13:51.079
+también de personal de apoyo, es decir,
+los entrenadores. Eh, solamente
+
+00:13:49.399 --> 00:13:54.320
+con el módulo.
+¿Quiénes no interiénes no interactúan
+
+00:13:53.079 --> 00:13:57.079
+con el módulo? Los deportistas y
+entrenador.
+
+00:13:55.560 --> 00:14:00.759
+Exacto. No.
+Okay. Pero el usuario final a quien se
+
+00:13:59.199 --> 00:14:04.959
+le va a entregar es deportista y
+entrenador y personal de apoyo o
+
+00:14:02.320 --> 00:14:11.480
+entrenador
+para juegos.
+
+00:14:07.199 --> 00:14:16.360
+para es como digamos que es como un, o
+sea, yo le voy a otorgar a usuarios un
+
+00:14:14.680 --> 00:14:24.279
+incentivo que cumpla con las siguientes
+características, sea un deportista o sea
+
+00:14:20.480 --> 00:14:28.759
+un fisioterape, un médico,
+un fisioterapeuta,
+
+00:14:26.320 --> 00:14:35.279
+un médico, un o sea, no sé, como algo
+así, es el el como que el usuario.
+
+00:14:31.240 --> 00:14:41.920
+Ajá. Porque yo te puedo decir
+que voy a crear un que se crea un
+
+00:14:38.000 --> 00:14:45.360
+programa que va a otorgar beneficios
+para
+
+00:14:43.680 --> 00:14:50.920
+eh,
+no sé,
+
+00:14:47.519 --> 00:14:55.519
+eh, deportistas aficionados que no sé
+hacen tal cosa.
+
+00:14:53.199 --> 00:15:00.519
+Un ejemplo.
+Y ya ahí tiene que cumplir entonces esas
+
+00:14:57.959 --> 00:15:04.639
+características. como el tipo de
+usuario,
+
+00:15:02.399 --> 00:15:12.680
+eh edad,
+eh condición así como que gane o digamos
+
+00:15:09.639 --> 00:15:18.120
+que un año el ministerio sacanó los
+estudiantes que participaron en juegos
+
+00:15:16.199 --> 00:15:22.759
+intercolegiados, pero no es en juegos
+intercolegiados, les vamos a dar tal
+
+00:15:20.639 --> 00:15:27.399
+cosa. Entonces ya ahí se va como que
+armando para que contemple todo y no
+
+00:15:25.040 --> 00:15:30.680
+solamente lo de juegos intercolegiados,
+pero puede ser cualquier tipo de
+
+00:15:29.480 --> 00:15:34.079
+usuario,
+¿okay?
+
+00:15:32.120 --> 00:15:40.240
+Solo que para juegos sí es solamente
+para deportistas y personales de apoyo.
+
+00:15:37.360 --> 00:15:44.560
+Okay. Vale, perfecto. Bueno, en cuanto a
+rubro, vamos a ver, ya me explicaste que
+
+00:15:42.079 --> 00:15:48.880
+el rubro exactamente es un dinero, es
+una categoría presupuestal, tipo de
+
+00:15:47.000 --> 00:15:52.759
+beneficio, fuente de financiación, línea
+estratégica, o sea, lo que te decía, yo
+
+00:15:50.920 --> 00:15:57.199
+puedo colocarle que solamente sea
+dinero, pero futuramente quizás vayan a
+
+00:15:54.800 --> 00:16:01.440
+querer especificar una categoría, un
+tipo qué tipo de beneficio
+
+00:15:58.600 --> 00:16:04.160
+eso ya eso ya sería en el project como
+tal.
+
+00:16:02.319 --> 00:16:09.279
+En el project,
+exacto, eh.
+
+00:16:06.759 --> 00:16:16.040
+Okay, listo.
+Hm. Bueno, una pregunta, un un programa,
+
+00:16:13.440 --> 00:16:20.160
+es decir, acá
+podría tener varias fuentes de varios
+
+00:16:18.319 --> 00:16:26.839
+rubros, varias fuentes de dinero, que
+digamos el ministerio colocó 50 millones
+
+00:16:22.319 --> 00:16:30.759
+y hubo otro, no sé, deportes, eh, otra
+otro, ¿cómo se llama? Dime otro otra
+
+00:16:28.519 --> 00:16:33.639
+entidad, no sé.
+Puede haber más de un comité olímpico, o
+
+00:16:32.839 --> 00:16:37.240
+sea,
+exacto. Comité olímpico,
+
+00:16:37.839 --> 00:16:43.160
+¿no? O sea, está enfocado es ministerio,
+a lo que a los
+
+00:16:41.720 --> 00:16:48.199
+el ministerio es el único que asigna el
+r
+
+00:16:44.560 --> 00:16:52.360
+Sí, sí, eso tiene que ser un solo rubro.
+Okay. Vale. Eh,
+
+00:16:50.399 --> 00:16:56.759
+ya que se divide en tipo de incentivo,
+ya es otra cosa.
+
+00:16:54.279 --> 00:17:01.600
+Claro. En cuanto a eso sentivos, yo voy
+a crear unas categorías eh random, por
+
+00:16:59.600 --> 00:17:07.439
+así decirlo. Voy a ponerle bono,
+transporte, kit, inscripción, descuento,
+
+00:17:04.319 --> 00:17:11.039
+dinero. Eh, pero hay alguna de pronto
+alguna lista que de pronto que nosotros
+
+00:17:09.240 --> 00:17:15.120
+podamos pedir que ya venga algún
+programa anterior,
+
+00:17:13.400 --> 00:17:17.720
+¿no?
+Okay. O sea, me voy yo me voy a inventar
+
+00:17:16.319 --> 00:17:22.880
+esas esas
+Exacto. Pero igual si te das cuenta, o
+
+00:17:20.400 --> 00:17:28.720
+sea, como yo te lo he planteado,
+es eso es un nombre porque a la final
+
+00:17:25.600 --> 00:17:33.080
+eso lleva es cierta cantidad de dinero.
+Sí, a eso voy. Eh, que un incentivo
+
+00:17:31.000 --> 00:17:36.360
+puede tener un valor monetario o es
+cualitativo. Es decir, yo le puedo decir
+
+00:17:34.799 --> 00:17:41.679
+que es una beca, pero la beca es de un
+millón, ¿vale? O sea, le voy a dar como
+
+00:17:39.160 --> 00:17:45.840
+una categoría para que porque eso yo sé
+que va a pasar. van a decir que ese
+
+00:17:42.960 --> 00:17:49.640
+dinero es porque es una becaación, lo
+que hablamos esta ayer.
+
+00:17:48.320 --> 00:17:53.840
+Okay. Entonces, también puede ser ambas,
+puede ser cualitativo o puede tener un
+
+00:17:51.480 --> 00:17:57.480
+valor asociado o incluso podría ser nada
+más cualitativo y no decirle que es
+
+00:17:56.000 --> 00:18:03.440
+plata, sino que simplemente le dicen
+como que mira, esto es el ingreso un
+
+00:17:59.559 --> 00:18:08.320
+parque una beca salitre mágico y el pase
+pase el agre. Okay. Vale.
+
+00:18:05.919 --> 00:18:12.799
+Eh, condiciones del del incentivo,
+¿vale? E ya dijimos que las condiciones
+
+00:18:11.080 --> 00:18:17.919
+es, por ejemplo, la parametrización como
+edad, género, el estrato, quizás la
+
+00:18:15.320 --> 00:18:22.320
+disciplina, la categoría, la categoría
+deportiva, la zona que de pronto sea
+
+00:18:20.320 --> 00:18:27.159
+nada más para niños en zonas urbanas o
+zonas eh, ¿cómo se llama eso? El otro
+
+00:18:25.600 --> 00:18:32.200
+que es el campo
+rural. Exacto. Que tenga logros, eh, que
+
+00:18:29.880 --> 00:18:37.039
+se haga una matrícula, etcétera. Bueno,
+las condiciones ahí ya podrían ser
+
+00:18:34.760 --> 00:18:41.000
+combinadas, ¿no? Las combinadas es que
+tú sabes que en programación está an,
+
+00:18:39.159 --> 00:18:45.600
+que es I, o,
+entonces eh puede que se combinen
+
+00:18:43.480 --> 00:18:49.240
+ciertas eh eh, ¿cómo se llama?,
+condiciones, por ejemplo, como que puede
+
+00:18:47.400 --> 00:18:51.679
+que sea esta, pero también puede ser con
+esta,
+
+00:18:49.720 --> 00:18:56.559
+pero también esta. Sí.
+Okay, listo. Eh, bueno, esta pregunta de
+
+00:18:55.159 --> 00:19:01.760
+los códigos te la hice esta mañana. en
+los códigos los genera eh un sistema,
+
+00:18:59.080 --> 00:19:05.880
+digamos, ministerio, se generó 100 100
+códigos. Eh,
+
+00:19:03.559 --> 00:19:09.280
+por lo menos la experiencia que se tuvo
+con
+
+00:19:07.159 --> 00:19:14.679
+Juegos Intercolegiados funcionaba de esa
+forma, o sea, con unos códigos
+
+00:19:11.440 --> 00:19:20.280
+y mandaban un Excel.
+Sí, solamente que
+
+00:19:17.240 --> 00:19:23.240
+no te puede conseguir ese esa info.
+Hm.
+
+00:19:21.440 --> 00:19:26.520
+¿Quién nos podía ayudar a
+quién nos podía ayudar esa a conseguir
+
+00:19:24.720 --> 00:19:29.760
+esa información? Porque si es un Excel,
+de pronto el Excel viene hasta numérico,
+
+00:19:28.320 --> 00:19:34.440
+viene con longitud fija, viene con
+código de 10 dígitos, de pronto tiene
+
+00:19:32.039 --> 00:19:40.440
+una estructura fija con un prefijo de
+algún programa por año. Por ejemplo,
+
+00:19:36.520 --> 00:19:44.000
+viene 2026 GU MIN como de ministerio y
+ya sabemos que ese beneficio viene el
+
+00:19:42.000 --> 00:19:49.039
+ministerio y a futuro podría ser que
+venga 2027 gu call que col deporte por
+
+00:19:47.480 --> 00:19:52.360
+decirte algo. Entonces son diferentes
+bonos y podemos generar diferente
+
+00:19:50.840 --> 00:19:57.840
+trazabilidad en el tiempo de quiénes
+están dando eso. preguntado era
+
+00:19:55.159 --> 00:20:01.360
+precisamente para eso.
+Bueno, yo igual voy a seguir
+
+00:19:59.880 --> 00:20:04.240
+preguntando,
+¿sí? Porque ahorita en la
+
+00:20:02.720 --> 00:20:08.320
+parametrización cuando se crea el
+programa también entraría el tema de
+
+00:20:06.159 --> 00:20:13.600
+carga masiva. Por ejemplo, si a ti te
+mandan 1000 códigos de 1000 pesos, son
+
+00:20:11.440 --> 00:20:17.080
+1000 códigos y no vamos a poner al
+administrador, al gestor del de
+
+00:20:15.440 --> 00:20:20.600
+sentivos, que suba 1000 códigos uno a
+uno, sino que él tenga un cargo masivo y
+
+00:20:19.159 --> 00:20:26.120
+suba todo el Excel de todos los códigos,
+¿me entiendes? Entonces, eso sí me
+
+00:20:21.840 --> 00:20:29.840
+parece como importante también.
+Eh, por ejemplo, te podría venir en ese
+
+00:20:28.240 --> 00:20:34.600
+Excel el valor monetario, que cada
+código diga, mira, código tal un millón
+
+00:20:31.960 --> 00:20:38.679
+de pesos y no diga lo cualitativo, sino
+que ya se entiende que todo lo que viene
+
+00:20:36.080 --> 00:20:42.640
+ahí en ese paquete de Excel son becas de
+un millón de pesos. El archivo de Excel
+
+00:20:40.799 --> 00:20:46.000
+se llama becas, pero el código tiene un
+millón de pesos. Entonces, sí sería
+
+00:20:44.320 --> 00:20:49.400
+bueno tener esa información si lo trae
+así.
+
+00:20:48.440 --> 00:20:52.159
+Sí.
+Bueno, okay.
+
+00:20:51.480 --> 00:20:56.440
+Eh,
+yo voy a preguntar cómo se cargó eso.
+
+00:20:56.159 --> 00:21:01.760
+Sí,
+yo le estuve preguntando a Cami, pero no
+
+00:20:59.360 --> 00:21:05.640
+tenía idea.
+Eh, por ejemplo, preguntas como si un
+
+00:21:03.799 --> 00:21:11.840
+mismo código puede aplicarse a más de un
+programa o son únicos por programa.
+
+00:21:08.799 --> 00:21:16.320
+No, son únicos de ese
+de esa asignación, o sea, de Sí, de esa
+
+00:21:14.760 --> 00:21:19.480
+asignación.
+Okay. Eh, en cuanto al tiempo, por
+
+00:21:18.200 --> 00:21:23.480
+ejemplo, un código tiene valor
+monetario, pero también tiene vigencia
+
+00:21:21.080 --> 00:21:28.600
+propia. Es decir, estira solamente este
+código tiene vigencia de un año, 6 meses
+
+00:21:26.360 --> 00:21:31.480
+si no lo redimen. O sea, si el si el
+deportista no se acerca a decir, "Mira,
+
+00:21:29.880 --> 00:21:36.520
+yo me gané esto en 6 meses, ¿ese código
+se pierde? ¿O queda una ventana abierta
+
+00:21:33.919 --> 00:21:42.120
+de cierto tiempo o se expira?"
+M No lo planteé, la verdad. No, no,
+
+00:21:41.880 --> 00:21:46.919
+eh
+no lo en cuenta,
+
+00:21:44.919 --> 00:21:50.360
+pero
+exacto. Llévate esa pregunta porque yo
+
+00:21:48.600 --> 00:21:54.480
+sé que de pronto trasciende más allá de
+tocar tocar puertas al ministerio. No sé
+
+00:21:52.360 --> 00:21:58.919
+quién nos podrá ayudar que nos digan eso
+porque eso es super importante. O sea,
+
+00:21:57.039 --> 00:22:02.320
+¿qué pasa con un incentivo de un de un
+deportista? es un derecho que tiene, de
+
+00:22:00.400 --> 00:22:05.840
+pronto no debería nunca vencerse, dinero
+que entregan y si qué pasa si en el
+
+00:22:04.480 --> 00:22:10.320
+tiempo se pierde ese dinero, se queda
+ahí, se pierde. Eh, se llama, se
+
+00:22:08.360 --> 00:22:13.440
+contacta al deportista, se le hace un
+follow, un follow back, ¿me entiendes?
+
+00:22:11.840 --> 00:22:16.799
+Como un follow up, perdón, al
+deportista. Sería chévere. Sería chévere
+
+00:22:15.520 --> 00:22:22.039
+eso.
+Okay. Yo le yo pregunto.
+
+00:22:19.520 --> 00:22:25.679
+Eh, bueno, listo.
+¿Cómo? Bueno, en cuanto al tema la
+
+00:22:23.760 --> 00:22:30.880
+búsqueda del usuario, ya dijimos que es
+el el gestor de la persona que está en
+
+00:22:28.799 --> 00:22:36.559
+campo que pues busca al deportista con
+la cédula o con el con el tipo de
+
+00:22:32.720 --> 00:22:39.440
+documento, eh, o digamos cédula, tipo
+documento, nombre. Me imagino que ese
+
+00:22:38.159 --> 00:22:42.600
+campo de búsqueda tiene que ser bastante
+amplio para encontrar al deportista.
+
+00:22:41.640 --> 00:22:47.320
+Claro,
+ya dijimos que entonces la búsqueda
+
+00:22:44.159 --> 00:22:50.039
+sería a nivel de eventos, o sea, es
+decir, de pronto el buscador va a tener
+
+00:22:49.720 --> 00:22:54.679
+también un
+a nivel de eventos, a nivel de eventos y
+
+00:22:52.880 --> 00:22:58.360
+también que cumplan las condiciones que
+te dije.
+
+00:22:56.360 --> 00:23:03.000
+Okay. Pero es que bueno, lo que pasa es
+lo siguiente. Cuando yo creo la
+
+00:22:59.600 --> 00:23:09.240
+parametrización acá, él va a estar atado
+a unas condiciones. Entonces, e cuando
+
+00:23:07.000 --> 00:23:15.240
+yo busque
+esa cédula, el perfil de esa cédula va a
+
+00:23:13.600 --> 00:23:19.279
+tener, si tiene las condiciones, lo va a
+llamar. No sé si me explico.
+
+00:23:17.840 --> 00:23:22.720
+Entonces, por eso por eso digo que no
+hay que colocar como las las condiciones
+
+00:23:21.080 --> 00:23:26.480
+como en el filtro, no tiene, o sea, de
+pronto sí en el buscador podríamos
+
+00:23:24.200 --> 00:23:29.760
+colocar el evento que la edad, que todos
+los parámetros que está aquí para que se
+
+00:23:27.760 --> 00:23:37.760
+No, no, pero yo no me refiero a eso. O
+sea, que en el listado, o sea, cuando yo
+
+00:23:34.159 --> 00:23:44.200
+vaya a a buscar,
+si yo si no es de 18 años, pues no me
+
+00:23:42.240 --> 00:23:49.760
+van a salir los que tienen más de 18
+años. Ah, no, claro, claro.
+
+00:23:47.200 --> 00:23:52.679
+Es eso, ¿no?
+Yo digo es que la búsqueda es lo
+
+00:23:50.919 --> 00:23:56.720
+contrario porque lo primero que tú vas
+que te entregan es la cédula por tú.
+
+00:23:55.279 --> 00:24:01.200
+Entonces, lo que va a hacer el sistema
+en una consulta y eso tendría que
+
+00:23:58.159 --> 00:24:04.159
+hablarlo con Wman para ver que es mejor.
+Le hace una consulta de todas las
+
+00:24:02.520 --> 00:24:07.880
+cédulas, o sea, de la cédula en el
+sistema. de esas cédulas le va a apuntar
+
+00:24:06.080 --> 00:24:13.200
+si él quedó campeón, obviamente lo va a
+traer y si aplica para ese para ese
+
+00:24:10.760 --> 00:24:17.120
+beneficio, pues obviamente lo va a traer
+porque él dice, "Este es el campeón, lo
+
+00:24:15.000 --> 00:24:21.440
+encontró y este campeón está dentro de
+los parámetros de este incentivo y
+
+00:24:18.440 --> 00:24:25.039
+llámale incentivo." Sí, eso para mí es
+lo lógico, pero vamos a ver si se puede
+
+00:24:23.240 --> 00:24:28.240
+hacer así, porque si no lo que toca
+hacer es que aparte del ID, de la cédula
+
+00:24:27.080 --> 00:24:32.039
+coloquen todos los parámetros
+incentivos. Ey, ¿qué evento fue
+
+00:24:30.080 --> 00:24:37.960
+intercocolegiado? ¿Qué edad tienes tú?
+18 años. Eh, tú eres eh, ¿qué categoría?
+
+00:24:35.640 --> 00:24:41.039
+Juvenil. Entonces, él ya llama todo. Si
+encuentra un incentivo con esos
+
+00:24:39.279 --> 00:24:45.760
+parámetros, él jala el incentivo y lo
+llama. Pero para mí la primera acción es
+
+00:24:43.399 --> 00:24:48.240
+la la más rápida y la que menos fricción
+tiene porque mira que yo nada más meto
+
+00:24:46.960 --> 00:24:50.440
+en la cédula,
+no tengo que meter todos los demás
+
+00:24:49.600 --> 00:24:53.120
+campos. Para mí esa es la mejor
+experiencia, pero tengo que hablarlo con
+
+00:24:51.880 --> 00:24:58.880
+Juan.
+E entonces sería quedamos con que es un
+
+00:24:55.960 --> 00:25:03.000
+buscador global eh en toda la suite que
+pero le busca eh orientada hacia
+
+00:25:01.279 --> 00:25:08.600
+eventos, o sea, va a buscar el evento,
+o sea, sí, porque es que, o sea, él en
+
+00:25:04.679 --> 00:25:15.000
+el en no sé, o sea, yo buscando no me no
+me va a salir otros usuarios que ni
+
+00:25:11.120 --> 00:25:19.399
+están en el evento ni y estaban,
+digamos, no pasaron de fase municipal, o
+
+00:25:17.120 --> 00:25:23.279
+sea, esa gente no me tiene que salir.
+Okay.
+
+00:25:21.200 --> 00:25:26.399
+Eh, listo. ¿Qué qué se le muestra al
+usuario? Ya dijimos que debe mostrar
+
+00:25:25.000 --> 00:25:32.120
+pues toda la información del perfil del
+usuario, o sea, el nombre, el documento,
+
+00:25:29.039 --> 00:25:35.320
+el estado, el programa. Incluso yo creo
+que esta historia tiene el alcance del
+
+00:25:33.679 --> 00:25:38.679
+perfil del usuario, porque no no lo
+tengo a la mano, pero tú sabes que en el
+
+00:25:36.760 --> 00:25:42.120
+perfil del usuario están todos los
+eventos, el historial, incluso dice
+
+00:25:40.480 --> 00:25:46.120
+promociones, hay un tab de promociones y
+hay un tab de incentivos. Entonces, el
+
+00:25:44.320 --> 00:25:50.919
+alcance el alcance de esta historia
+también pega en esa de incentivos que
+
+00:25:48.200 --> 00:25:54.840
+ahí debe mostrarse todos los incentivos
+que él ha recibido o los que tiene por
+
+00:25:52.880 --> 00:25:58.399
+aplicar o por redimir, que eso también
+me abre otra pregunta. Ahí el usuario
+
+00:25:56.760 --> 00:26:02.960
+como deportista no solamente se podría
+acercar a e muéstrame el incentivo, sino
+
+00:26:00.720 --> 00:26:07.760
+que él se ingresa a su perfil, se va
+incentivo y se da cuenta que al ser
+
+00:26:04.440 --> 00:26:13.440
+campeón le apareció un bono eh en el
+sistema en su incentivo y él lo podría
+
+00:26:09.559 --> 00:26:17.679
+redimir, ¿no? Claro,
+eso eso es otro medio, o sea, ahorita no
+
+00:26:15.240 --> 00:26:24.480
+solamente
+y mira que también podría pasar de que,
+
+00:26:21.960 --> 00:26:31.279
+o sea, ya cuando yo establezco como esas
+condiciones del del incentivo
+
+00:26:28.679 --> 00:26:38.640
+que yo pueda, o sea, que en mi perfil yo
+diga, yo puedo aplicar a este incentivo.
+
+00:26:36.440 --> 00:26:43.360
+Todas estas características a mí me
+pueden otorgar este incentivo
+
+00:26:41.159 --> 00:26:48.600
+porque eso genera
+eh ya tú sabes que no se cojan la plata.
+
+00:26:46.520 --> 00:26:53.520
+Sí, sí. Ahí lo que estoy pensando es
+cómo sería porque por ejemplo, tú sabes
+
+00:26:51.360 --> 00:26:57.159
+que cuando se le acerca, cuando el
+deportista se acerca en campo, pues le
+
+00:26:55.640 --> 00:27:01.320
+toman la foto, ¿no? Lo buscan, lo
+encuentran y le toman la foto, ¿eh? Y te
+
+00:27:00.000 --> 00:27:04.760
+lo entregan. Vamos, mira, que este lo
+entrego y se lo entrega. Pero, ¿qué pasa
+
+00:27:02.919 --> 00:27:08.440
+si él no lo redime? sino que él va y
+después, ¿cómo es ese contacto con esa
+
+00:27:06.679 --> 00:27:12.120
+persona? No hay, ¿verdad? No hay forma.
+O sea, en la plataforma que él se mete a
+
+00:27:10.520 --> 00:27:16.279
+su perfil y y él ve, ah, mira, me
+apareció un incentivo, le voy a aplicar
+
+00:27:14.640 --> 00:27:20.000
+y ya alguien se contacta con él,
+acércate a tal lado para tal hora, tal
+
+00:27:18.720 --> 00:27:27.240
+fecha y que te vamos a entregar el
+incentivo. Y ahí es donde el el operador
+
+00:27:23.720 --> 00:27:30.320
+de campo le toma la foto, eh, sube y
+redime el bono, por así decirlo, como
+
+00:27:28.760 --> 00:27:34.360
+que dice, "Mira, este bono lo redimimos
+de pasa del estado por redimir a
+
+00:27:32.840 --> 00:27:37.840
+redimido."
+Eso es lo que yo entiendo.
+
+00:27:35.840 --> 00:27:43.159
+Pero mi pregunta es, ¿el scope da para
+eso? para que en el perfil del usuari
+
+00:27:40.159 --> 00:27:47.200
+del deportista de un botón que diga
+redimir y eso le genere una alerta a
+
+00:27:45.200 --> 00:27:51.080
+alguien que lo llame y llame al
+deportista o o que le digan como que
+
+00:27:48.960 --> 00:27:54.919
+llama a este número.
+No, no, no.
+
+00:27:52.960 --> 00:28:01.919
+O sea, eso todavía no está planteado
+porque hay que verlo, o sea, para los
+
+00:27:58.360 --> 00:28:07.519
+que son como para ministerio y eso van a
+cumplir como estas funcionalidades
+
+00:28:04.120 --> 00:28:11.559
+básicas que estamos colocando,
+pero eh ya más allá digamos que no se ha
+
+00:28:10.240 --> 00:28:18.039
+planteado porque esto tiene que ver
+mucho con el tema de de los proyectos.
+
+00:28:15.039 --> 00:28:18.039
+Ajá.
+
+00:28:18.240 --> 00:28:22.320
+Dale.
+Exactamente. O sea, eso no lo eso no lo
+
+00:28:21.679 --> 00:28:27.519
+incluiría.
+El stop sería en campo eh durante un
+
+00:28:25.240 --> 00:28:30.480
+evento. El evento se está dando, el niño
+ganó, el deportista ganó como campeón y
+
+00:28:29.440 --> 00:28:36.480
+él se acerca,
+pero no lo mires como en el evento, sino
+
+00:28:33.840 --> 00:28:43.039
+o sea cumpliendo este tipo de flujo, o
+sea, como pueden ser en un evento como
+
+00:28:38.760 --> 00:28:48.799
+un ministerio y puede crear un un
+qué? Un programa de incentivos. donde
+
+00:28:46.600 --> 00:28:57.159
+asigna un rubro, dice tal cosa y dice
+que se lo va a dar a deportistas
+
+00:28:53.760 --> 00:28:59.840
+que estén registrados, una cosa así.
+Pero entonces ahí hay un canal de
+
+00:28:58.320 --> 00:29:04.559
+comunicación de parte de ministerio para
+esos programas, ¿no? Donde él dice a
+
+00:29:02.039 --> 00:29:09.880
+través de la web, mira ahí está bec y
+alguien se da cuenta ingresa y y aplica
+
+00:29:07.960 --> 00:29:13.360
+y dice, "Mira, yo llamé o llegué al
+puesto de control porque si te das
+
+00:29:11.279 --> 00:29:16.640
+cuenta, yo puedo crear el incentivo,
+pero si no es en campo, no es al
+
+00:29:14.679 --> 00:29:20.720
+finalizar un evento, ¿cómo llega el
+deportista a decirle a tocarle el hombro
+
+00:29:19.000 --> 00:29:24.640
+a alguien de de que es el administrador
+de incentivo y decirle, "Mira,
+
+00:29:22.360 --> 00:29:29.080
+verifícame que yo aplico para esto,
+¿dónde lo hace él?"
+
+00:29:26.039 --> 00:29:34.279
+Exacto. O sea, de ese modo pues no está
+planteado, como te digo, o sea, lo
+
+00:29:30.760 --> 00:29:38.960
+tenemos es eh bajo estos criterios
+porque como él se va a enlazar
+
+00:29:37.120 --> 00:29:43.720
+con
+con ¿cómo es que se llama?
+
+00:29:41.519 --> 00:29:47.399
+con el project, pues no lo podemos
+enseguida plantear porque ya hay como
+
+00:29:45.519 --> 00:29:52.120
+que varias cosas ahí que hay que tener
+en cuenta, pero sí hasta ahora es
+
+00:29:50.320 --> 00:29:56.039
+simplemente asignarlo, o sea, que yo
+pueda buscar una persona, o sea,
+
+00:29:53.559 --> 00:30:01.559
+independientemente de si llega o no
+llega, que yo pueda buscar a la persona.
+
+00:29:59.559 --> 00:30:04.600
+Okay, vale, listo. No, es que vuelve y
+te digo, a mí me huele la cabeza por
+
+00:30:03.000 --> 00:30:07.440
+eso, porque yo no yo quiero cerrar el
+flujo,
+
+00:30:05.600 --> 00:30:11.159
+¿eh? ¿Y qué pasa con el persona que no
+sabe que hay un hay un programa
+
+00:30:09.279 --> 00:30:16.840
+corriendo, deportista o de pronto el
+deportista? Fíjate que que yo te decía
+
+00:30:14.519 --> 00:30:21.519
+que digamos que yo cumplo todas las
+condiciones y a mí me están diciendo que
+
+00:30:19.720 --> 00:30:27.559
+yo puedo
+eh yo puedo recibir un incentivo porque
+
+00:30:24.760 --> 00:30:32.960
+cumplo todas esas condiciones. Si es
+como lo que el el
+
+00:30:30.039 --> 00:30:37.600
+el paso a seguir con este módulo que es
+menos orientado a eventos y más
+
+00:30:34.760 --> 00:30:43.120
+orientado como a la operación de de
+ministerio.
+
+00:30:39.600 --> 00:30:48.320
+Okay. Una pregunta, eh, cuando, ¿qué
+pasa si la persona que le buscan no es
+
+00:30:46.720 --> 00:30:53.720
+legible? Simplemente no le aparece en la
+búsqueda dice, este perfil, o sea, esta
+
+00:30:50.600 --> 00:30:57.880
+este tipo de documentos o deportista no
+es no tiene ningún
+
+00:30:55.799 --> 00:31:00.960
+no se le diría como que no tiene ningún
+incentivo habilitado o ningún incentivo
+
+00:31:00.279 --> 00:31:05.760
+aplicable.
+Eso, o sea, porque significa que no está
+
+00:31:02.880 --> 00:31:11.639
+cumpliendo con las características, a no
+ser que haya un error en plataforma y no
+
+00:31:08.440 --> 00:31:17.279
+aparece. Digamos que en esos casos el
+proceso a seguir, eh verificar en la
+
+00:31:14.840 --> 00:31:23.039
+plataforma toda la todo el usuario, toda
+la trazabilidad del usuario, eh fechas
+
+00:31:20.559 --> 00:31:26.440
+en que se digamos esto que pasó que te
+comentaba
+
+00:31:24.600 --> 00:31:31.159
+que pasó muchísimo para juegos
+intercolegiados que pues en el
+
+00:31:29.159 --> 00:31:36.360
+desarrollo habían varias varios
+obstáculos
+
+00:31:33.000 --> 00:31:42.120
+y lo que se hacía era ingresar al módulo
+como tal de inscripciones
+
+00:31:39.120 --> 00:31:48.360
+ver
+eh buscar al deportista,
+
+00:31:44.960 --> 00:31:55.000
+perdón, al personal de apoyo eh cuando
+se inscribió, cuando se asignó y como
+
+00:31:51.880 --> 00:32:01.880
+nosotros no dejamos ese flujo planteado
+desde un inicio, eso nos generó
+
+00:31:59.039 --> 00:32:06.760
+muchísimo. Habían que hacer consultas
+directamente en la base de datos porque
+
+00:32:03.760 --> 00:32:12.039
+no la no la teníamos.
+Okay. Bueno, eh, perfecto. La otra
+
+00:32:10.159 --> 00:32:17.159
+pregunta que te digo es que quería saber
+era cómo cómo han pensado el sistema de
+
+00:32:15.519 --> 00:32:20.399
+cómo el sistema elige, porque tú sabes
+que esto puede ser automático. tuvimos
+
+00:32:18.679 --> 00:32:25.600
+unos unos códigos, independientemente
+que sean carga masiva o no, 100 códigos,
+
+00:32:22.919 --> 00:32:31.080
+pero el momento de la asignar ese código
+a un deportista, ese esa asignación es
+
+00:32:28.519 --> 00:32:35.039
+eh automática, es decir, vamos uno a
+uno, ya se asignó el 01, después ya al
+
+00:32:33.399 --> 00:32:43.639
+redimir el 01, ya queda el siguiente es
+el 02 o eh se podría una lista
+
+00:32:39.799 --> 00:32:49.120
+cuando ya yo digamos, bueno, ahí 1 2 3,
+o sea, el código es 1 2 3 4 5 6 7
+
+00:32:48.000 --> 00:32:52.639
+10.
+Ajá.
+
+00:32:50.120 --> 00:32:57.919
+Entonces llega a Douglas y yo le asigné
+el dos, digamos así.
+
+00:32:55.399 --> 00:33:03.919
+O sea, yo tengo en mi lista que ya yo
+Exactamente ya el el número dos ya no lo
+
+00:33:01.320 --> 00:33:07.279
+puedo utilizar nadie.
+Okay.
+
+00:33:05.320 --> 00:33:09.840
+Ya. Entonces,
+sí,
+
+00:33:08.159 --> 00:33:15.159
+no, eso me abre la pregunta rápida antes
+que se me olvide. Si yo, por ejemplo, ya
+
+00:33:12.440 --> 00:33:17.760
+creo un programa con 100 códigos y lo
+publiqué, porque eso es así. O sea, yo
+
+00:33:16.760 --> 00:33:22.440
+me imagino que al final del código
+parametricio lo publico, le doy a
+
+00:33:19.320 --> 00:33:26.000
+activar programa. Eh, yo podría editar
+ese programa nuevamente con nuevos
+
+00:33:23.799 --> 00:33:29.679
+códigos
+o porque el ministerio sí o sea, por
+
+00:33:28.559 --> 00:33:32.679
+ejemplo, son 100 códigos que dio el
+ministerio y después el ministerio a las
+
+00:33:31.120 --> 00:33:37.760
+dos semanas dice, "No, mira, voy a
+habilitar 50 códigos más porque hay más
+
+00:33:35.320 --> 00:33:42.799
+presupuesto. ¿Se puede editar ese
+programa de 100 a 150 códigos?"
+
+00:33:41.039 --> 00:33:46.120
+Bueno, no lo tenía planteado en
+realidad.
+
+00:33:44.760 --> 00:33:49.200
+Eh,
+sí,
+
+00:33:46.760 --> 00:33:53.760
+yo diría, o sea, no sé si eso se puede
+presentar, honestamente no sé.
+
+00:33:51.960 --> 00:33:56.960
+Okay. Porque si eso pasara y no se
+podría editar, tocaría duplicarlo y
+
+00:33:55.639 --> 00:34:00.360
+crear
+eh 50, o sea, meter los nuevos 50
+
+00:33:58.840 --> 00:34:05.159
+códigos, que también es otra solución.
+Exacto. O sea, lo que sería sería
+
+00:34:02.519 --> 00:34:09.040
+modificar el rubro.
+Ajá.
+
+00:34:05.519 --> 00:34:13.240
+Y y
+lo lo exactamente los códigos
+
+00:34:11.800 --> 00:34:16.960
+sería así.
+Aunque eso está complicado un poquito
+
+00:34:14.639 --> 00:34:21.040
+porque tendrían que ser 50 códigos de de
+1 millón porque no podrían ser de 2
+
+00:34:19.480 --> 00:34:24.639
+millones porque ya sería mitad de 25
+millones. To tocaría hacer como un cauto
+
+00:34:23.399 --> 00:34:28.399
+cálculo, o sea, tendría que tener como
+mismo parámetro. Si cada uno es de 1
+
+00:34:26.560 --> 00:34:33.760
+millón.
+Sí, porque o sea, si tú agregas 50
+
+00:34:30.159 --> 00:34:38.720
+nuevos campos y y son, digamos, 50
+millones, tendrían que ser de 1 millón
+
+00:34:36.040 --> 00:34:43.480
+cada código, cada cada rubro en total de
+los 50, ¿entiendes? Porque si si tú
+
+00:34:41.280 --> 00:34:49.440
+pones 2 millones sería nada más 25 cupos
+que quedaría faltando 25 códigos más.
+
+00:34:46.960 --> 00:34:53.560
+Okay. Eso va dependiendo al tipo de
+incentivo que tú vayas a dar.
+
+00:34:51.560 --> 00:34:56.800
+Mm.
+Pero te dejo la pregunta ahí porque
+
+00:34:54.760 --> 00:34:59.800
+puede pasar. ¿Qué pasa si quisiera
+aumentar el rubro o los números de
+
+00:34:58.599 --> 00:35:03.520
+código?
+Eso
+
+00:35:01.200 --> 00:35:09.680
+sucedería, o sea, de pronto en juegos
+intercolegiados, ¿no? Porque eso no, eso
+
+00:35:06.200 --> 00:35:15.800
+está recontraaprobado.
+Y
+
+00:35:11.839 --> 00:35:22.400
+este ya para efectos de la suite como
+tal, que vayan a hacer esos programas,
+
+00:35:18.960 --> 00:35:27.839
+digamos que no sé, lo pueden reutilizar
+el programa
+
+00:35:24.599 --> 00:35:31.200
+eh en una edición diferente. No sé si me
+si me hago entender. Mm.
+
+00:35:30.880 --> 00:35:36.560
+Okay.
+Entonces yo diría que sí, pero es de esa
+
+00:35:33.280 --> 00:35:43.560
+forma, o sea, es viendo, o sea,
+actualizando el rubro y viendo
+
+00:35:40.880 --> 00:35:49.440
+eh a qué tipo de incentivo yo les voy a
+agregar para que ahí sí, porque si yo
+
+00:35:46.000 --> 00:35:56.440
+parametricé que van a haber eh
+incentivos de tantos pesos, eh yo
+
+00:35:53.440 --> 00:36:01.359
+selecciono ese mismo y se me va pues
+calculando de esa forma, decirlo así.
+
+00:35:59.319 --> 00:36:06.880
+Okay.
+Una pregunta, eh después de que se
+
+00:36:03.480 --> 00:36:12.560
+asigna el código, eh pasa obviamente el
+estado de por redimir a redimido, ese
+
+00:36:10.359 --> 00:36:16.400
+redimido no podría cambiarse, o sea, a
+menos que se pueda revertir. Por ahí vi
+
+00:36:14.760 --> 00:36:23.440
+que hay una opción que dice
+que pero es que allí no es como redimido
+
+00:36:21.400 --> 00:36:28.560
+porque es como asignado, o sea, yo lo
+voy a asignar y ya.
+
+00:36:25.599 --> 00:36:32.079
+Okay, listo. Entonces sería por asignar
+y asignado los estados.
+
+00:36:30.680 --> 00:36:36.040
+Exactamente.
+Okay. ¿Y qué pasa si quiero anular o
+
+00:36:34.280 --> 00:36:44.160
+reversar una asignación? Anular. ¿Por
+qué habría de anularse una asignación?
+
+00:36:40.359 --> 00:36:48.480
+Errores. Eh, no se asignó a la persona
+que era, o sea,
+
+00:36:46.280 --> 00:36:51.359
+pero anular quiere decir que se le quita
+la asignación a esa persona y vuelve a
+
+00:36:50.040 --> 00:36:55.440
+estar validada otra vez.
+Exacto. Sí. Yo le yo le di a Douglas el
+
+00:36:53.640 --> 00:36:59.000
+dos y ya no le voy a dar. Entonces el
+dos otra vez está disponible para
+
+00:36:57.520 --> 00:37:01.400
+asignarlo.
+Okay.
+
+00:37:00.200 --> 00:37:04.839
+Eh, solamente lo pueden hacer los
+administradores, es decir, que el
+
+00:37:02.839 --> 00:37:08.800
+administrador podría entrar al panel de
+del programa, o sea, al programa, ver
+
+00:37:06.680 --> 00:37:13.839
+los códigos y decir revertir. Y al
+momento de darle revertir, pues daría o
+
+00:37:11.200 --> 00:37:18.640
+anular daría una razón, un motivo por
+qué lo está revertiendo. Eh, modifica el
+
+00:37:16.520 --> 00:37:23.240
+stock de códigos, se registra anulación
+si posible, o sea, esta registro sería
+
+00:37:20.680 --> 00:37:29.319
+en el en el historial. en el en el me
+imagino que hay como un change de de lo
+
+00:37:26.119 --> 00:37:32.920
+que se ha redimido y bueno, se registra
+enulación, se puede volver a asignar el
+
+00:37:31.280 --> 00:37:37.880
+código, debe contar con tu solidar
+estado. Okay, listo. Vale, está listo.
+
+00:37:35.640 --> 00:37:41.800
+Eso es lo que te decía que estaría como
+nuevamente disponible para que lo
+
+00:37:39.760 --> 00:37:46.160
+ascienden a otra persona.
+Okay.
+
+00:37:43.520 --> 00:37:49.839
+Eh, listo.
+La notificación es simplemente cuando yo
+
+00:37:47.920 --> 00:37:54.599
+le digo asignar con la persona, aquí
+busco la cédula, bueno, aplicaste, le
+
+00:37:52.280 --> 00:37:58.839
+voy a dar asignar si eres eres legítimo
+para ese incentivo. Le doy a asignar,
+
+00:37:56.680 --> 00:38:03.640
+ahí sale un mensajito. Este incentivo
+tal ha sido asignado a tu a tu perfil,
+
+00:38:01.520 --> 00:38:06.760
+eh, disfrútalo. Y ya esa es la única
+notificación que se le da. No se le da
+
+00:38:04.960 --> 00:38:10.280
+notificación por correo ni por mensaje
+de texto. Nada.
+
+00:38:09.160 --> 00:38:15.920
+No, no, no.
+Okay. Vale. Lo que a ver, diversión y
+
+00:38:13.680 --> 00:38:20.319
+quién. Okay, ya sabemos que el único que
+puede revertir es el gestor de
+
+00:38:17.160 --> 00:38:26.240
+incentivos. E
+me requiere motivo, ya dijimos. Eh,
+
+00:38:24.839 --> 00:38:30.640
+lo de la ventana de tiempo no se sabe
+todavía, ¿no? O sea, si se la asigna, él
+
+00:38:28.760 --> 00:38:33.440
+verá si lo aplica o no. Es lo que
+entiendo.
+
+00:38:31.599 --> 00:38:38.319
+Exacto. Porque no lo van, o sea,
+nosotros no
+
+00:38:35.440 --> 00:38:45.040
+eh por ahora no estamos llevando como el
+seguimiento,
+
+00:38:41.040 --> 00:38:48.880
+sino la asignación y ya.
+Ve acá y cuando se le asigna que sale
+
+00:38:47.040 --> 00:38:54.599
+esa ventana de felicitaciones, ahí no
+debería salir eh como que mira este
+
+00:38:51.839 --> 00:38:59.400
+incentivo es un millón de pesos eh para
+que te bastes en helado, por decirte
+
+00:38:56.440 --> 00:39:03.480
+algo. Entonces, ¿cómo él cómo son esos
+convenios? O sea, ¿cómo eso sería un
+
+00:39:01.319 --> 00:39:07.240
+algún PDF, algo que le imprime? ¿O eso
+simplemente es una notificación que se
+
+00:39:04.640 --> 00:39:11.520
+le dice, mira, ya atiéndete con esta
+persona, llama este número o cómo es?
+
+00:39:09.800 --> 00:39:18.800
+¿Cómo se llama el incentivo allá en
+No, o sea, allá es lo asigno
+
+00:39:15.920 --> 00:39:24.680
+y bueno, no sé cómo lo entregan
+literalmente, o sea, de
+
+00:39:22.560 --> 00:39:27.720
+si le entregan la plata, o sea,
+eso se encargan allá en campo, eso no
+
+00:39:26.160 --> 00:39:30.079
+nos encargamos nosotros,
+eso no
+
+00:39:28.480 --> 00:39:33.319
+le entregan un cheque grande de un
+millón de pesos y ellos verán y le dicen
+
+00:39:31.520 --> 00:39:37.280
+allá, cómo son los pasos para redimir
+eso.
+
+00:39:34.119 --> 00:39:43.440
+Exactamente. Ya, eso es aparte.
+Okay. Eh, eso mismo que listo.
+
+00:39:42.280 --> 00:39:46.839
+Bueno, aquí lo de los roles y los
+permisos fue lo que yo te envié por
+
+00:39:45.040 --> 00:39:50.079
+Slack, porque ese sí no sé si de pronto
+lo íbamos a tener en tiempo real, que
+
+00:39:48.560 --> 00:39:55.680
+era, ya sabemos cuáles son los roles, ya
+sabemos que es un gestor de incentivos y
+
+00:39:52.119 --> 00:39:59.640
+e el responsable en campo o operador,
+que es lo mismo, ¿no? Pero digamos que
+
+00:39:57.839 --> 00:40:04.480
+el operador de campo, ¿qué podría haber?
+O sea, el operador de campo solamente
+
+00:40:01.599 --> 00:40:10.640
+puede consultar,
+consultar y darle asignar.
+
+00:40:07.119 --> 00:40:15.040
+Okay. No puede editar el el programa
+porque solamente que lo puede hacer es
+
+00:40:11.920 --> 00:40:20.400
+el gestor de incentivos, ¿no? Eh, el
+operador de campo sí puede revertir o no
+
+00:40:17.000 --> 00:40:23.319
+puede. Solamente es el gestor de de de
+O sea, al gestor te refieres al
+
+00:40:22.040 --> 00:40:27.040
+administrador.
+Ajá. Exacto, exacto.
+
+00:40:25.119 --> 00:40:30.319
+Okay. Sí, sí. El único que puede
+revertir es el administrador.
+
+00:40:29.200 --> 00:40:34.560
+Mm.
+O sea, si el operador la la embarra en
+
+00:40:32.839 --> 00:40:37.800
+campo, no le di un código de un
+incentivo que no era porque no sé, creo
+
+00:40:36.359 --> 00:40:41.440
+no creo que pueda pasar porque ya
+dijimos que los parámetros no deberían
+
+00:40:39.160 --> 00:40:45.000
+permitirlo, pero pone tú que le dio le
+dio un código que no quería. No sé en
+
+00:40:43.560 --> 00:40:47.880
+qué escenario puede pasar porque si son
+lo mismo todos, a menos que hayan
+
+00:40:46.280 --> 00:40:50.599
+códigos del mismo incentivo que cambien
+mínimamente, que uno le da un helado y
+
+00:40:49.440 --> 00:40:53.800
+el otro no.
+En dentro de todo, ¿sí me entiendes? y
+
+00:40:51.960 --> 00:40:58.200
+el pelado quería el del helado o le
+tocaba el del helado. Entonces, eh el
+
+00:40:56.359 --> 00:41:01.960
+operador viene y contacta a un gestor de
+o al admin, que es lo mismo, y le dice,
+
+00:40:59.880 --> 00:41:05.599
+"Mira, necesito revertir este porque le
+di el que no era." Entonces, el único
+
+00:41:03.160 --> 00:41:08.960
+que puede hacer eso es el admin.
+Así es.
+
+00:41:07.000 --> 00:41:13.960
+Eh, en la jerarquía territorial, por
+ejemplo, tú sabes que nosotros manejamos
+
+00:41:10.480 --> 00:41:17.839
+nacional, regional y municipal. eh los
+gestores, es decir, el gestor de
+
+00:41:15.560 --> 00:41:20.960
+incentivos o el admin, solamente va a
+ver su zona o va a ver todo. Por
+
+00:41:20.040 --> 00:41:26.160
+ejemplo, un gestor,
+¿cómo así su zona?
+
+00:41:23.000 --> 00:41:30.640
+Eh, por ejemplo, un gestor de incentivos
+del Atlántico, se registró, él es de
+
+00:41:28.520 --> 00:41:34.440
+aquí del Atlántico. Él solamente puede
+ver los incentivos que se dan en su zona
+
+00:41:32.520 --> 00:41:39.440
+Atlántico o él puede ver los incentivos
+de todo.
+
+00:41:34.960 --> 00:41:44.560
+Ah, no, no. Es que es un solo es un solo
+es una sola persona en eso porque eso se
+
+00:41:41.640 --> 00:41:48.599
+da solamente en la última etapa.
+Okay. Okay. O sea, entonces debería ver
+
+00:41:47.160 --> 00:41:51.599
+todo, todos los incentivos de toda la
+plataforma,
+
+00:41:52.240 --> 00:41:59.079
+¿cómo
+del evento, él debería ver todos los los
+
+00:41:56.440 --> 00:42:03.040
+incentivos de ese evento de todo el
+país, o sea,
+
+00:42:00.280 --> 00:42:06.119
+Exacto, porque sí, la persona que que
+encargan de eso es una persona de
+
+00:42:04.599 --> 00:42:09.760
+ministerio.
+Okay. Entonces es una jerarquía super
+
+00:42:07.680 --> 00:42:15.160
+alta, un gestor que tiene una jerarquía
+alta, ve todo,
+
+00:42:12.359 --> 00:42:19.079
+puede editar, puede crear, puede ver y
+pues tiene una jerarquía territorial
+
+00:42:16.800 --> 00:42:24.200
+nacional.
+Sí, eso es una sola persona citando eso.
+
+00:42:22.800 --> 00:42:29.079
+Yo creo que esta pregunta sí es válida,
+que es un un deportista puede eh aplicar
+
+00:42:27.520 --> 00:42:32.839
+o tener varios incentivos vigentes al
+mismo tiempo, ¿cierto? Porque dijimos
+
+00:42:30.400 --> 00:42:37.720
+que puede ser que la línea, la ventana
+de tiempo se ganó un concurso, no sé, un
+
+00:42:36.359 --> 00:42:41.319
+Ah, exacto.
+Hace 6 meses, pero hace dos semanas ganó
+
+00:42:39.720 --> 00:42:44.319
+uno, entonces se le se le van
+acumulando, tengo entendido.
+
+00:42:42.960 --> 00:42:46.359
+Exacto.
+Okay.
+
+00:42:44.720 --> 00:42:53.240
+Mira, te voy a te voy a pasar un
+documento que me mandó Cami, que era
+
+00:42:49.160 --> 00:42:56.920
+como lo que firmaban para entregárselo.
+Okay.
+
+00:42:54.000 --> 00:43:02.440
+Que con esto construyeron el formulario.
+Es
+
+00:42:59.040 --> 00:43:02.440
+Okay. me sirve.
+
+00:43:02.800 --> 00:43:08.760
+¿Hay alguna caso que hayas escuchado
+alguna vez que hay incentivos que
+
+00:43:06.440 --> 00:43:16.319
+excluyan a otro? Por ejemplo, si gana A,
+no puede tener B.
+
+00:43:11.400 --> 00:43:23.040
+Mm. No, o sea, como tal es un es una
+sola asignación. O sea, yo te doy esto,
+
+00:43:21.359 --> 00:43:29.319
+pero no significa que vas a volver y te
+voy a dar otro bono, o sea,
+
+00:43:26.319 --> 00:43:29.319
+okay.
+
+00:43:34.599 --> 00:43:37.760
+Y ya
+
+00:43:38.880 --> 00:43:45.079
+déjame que estoy leyendo esto porque la
+la sesión que viene ya es como la la de
+
+00:43:43.359 --> 00:43:49.640
+reportería y la trazabilidad. Por
+ejemplo, ¿qué KPIs entendemos por KPIs?
+
+00:43:47.960 --> 00:43:54.920
+Estas tarjeticas que son las tarjeticas
+que colocamos de analítica. Eh,
+
+00:43:52.839 --> 00:43:58.920
+por ejemplo, eh, se quieren ver en el
+dashboard, por ejemplo, inventario
+
+00:43:57.119 --> 00:44:03.520
+disponible, es decir, que un gestor de
+incentivos o un administrador vea como
+
+00:44:01.200 --> 00:44:09.800
+que, mira, tienes ahora mismo se te
+asignaron, no sé, Ministerio te dio 1000
+
+00:44:07.240 --> 00:44:15.559
+cupos para 1000 incentivos, los tienes
+ahí aguantados, nada más has asignado
+
+00:44:11.280 --> 00:44:20.240
+80, eh, has revertido tantos, eh, tienes
+cierto porcentaje de en ejecución o hay
+
+00:44:18.440 --> 00:44:27.200
+alertas, no sé, alertas como de que se
+están anulando mucho. muchos eh muchos
+
+00:44:24.800 --> 00:44:32.200
+muchos incentivos. ¿Ese tipo de de
+analítica tiene validez o hay alguna
+
+00:44:29.559 --> 00:44:36.720
+otra que que de pronto sea de más alto
+valor?
+
+00:44:34.960 --> 00:44:39.760
+Me perdí.
+Sí. Por ejemplo, haz de cuenta que tú
+
+00:44:37.800 --> 00:44:42.760
+eres un gestor de incentivos, como ya
+dijimos que es alguien de ministerio.
+
+00:44:41.000 --> 00:44:45.960
+Alguien de ministerio le interesaría ver
+qué está pasando con todos esos
+
+00:44:44.200 --> 00:44:49.000
+incentivos que sea
+entonces por ejemplo, él entra al
+
+00:44:47.319 --> 00:44:51.559
+dashboard y ve, okay, como yo tengo a
+nivel nacional todos los incentivos,
+
+00:44:50.319 --> 00:44:57.839
+quiero ver
+como un como un rol de visualizador,
+
+00:44:55.760 --> 00:45:02.079
+¿sí? O sea, que ve unas tarjeticas así
+como las que mostramos esta mañana en
+
+00:44:59.319 --> 00:45:08.680
+analítica. como el resumen. Sí,
+pero o sea, yo diría que eso sería muy
+
+00:45:05.079 --> 00:45:13.000
+bueno. O sea, este no era el eh no, este
+no era el cas,
+
+00:45:10.400 --> 00:45:17.280
+digamos que no, o sea, para el año
+pasado digamos que ellos no pedían como
+
+00:45:14.960 --> 00:45:21.880
+un reporte o una cosa así.
+Ajá.
+
+00:45:18.079 --> 00:45:27.720
+Pero eso puede ser muy bueno porque pues
+uno de los pilares para este módulo es
+
+00:45:24.880 --> 00:45:31.640
+la transparencia.
+Ajá.
+
+00:45:29.440 --> 00:45:39.319
+Entonces sería como muy bueno tener como
+ese rol visualizador del dash.
+
+00:45:36.680 --> 00:45:43.040
+Sí. Bueno, yo voy a ver qué qué datos,
+qué KPI pueden ser. Por ejemplo, el
+
+00:45:41.079 --> 00:45:48.160
+número de revertidos es un buen dato
+porque pues como me imagino que será un
+
+00:45:45.040 --> 00:45:52.520
+admin general o no sé si es que se le da
+un admin, cada quien se genera, entonces
+
+00:45:50.079 --> 00:45:57.000
+ellos pueden ver cada admin. de cuenta
+que dan 100 admin, 100 gestores de
+
+00:45:55.000 --> 00:46:02.200
+incentivos en todo el país. Entonces,
+cada uno entra y va a ver como él
+
+00:46:00.160 --> 00:46:06.119
+cuántos incentivos ha dado, cuántos
+incentivos él ha anulado, pero en
+
+00:46:03.960 --> 00:46:09.520
+general puede haber alguien más arriba
+que podría ver que se han dado el
+
+00:46:07.800 --> 00:46:13.200
+conjunto de todos esos incentivos de
+todas esos 100 personas que son
+
+00:46:11.000 --> 00:46:16.400
+administradores y cuántos han anulado
+ellos. alguien que los administre a
+
+00:46:15.040 --> 00:46:20.480
+ellos, que sería el de ministerio, pero
+esa figura no existe. O sea, dijimos que
+
+00:46:18.079 --> 00:46:24.960
+solamente hay dos roles, el gestor de
+incentivos y el el operador en campo.
+
+00:46:23.520 --> 00:46:28.880
+Entonces, por ahora
+el gestor de incentivo vería como a
+
+00:46:27.160 --> 00:46:33.920
+grandes rasgos cuántos todos han
+anulado, cuántos están anulando,
+
+00:46:31.280 --> 00:46:37.319
+¿entiendes? que es diferente al al
+usuario, porque yo puedo decir en la
+
+00:46:35.520 --> 00:46:42.920
+trazabilidad, en el historial, puedo
+decir Juan Hernández anuló eh tal
+
+00:46:40.839 --> 00:46:47.720
+incentivo, Pedro Pérez anuló tal
+incentivo, es diferente. Él puede ver un
+
+00:46:44.760 --> 00:46:51.800
+dashbo general, se están anulando 80% de
+los de los de los incentivos. Ahí hay
+
+00:46:49.240 --> 00:46:54.200
+una alerta una alerta enorme. No quiere
+decir que lo haga una sola persona
+
+00:46:53.040 --> 00:46:58.480
+porque en nuestras saludad se da a ver
+que todo el mundo independientemente ha
+
+00:46:56.079 --> 00:47:03.440
+ido anulando. Entonces es ese tipo de
+KPI, ¿no? Voy a ver cuál se pueden
+
+00:47:00.640 --> 00:47:07.839
+colocar. No creo que esté en el alcance,
+pero sí podríamos tenerlo como un nice
+
+00:47:05.359 --> 00:47:11.480
+to have eh, una vez se tenga el alcance
+uno.
+
+00:47:10.240 --> 00:47:14.520
+Okay.
+Eh,
+
+00:47:13.000 --> 00:47:20.480
+eso mismo necesitaría, obviamente lo de
+siempre, poder descargar ese ese
+
+00:47:17.319 --> 00:47:26.480
+exportable, ya sea en PDF, en SBG, eh
+Excel. E
+
+00:47:24.599 --> 00:47:30.319
+bueno, la auditoría es la de siempre. Ya
+sabemos quién se le asigna a alguien lo
+
+00:47:28.200 --> 00:47:32.800
+que acabo de decir. Eh, Juan Pérez eh
+anuló
+
+00:47:30.839 --> 00:47:36.640
+y satar la trazabilidad,
+¿quién? ¿Cuándo y dónde y en qué
+
+00:47:34.599 --> 00:47:42.760
+dispositivo y si es posible la foto del
+avatar que ya la tenemos? E
+
+00:47:40.440 --> 00:47:45.520
+la última ya para cierre, o sea, ¿tú
+crees que hay flujos alternos? Bueno, el
+
+00:47:44.359 --> 00:47:49.680
+flujo alterno, que era el que estaba
+mencionando yo ahorita, pero no está en
+
+00:47:46.800 --> 00:47:54.599
+el scope, por ejemplo, eh en el perfil
+del este scope no alcanza el perfil del
+
+00:47:52.280 --> 00:47:58.920
+usuario, que es el tab de incentivos. O
+sea, él no puede ver en este scopero,
+
+00:47:56.680 --> 00:48:04.079
+eso sería un flujo alterno a futuro, que
+en el tab de incentivos el el deportista
+
+00:48:01.559 --> 00:48:09.480
+vea qué incentivos tiene activos o por o
+por asignar o cuáles aplica. E, ¿cuál
+
+00:48:08.040 --> 00:48:14.800
+otro crees tú que de pronto podría
+haber,
+
+00:48:11.839 --> 00:48:18.520
+hombre?
+Tengo una reunión ahora.
+
+00:48:17.200 --> 00:48:21.839
+No, pero ya estamos terminando. Ya
+estamos terminando. Es a las 3 en 10
+
+00:48:20.200 --> 00:48:26.440
+minutos.
+Sí.
+
+00:48:24.440 --> 00:48:31.160
+¿Hay alguna decisión que falte no tomada
+que dependa de alguien más? No sé, de
+
+00:48:28.160 --> 00:48:31.160
+ministerio.
+
+00:48:33.319 --> 00:48:38.000
+No.
+Okay.
+
+00:48:35.960 --> 00:48:41.800
+No, es solo eso.
+Bueno, yo creo que son esas las
+
+00:48:39.079 --> 00:48:47.880
+preguntas. Eh, me te llevas por ahí lo
+de los las preguntas que te dije como lo
+
+00:48:44.720 --> 00:48:52.920
+del tipo de código, la lista del Excel,
+cómo entregan ese esa lista de códigos,
+
+00:48:50.520 --> 00:48:58.960
+si es una carga masiva, o si qué tipo de
+columnas trae eh esas cosas, ¿no?
+
+00:48:56.960 --> 00:49:04.760
+Sí, yo voy a preguntar es cómo cómo
+incluyeron la
+
+00:49:02.079 --> 00:49:10.280
+del año pasado. A ver qué fue lo que les
+pasaron.
+
+00:49:07.119 --> 00:49:16.160
+Listo. Bueno, era eso. Bueno, me sirvió
+un montón. Eh, voy a entonces
+
+00:49:13.359 --> 00:49:20.920
+estructurar ya todo para voy a tratar de
+tener algo listo para mañana en la
+
+00:49:18.240 --> 00:49:24.760
+review de las 4 de 4 para que demos
+dirección enseguida, o sea, no
+
+00:49:22.480 --> 00:49:29.760
+alargarme. Si no alcanzo por alguna
+razón, pues ya te la mostr te lo muestro
+
+00:49:27.400 --> 00:49:34.960
+a ti solamente a ti el viernes en los
+horarios de la mañana.
+
+00:49:31.240 --> 00:49:40.160
+Listo. Yo no sé si pueda ingresar a a la
+de mañana porque yo tengo una reunión
+
+00:49:37.960 --> 00:49:44.880
+con en territorio.
+Ajá.
+
+00:49:41.880 --> 00:49:44.880
+Entonces,
+

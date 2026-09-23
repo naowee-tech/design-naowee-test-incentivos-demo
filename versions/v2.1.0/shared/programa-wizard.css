@@ -1,0 +1,1728 @@
+/* ═══════════════════════════════════════════════════════════════
+   PROGRAMA · WIZARD (5 pasos) — estilos compartidos
+   Usa naowee-modal + naowee-textfield + naowee-dropdown + naowee-btn
+   del design system. Este archivo sólo agrega layout y refinamientos.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Dimensiones del modal — mismo ancho que escenarios (576/680) */
+.naowee-modal.wz-modal{
+  width: 680px;
+  max-width: calc(100vw - 48px);
+  max-height: calc(100vh - 48px);
+  border-radius: 16px;
+  box-shadow: 0 24px 48px rgba(0,0,0,.25);
+  /* Spring overshoot como escenarios */
+  animation: wzScaleIn .35s cubic-bezier(.175,.885,.32,1.275);
+}
+@keyframes wzScaleIn{
+  from{ opacity: 0; transform: scale(.92) translateY(24px); }
+  to{ opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Backdrop con blur (escenarios-style) */
+.naowee-modal-overlay{
+  background: rgba(0, 43, 91, .45);
+  backdrop-filter: blur(2px);
+}
+
+/* Sin scroll horizontal en el modal */
+.wz-modal,
+.wz-modal .naowee-modal__body{
+  overflow-x: hidden;
+}
+
+/* Body del modal: content-sized en vez de flex:1 del DS para evitar
+   espacio blanco masivo cuando el paso tiene poco contenido (ej. step 1).
+   Mantiene overflow-y:auto del DS → scroll activa solo si el contenido
+   supera el max-height del modal (pasos largos como el 3, 4, 5). */
+.wz-modal .naowee-modal__body{
+  flex: 0 1 auto;
+}
+
+/* Quitar shadow/border del header sticky sobre el stepper.
+   padding-right: 16 para igualar la distancia superior de la X close —
+   el DS pone 16 top + 32 right, lo que hacía que la X se viera pegada
+   arriba y separada a la derecha. Con 16/16 queda simétrica.
+   padding-left se mantiene en 32 para alinear el título con el step 1. */
+.wz-modal.naowee-modal--fixed-header .naowee-modal__header{
+  box-shadow: none;
+  border-bottom: none;
+  padding: 16px 16px 4px 32px;
+}
+
+/* Divider top en footer + padding parejo en todos los lados */
+.wz-modal.naowee-modal--fixed-footer .naowee-modal__footer{
+  border-top: 1px solid var(--naowee-color-border-default, #e7e9f3);
+  box-shadow: none;
+  padding: 20px 24px;
+}
+
+/* Stepper — padding horizontal alineado con .naowee-modal__header del DS
+   (32px) para que step 1 y step 5 queden simétricos con título + X */
+.wz-stepper-wrap{
+  padding: 16px 32px;
+  background: #fff;
+  overflow-x: auto;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--naowee-color-border-default, #e7e9f3);
+}
+
+/* Stepper distribuye los 5 pasos a lo ancho del wrap. Los pasos 1-4
+   tienen flex:1 para crecer y estirar el connector interno (línea entre
+   números). El paso 5 es content-size con margin-right para separarse
+   del borde derecho del ol (evita que "Códigos" quede pegado a la X). */
+.wz-modal .naowee-stepper{
+  width: 100%;
+}
+.wz-modal .naowee-stepper__connector{
+  flex: 1 1 0;
+  min-width: 16px;
+  margin: 0 8px;
+}
+.wz-modal .naowee-stepper__step{
+  padding: 4px 8px;
+}
+.wz-modal .naowee-stepper__step:not(:last-child){
+  flex: 1 1 0;
+  min-width: 0;
+}
+.wz-modal .naowee-stepper__step:first-child{ padding-left: 0; }
+.wz-modal .naowee-stepper__step:last-child{
+  flex: 0 0 auto;
+  padding-right: 0;
+  margin-right: 28px;
+}
+
+/* Transición suave entre paneles — fadeInUp */
+.wz-pane{ animation: wzFadeInUp .4s cubic-bezier(.4,0,.2,1); }
+@keyframes wzFadeInUp{
+  from{ opacity: 0; transform: translateY(12px); }
+  to{ opacity: 1; transform: translateY(0); }
+}
+
+/* Pulse sutil en step activo del stepper */
+.wz-modal .naowee-stepper__step--active .naowee-stepper__number{
+  animation: wzStepperPulse 2s cubic-bezier(.4,0,.6,1) infinite;
+}
+@keyframes wzStepperPulse{
+  0%, 100%{ box-shadow: 0 0 0 0 rgba(215,64,9,.35); }
+  50%{ box-shadow: 0 0 0 6px rgba(215,64,9,0); }
+}
+
+.wz-pane__title{
+  font-size: 18px; font-weight: 600; letter-spacing: -.005em;
+  margin-bottom: 4px; color: var(--naowee-color-text-primary, #282834);
+}
+.wz-pane__sub{
+  font-size: 13px; color: var(--naowee-color-text-secondary, #646587);
+  margin-bottom: 20px; line-height: 1.5; font-weight: 400;
+}
+
+/* Grid + field groups */
+.wz-grid{ display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 640px){ .wz-grid{ grid-template-columns: 1fr; } }
+.wz-field-group{ display: flex; flex-direction: column; gap: 16px; margin-bottom: 20px; }
+/* Section title — gris claro, sin dividers (escenarios pattern) */
+.wz-subtitle{
+  font-size: 12px; font-weight: 600; line-height: 16px; letter-spacing: .2px;
+  color: #9c9ebf; text-transform: uppercase;
+  margin: 8px 0 4px;
+  padding: 0; border: none;
+}
+
+/* Placeholder — gris más claro en todo el wizard */
+.wz-modal .naowee-textfield__input::placeholder,
+.wz-modal .naowee-textfield__input::-webkit-input-placeholder{
+  color: #9c9ebf; opacity: 1;
+}
+/* Readonly inputs que funcionan como display (ej. Responsable) — mismo gris suave */
+.wz-modal .naowee-textfield__input[readonly]:not([data-wz-iso]){
+  color: var(--naowee-color-text-primary, #282834);
+}
+
+/* Required-field wiggle + highlight */
+@keyframes wzShake{
+  0%, 100%{ transform: translateX(0); }
+  15%{ transform: translateX(-6px); }
+  30%{ transform: translateX(5px); }
+  45%{ transform: translateX(-4px); }
+  60%{ transform: translateX(3px); }
+  75%{ transform: translateX(-2px); }
+  90%{ transform: translateX(1px); }
+}
+.wz-shake{ animation: wzShake .45s cubic-bezier(.36,.07,.19,.97); }
+
+/* Required marker — asterisco naranja en labels (dropdown + textfield).
+   El DS sólo define ::after para textfield (color rojo); aquí unificamos
+   ambos en accent naranja del proyecto. */
+.naowee-dropdown__label--required::after,
+.naowee-textfield__label--required::after{
+  content: ' *';
+  color: var(--naowee-color-text-accent, #d74009);
+}
+
+/* Cuando el field del wizard está en error, sólo mostramos el helper de
+   error (.naowee-helper--negative con badge "Este campo es obligatorio")
+   y ocultamos el helper informativo original (ej: "Debe ser posterior a
+   la vigencia desde") para no duplicar mensajes en rojo. Scope al wizard
+   para no afectar otros modales (revertir, etc). */
+.wz-modal .naowee-textfield--error .naowee-textfield__helper,
+.wz-modal .naowee-dropdown--error .naowee-dropdown__helper{ display: none; }
+
+/* Toggle cards (tipo de incentivo) */
+.toggle-cards{ display: flex; flex-direction: column; gap: 8px; }
+.toggle-card{
+  display: flex; gap: 12px; padding: 14px 16px;
+  border: 1.5px solid var(--naowee-color-border-default, #e7e9f3);
+  border-radius: 12px; cursor: pointer; align-items: center; transition: all .15s;
+}
+.toggle-card:hover{ border-color: var(--naowee-color-border-strong, #d0d4e6); }
+.toggle-card.active{ background: #fff3e6; border-color: var(--naowee-color-text-accent, #d74009); }
+.toggle-card .naowee-radio{ padding: 0; flex-shrink: 0; }
+.toggle-card__title{ font-size: 13px; font-weight: 700; color: var(--naowee-color-text-primary, #282834); margin-bottom: 2px; }
+.toggle-card__desc{ font-size: 11.5px; color: var(--naowee-color-text-secondary, #646587); line-height: 1.4; }
+
+/* Chip picker (cobertura territorial) */
+.chip-picker{ display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* Condition builder — grupos con Y interno, O entre grupos */
+.cond-builder{ display: flex; flex-direction: column; gap: 0; }
+.cond-group{
+  position: relative;
+  border: 1px solid var(--naowee-color-border-default, #e7e9f3);
+  border-radius: 12px; padding: 14px; background: #fafbfd;
+  box-shadow: 0 1px 2px rgba(40,40,52,.04);
+}
+.cond-group__head{
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; margin-bottom: 10px;
+}
+.cond-group__badge{
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 10.5px; font-weight: 700; letter-spacing: .4px;
+  color: var(--naowee-color-text-accent, #d74009);
+  background: #fff3e6;
+  padding: 3px 10px; border-radius: 9999px;
+  text-transform: uppercase;
+}
+.cond-group__badge::before{
+  content: ""; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--naowee-color-text-accent, #d74009);
+}
+.cond-group__remove{
+  border: none; background: transparent; cursor: pointer;
+  color: var(--naowee-color-text-secondary, #646587);
+  width: 28px; height: 28px; border-radius: 6px;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.cond-group__remove:hover{ background: #fff0ee; color: #b42318; }
+
+/* OR divider entre grupos */
+.cond-or-divider{
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  margin: 10px 0;
+  height: 28px;
+}
+.cond-or-divider::before{
+  content: ""; position: absolute; left: 0; right: 0; top: 50%;
+  height: 1px; background: var(--naowee-color-border-default, #e7e9f3);
+}
+.cond-or-divider__pill{
+  position: relative; z-index: 1;
+  font-size: 10.5px; font-weight: 700; letter-spacing: .6px;
+  color: var(--naowee-color-text-secondary, #646587);
+  background: #fff; border: 1px solid var(--naowee-color-border-default, #e7e9f3);
+  padding: 4px 14px; border-radius: 9999px;
+}
+
+/* Botones add-group / add-cond — alineación dentro del builder.
+   El estilo viene del DS (.naowee-btn--quiet / --mute), aquí sólo
+   ajustamos posición y separación. */
+.wz-add-group{
+  align-self: flex-start;
+  margin-top: 12px;
+}
+.wz-add-cond{
+  align-self: flex-start;
+  margin-top: 4px;
+}
+.cond-rows{ display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
+.cond-row{
+  display: grid; grid-template-columns: 150px 100px 1fr 32px; gap: 8px;
+  align-items: center;
+}
+.cond-row > .x-btn{ align-self: center; }
+.cond-row [data-cond-value]{ display: block; min-width: 0; }
+
+/* Chip de regla implícita (ej. tipoUsuario=personal_apoyo →
+   "primer entrenador en su historial"). Se renderiza debajo de la fila
+   ocupando todo el ancho del grid. */
+.cond-row__implied{
+  grid-column: 1 / -1;
+  display: inline-flex; align-items: center; gap: 8px;
+  margin-top: 2px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--naowee-color-feedback-fill-positive-quiet, #DEFADE);
+  color: var(--naowee-color-feedback-text-positive-quiet-on-fill, #17641A);
+  border: 1px solid var(--naowee-color-feedback-border-positive-loud, #14A919);
+  font-size: 12.5px; line-height: 1.4;
+  animation: wzImpliedFadeIn .22s ease-out both;
+}
+.cond-row__implied svg{
+  flex-shrink: 0;
+  color: var(--naowee-color-feedback-icon-positive-loud, #1f8923);
+}
+.cond-row__implied strong{ font-weight: 700; }
+@keyframes wzImpliedFadeIn{
+  from{ opacity: 0; transform: translateY(-2px); }
+  to{ opacity: 1; transform: translateY(0); }
+}
+
+/* En la vista previa, la regla implícita se muestra como texto ligado */
+.wz-cond-preview__implied{
+  font-style: italic;
+  color: var(--naowee-color-feedback-text-positive-loud, #1f8923);
+}
+
+/* Dropdowns en cond-row usan los estilos del DS (.naowee-dropdown).
+   Sólo ajustamos tamaño: alto 40px (medium DS) y padding horizontal
+   compacto para que quepan 3 controles + value en el grid. */
+.cond-row .naowee-dropdown .naowee-dropdown__trigger{
+  padding: 0 12px;
+  font-size: 13px;
+}
+/* El dropdown de operador es corto (sólo símbolo) — centra contenido */
+.cond-row .cond-op .naowee-dropdown__trigger .naowee-dropdown__value{
+  font-weight: 600;
+}
+
+/* Stepper DS al mismo alto que los dropdowns del row (medium DS = 48px),
+   para que Edad, operador y valor compartan baseline y no parezcan
+   componentes distintos. */
+.cond-row .naowee-input-stepper{ width: 100%; }
+.cond-row select{
+  padding-right: 26px; appearance: none; -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12' fill='none'><path d='M2 4l4 4 4-4' stroke='%23282834' stroke-width='1.4' stroke-linecap='round'/></svg>");
+  background-repeat: no-repeat; background-position: right 8px center;
+}
+.cond-row select:focus, .cond-row input:focus{
+  outline: none; border-color: var(--naowee-color-text-accent, #d74009); background: #fff;
+}
+.x-btn{
+  width: 30px; height: 30px; border-radius: 6px;
+  background: transparent; border: none; cursor: pointer;
+  color: var(--naowee-color-text-secondary, #646587);
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.x-btn:hover{ background: #fff0ee; color: #b42318; }
+
+/* ═════ Vista previa en lenguaje natural — step 4 ═════
+   Card con título e iconito, body que se actualiza en vivo mostrando
+   las condiciones como texto natural. Usa fondo soft-orange y borde
+   accent quiet para sentirse parte del flujo de creación, no como
+   un panel técnico. */
+.wz-cond-preview{
+  margin-top: 18px;
+  padding: 16px;
+  background: linear-gradient(180deg, #fffaf5 0%, #fff 100%);
+  border: 1px solid #ffd9b3;
+  border-radius: 12px;
+  transition: opacity .25s ease;
+}
+.wz-cond-preview[data-empty="true"]{ opacity: .65; }
+.wz-cond-preview__head{
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 12px;
+}
+.wz-cond-preview__icon{
+  width: 32px; height: 32px; border-radius: 8px;
+  background: #fff3e6; color: var(--naowee-color-text-accent, #d74009);
+  display: inline-flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.wz-cond-preview__icon svg{ width: 18px; height: 18px; }
+.wz-cond-preview__title{
+  font-size: 13px; font-weight: 700;
+  color: var(--naowee-color-text-primary, #282834);
+  line-height: 1.2;
+}
+.wz-cond-preview__sub{
+  font-size: 11px; font-weight: 500;
+  color: var(--naowee-color-text-secondary, #646587);
+  margin-top: 2px;
+}
+.wz-cond-preview__body{
+  font-size: 13px; line-height: 1.6;
+  color: var(--naowee-color-text-primary, #282834);
+}
+/* Lenguaje natural — frases unitarias en lugar de chunks técnicos. */
+.wz-cond-preview__sentence{
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--naowee-color-text-primary, #282834);
+}
+.wz-cond-preview__chunk{ display: inline; }
+.wz-cond-preview__or-list{
+  list-style: none; padding: 0; margin: 6px 0 0;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.wz-cond-preview__or-list li{
+  position: relative; padding: 10px 12px 10px 32px;
+  background: #fff;
+  border: 1px solid #ffd9b3;
+  border-radius: 10px;
+  font-size: 13.5px; line-height: 1.6;
+}
+.wz-cond-preview__or-list li::before{
+  content: counter(or-item);
+  position: absolute; left: 10px; top: 10px;
+  width: 18px; height: 18px;
+  background: var(--naowee-color-text-accent, #d74009); color: #fff;
+  border-radius: 50%;
+  font-size: 10px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  counter-increment: or-item;
+}
+.wz-cond-preview__or-list{ counter-reset: or-item; }
+.wz-cond-preview__implied-note{
+  margin: 10px 0 0;
+  padding: 8px 12px;
+  background: var(--naowee-color-feedback-fill-positive-quiet, #DEFADE);
+  border: 1px solid var(--naowee-color-feedback-border-positive-loud, #14A919);
+  border-radius: 8px;
+  color: var(--naowee-color-feedback-text-positive-quiet-on-fill, #17641A);
+  font-size: 12.5px; line-height: 1.5;
+}
+.wz-cond-preview__implied-note strong{ font-weight: 700; }
+
+/* Paneles del paso 3 — uno por incentivo en multi mode. */
+.wz-cond-panels{ display: flex; flex-direction: column; gap: 24px; }
+.wz-cond-panel{
+  display: flex; flex-direction: column; gap: 14px;
+}
+.wz-cond-panels:has(.wz-cond-panel + .wz-cond-panel) .wz-cond-panel{
+  /* Sólo cuando hay más de un panel (multi), envolver en card. */
+  padding: 16px;
+  background: #fafbfd;
+  border: 1px solid var(--naowee-color-border-default, #e7e9f3);
+  border-radius: 14px;
+}
+.wz-cond-panel__head{
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding-bottom: 4px;
+  border-bottom: 1px dashed var(--naowee-color-border-default, #e7e9f3);
+  margin-bottom: 4px;
+}
+.wz-cond-panel__num{
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px;
+  background: var(--naowee-color-text-accent, #d74009); color: #fff;
+  border-radius: 999px;
+  font-size: 11px; font-weight: 700;
+  flex-shrink: 0;
+}
+.wz-cond-panel__title{
+  font-size: 14px; font-weight: 700;
+  color: var(--naowee-color-text-primary, #282834);
+}
+
+/* Bloques por incentivo en la página de detalle */
+.cond-inc-block{
+  padding: 14px 16px;
+  background: #fafbfd;
+  border: 1px solid var(--naowee-color-border-default, #e7e9f3);
+  border-radius: 12px;
+  margin-bottom: 14px;
+}
+.cond-inc-block__head{
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed var(--naowee-color-border-default, #e7e9f3);
+}
+.cond-inc-block__num{
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px;
+  background: var(--naowee-color-text-accent, #d74009); color: #fff;
+  border-radius: 999px;
+  font-size: 11px; font-weight: 700;
+  flex-shrink: 0;
+}
+.cond-inc-block__name{
+  font-size: 14px; font-weight: 700;
+  color: var(--naowee-color-text-primary, #282834);
+}
+.wz-cond-preview__intro{
+  font-size: 12px;
+  color: var(--naowee-color-text-secondary, #646587);
+  margin: 0 0 10px;
+}
+.wz-cond-preview__group{
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 10px 12px;
+  background: #fff;
+  border: 1px solid #ffd9b3;
+  border-radius: 10px;
+}
+.wz-cond-preview__group-lbl{
+  font-size: 10px; font-weight: 600; letter-spacing: .5px;
+  color: var(--naowee-color-text-accent, #d74009);
+  text-transform: uppercase;
+}
+.wz-cond-preview__group-body{
+  font-size: 13px; line-height: 1.7;
+  color: var(--naowee-color-text-primary, #282834);
+}
+.wz-cond-preview__field{
+  font-weight: 600;
+  color: var(--naowee-color-text-primary, #282834);
+}
+.wz-cond-preview__val{
+  display: inline-block;
+  padding: 1px 8px;
+  background: #fff3e6;
+  color: var(--naowee-color-text-accent, #d74009);
+  border-radius: 999px;
+  font-weight: 500;
+  font-size: 12.5px;
+  margin: 0 1px;
+}
+.wz-cond-preview__val--empty{
+  background: #f1f2f7;
+  color: #9c9ebf;
+  font-style: italic;
+}
+.wz-cond-preview__conn{
+  display: inline-block;
+  font-weight: 600;
+  text-transform: lowercase;
+  letter-spacing: .3px;
+  padding: 0 4px;
+}
+.wz-cond-preview__conn--and{
+  color: var(--naowee-color-text-accent, #d74009);
+}
+.wz-cond-preview__conn--or{
+  color: #1f78d1;
+  font-size: 11px;
+  background: #eef5ff;
+  border: 1px solid #c7defa;
+  padding: 3px 12px; border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+}
+.wz-cond-preview__or{
+  display: flex; justify-content: center;
+  margin: 8px 0;
+  position: relative;
+}
+.wz-cond-preview__or::before{
+  content: ""; position: absolute; left: 0; right: 0; top: 50%;
+  height: 1px; background: #c7defa; z-index: 0;
+}
+.wz-cond-preview__or .wz-cond-preview__conn{
+  position: relative; z-index: 1;
+}
+
+/* Spacing para segments del DS dentro del wizard */
+.wz-modal .naowee-segment{ margin-bottom: 14px; }
+.cond-group__head .naowee-segment{ margin: 0; }
+
+/* Step 5 segment: full width. Items con padding horizontal generoso
+   para que el texto no quede pegado al borde del pill. */
+.wz-modal .naowee-segment.wz-codes-seg{
+  display: flex;
+  width: 100%;
+  margin: 0 auto 18px;
+  padding: 6px;
+}
+.wz-modal .naowee-segment.wz-codes-seg .naowee-segment__item{
+  flex: 1 1 0;
+  justify-content: center;
+  gap: 0;
+  padding: 8px 20px;
+}
+
+/* Stepper — solo pasos completados son clickeables */
+.wz-modal .naowee-stepper__step{ cursor: not-allowed; }
+.wz-modal .naowee-stepper__step--done,
+.wz-modal .naowee-stepper__step--active{ cursor: pointer; }
+
+/* Step 4 — badge del grupo alineado a la izquierda */
+.cond-group__head{ justify-content: flex-start; }
+.wz-modal .naowee-segment.wz-condop-seg{ margin: 0; }
+
+/* Stepper item totalmente oculto — el DS le aplica display:flex con mayor
+   especificidad que el atributo nativo [hidden], así que forzamos vía clase
+   con !important. El paso 4 (Códigos) usa esto cuando no hay incentivo Bono. */
+.naowee-stepper__step.wz-step-hidden{ display: none !important; }
+/* También oculta el conector cuando un step está oculto, para evitar barras
+   "huérfanas" colgando entre los pasos visibles. */
+.naowee-stepper__step.wz-step-hidden + * .naowee-stepper__connector{ display: none !important; }
+
+/* Step 2 — Tipos & rubro: rubro total al tope + lista de incentivos */
+.wz-rubro-row{ display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 18px; }
+.wz-types-group{ display: flex; flex-direction: column; gap: 16px; }
+.wz-inc-list{ display: flex; flex-direction: column; gap: 12px; }
+.wz-inc-card{
+  border: 1px solid var(--naowee-color-border-default, #e7e9f3);
+  border-radius: 12px;
+  padding: 14px 16px 16px;
+  background: #fafbfd;
+  box-shadow: 0 1px 2px rgba(40,40,52,.04);
+}
+/* Grid del incentivo card. Cambia según single vs multi:
+   - Single (1 incentivo, todo el rubro): nombre / categoría / valor unitario
+   - Multi (varios incentivos): 2 filas — fila 1 nombre/categoría, fila 2 rubro/unitario
+   minmax(0, 1fr) evita overflow cuando los placeholders/values son anchos. */
+.wz-inc-card__grid{
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+}
+.wz-inc-card__grid > *{ min-width: 0; }
+/* En modo single ocultamos el campo rubro per-card (todo el rubro va al único
+   incentivo) y dejamos el layout de 3 columnas. */
+.wz-inc-list--single .wz-inc-card__rubro{ display: none; }
+/* En modo multi pasamos a grid de 2 columnas y los 4 campos se acomodan en 2 filas. */
+.wz-inc-list--multi .wz-inc-card__grid{
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  row-gap: 14px;
+}
+@media (max-width: 760px){
+  .wz-inc-card__grid,
+  .wz-inc-list--multi .wz-inc-card__grid{ grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Etiqueta "(opcional)" del valor unitario — secundaria y discreta */
+.wz-inc-card__optional{
+  font-weight: 400;
+  font-size: 11.5px;
+  color: var(--naowee-color-text-secondary, #646587);
+  margin-left: 4px;
+}
+
+/* Resumen de asignación de rubro (sólo visible en modo multi) */
+.wz-multi-budget{ margin-top: 4px; margin-bottom: 6px; }
+.wz-multi-budget .naowee-message{ padding: 12px 14px; }
+.wz-multi-budget .naowee-message strong{ font-weight: 700; }
+.wz-inc-card__head{
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+/* Badge: estilos del DS (.naowee-badge--quiet --neutral --small) */
+.wz-inc-card__remove{
+  border: none; background: transparent; cursor: pointer;
+  color: var(--naowee-color-text-secondary, #646587);
+  width: 28px; height: 28px; border-radius: 6px;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.wz-inc-card__remove:hover{ background: #fff0ee; color: #b42318; }
+.wz-add-inc{ align-self: flex-start; }
+
+/* ═════ Multi-select dropdown — checkbox estilo DS (.naowee-checkbox__box)
+   Replica width/height/radius/border/check SVG del componente oficial del
+   Design System para que los options se vean idénticos al checkbox del DS.
+   ═════ */
+.naowee-dropdown[data-wz-multi] .naowee-dropdown__menu{
+  max-height: 280px;
+  overflow-y: auto;
+}
+.naowee-dropdown[data-wz-multi] .naowee-dropdown__option{
+  padding-left: 40px;
+  position: relative;
+}
+/* Caja del checkbox — 20x20, border-radius 4px (tokens del DS) */
+.naowee-dropdown[data-wz-multi] .naowee-dropdown__option::before{
+  content: "";
+  position: absolute;
+  left: 12px; top: 50%;
+  transform: translateY(-50%);
+  width: 20px; height: 20px;
+  border: 1.5px solid var(--naowee-color-interactive-border-idle, #d0d4e6);
+  border-radius: 4px;
+  background: #fff;
+  transition: background .2s cubic-bezier(.4,0,.2,1),
+              border-color .2s cubic-bezier(.4,0,.2,1),
+              box-shadow .2s;
+}
+.naowee-dropdown[data-wz-multi] .naowee-dropdown__option:hover::before{
+  border-color: var(--naowee-color-interactive-border-hover, #d74009);
+}
+.naowee-dropdown[data-wz-multi] .naowee-dropdown__option:active::before{
+  transform: translateY(-50%) scale(0.9);
+}
+/* Checkmark SVG blanco (polyline estilo DS) via background-image */
+.naowee-dropdown[data-wz-multi] .naowee-dropdown__option--selected::before{
+  background: var(--naowee-color-interactive-fill-loud-idle, #d74009)
+              url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='5 12 10 17 19 6'/></svg>")
+              center/70% no-repeat;
+  border-color: var(--naowee-color-interactive-fill-loud-idle, #d74009);
+}
+.naowee-dropdown[data-wz-multi] .naowee-dropdown__option--selected:hover::before{
+  background-color: var(--naowee-color-interactive-fill-loud-hover, #b8340a);
+  border-color: var(--naowee-color-interactive-fill-loud-hover, #b8340a);
+}
+
+/* ═════ Tag-multi (portado del pattern reg-multi de escenarios-08)
+   Trigger con chips inline + menu con opciones + botón Agregar.
+   Los cambios del menu se mantienen en temp hasta click Agregar.
+   ═════ */
+.wz-tag-multi{position:relative;width:100%;display:flex;flex-direction:column}
+.wz-tag-multi__label{
+  font-size:14px;font-weight:400;line-height:18px;
+  color:var(--naowee-color-text-primary,#282834);padding-bottom:6px;
+}
+.wz-tag-multi__label .req{color:var(--naowee-color-text-accent,#d74009);margin-left:2px}
+
+.wz-tag-multi__trigger{
+  display:flex;align-items:center;gap:8px;
+  min-height:48px;padding:8px 12px;width:100%;
+  background:#fff;border:1px solid #8788ab;border-radius:12px;
+  cursor:pointer;text-align:left;
+  font-family:'Inter',sans-serif;font-size:14px;
+  transition:border-color .15s,box-shadow .15s;
+}
+.wz-tag-multi__trigger:hover{border-color:#646587}
+.wz-tag-multi.is-open .wz-tag-multi__trigger{
+  border-color:var(--naowee-color-text-accent,#d74009);
+  box-shadow:0 0 0 3px rgba(215,64,9,.15);
+}
+.wz-tag-multi__chips{
+  display:flex;gap:4px;flex-wrap:wrap;flex:1;min-width:0;
+  align-items:center;
+}
+.wz-tag-multi__placeholder{
+  color:var(--naowee-color-text-secondary,#9c9ebf);flex:1;text-align:left;
+}
+.wz-tag-multi__chevron{
+  width:20px;height:20px;color:var(--naowee-color-text-primary,#282834);
+  transition:transform .2s;flex-shrink:0;
+}
+.wz-tag-multi.is-open .wz-tag-multi__chevron{
+  transform:rotate(180deg);color:var(--naowee-color-text-accent,#d74009);
+}
+
+/* Chip inline en el trigger (item confirmado) */
+.wz-tag-multi__chip{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:3px 6px 3px 10px;
+  background:#fff;border:1.5px solid var(--naowee-color-text-accent,#d74009);
+  border-radius:6px;
+  font-size:12px;font-weight:500;color:var(--naowee-color-text-accent,#d74009);
+  max-width:100%;
+}
+.wz-tag-multi__chip-close{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:16px;height:16px;border-radius:4px;cursor:pointer;
+  color:var(--naowee-color-text-accent,#d74009);
+  transition:background .15s;
+}
+.wz-tag-multi__chip-close:hover{background:#fff3e6}
+.wz-tag-multi__chip-close svg{width:10px;height:10px}
+.wz-tag-multi__counter{
+  display:inline-flex;align-items:center;
+  padding:3px 10px;
+  border:1.5px solid var(--naowee-color-text-accent,#d74009);
+  border-radius:6px;
+  font-size:12px;font-weight:600;
+  color:var(--naowee-color-text-accent,#d74009);
+}
+
+/* Menu flotante — default anchored al componente */
+.wz-tag-multi__menu{
+  position:absolute;top:calc(100% + 4px);left:0;right:0;
+  background:#fff;border:1px solid var(--naowee-color-border-default,#e7e9f3);
+  border-radius:12px;
+  box-shadow:0 8px 24px rgba(40,40,52,.12);
+  z-index:3000;
+  display:none;flex-direction:column;
+  max-height:320px;overflow:hidden;
+}
+.wz-tag-multi.is-open .wz-tag-multi__menu{display:flex}
+
+/* Modo floating — movido a <body>, position:fixed escapa del overflow scroll
+   y los stacking contexts del modal (transform del wrapper). JS calcula coords. */
+.wz-tag-multi__menu--floating{
+  position:fixed !important;
+  top:auto;left:auto;right:auto;bottom:auto;
+  z-index:10000;
+  display:flex !important;
+}
+.wz-tag-multi__options{
+  flex:1;overflow-y:auto;padding:6px;
+}
+.wz-tag-multi__option{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;border-radius:6px;
+  cursor:pointer;transition:background .15s;
+  font-size:14px;color:var(--naowee-color-text-primary,#282834);
+}
+.wz-tag-multi__option:hover{background:#f4f5f9}
+.wz-tag-multi__option.is-selected{background:#fff3e6;font-weight:600;color:var(--naowee-color-text-accent,#d74009)}
+/* Opción deshabilitada cuando una exclusiva (ej. "Nacional") ya está activa.
+   Visual: opacidad atenuada + cursor not-allowed, sin hover. */
+.wz-tag-multi__option.is-disabled{
+  opacity: .4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.wz-tag-multi__option.is-disabled:hover{ background: transparent; }
+
+/* Checkbox visual (pattern .naowee-checkbox__box del DS) */
+.wz-tag-multi__check{
+  width:20px;height:20px;border-radius:4px;
+  border:2px solid #8788ab;background:#fff;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  transition:background .15s,border-color .15s;
+}
+.wz-tag-multi__check svg{
+  width:14px;height:14px;color:#fff;opacity:0;
+  transition:opacity .15s;
+}
+.wz-tag-multi__option.is-selected .wz-tag-multi__check{
+  background:var(--naowee-color-text-accent,#d74009);
+  border-color:var(--naowee-color-text-accent,#d74009);
+}
+.wz-tag-multi__option.is-selected .wz-tag-multi__check svg{opacity:1}
+
+.wz-tag-multi__footer{
+  padding:8px;border-top:1px solid var(--naowee-color-border-default,#e7e9f3);
+}
+.wz-tag-multi__footer .naowee-btn{width:100%}
+
+/* Estado error */
+.wz-tag-multi--error .wz-tag-multi__trigger{
+  border-color: var(--naowee-color-feedback-border-negative-loud, #ed314a);
+  box-shadow: 0 0 0 3px rgba(237, 49, 74, .15);
+}
+
+/* ═════ Step 3 — naowee-message wrapper ═════ */
+/* El hint usa el componente .naowee-message del DS; sólo ajustamos el
+   margin-bottom y una transición suave entre variantes informative/caution. */
+.wz-types-hint{
+  margin: 0 0 18px;
+  transition: background-color .25s ease;
+}
+/* Flash sobre el hint cuando la validación bloquea Continuar — pulse
+   suave para reforzar visualmente el mensaje sin necesitar toast. */
+.wz-flash-caution{
+  animation: wzFlashCaution 1.2s cubic-bezier(.4,0,.2,1) both;
+}
+@keyframes wzFlashCaution{
+  0%   { box-shadow: 0 0 0 0 rgba(215,64,9,.0); }
+  20%  { box-shadow: 0 0 0 4px rgba(215,64,9,.18); }
+  100% { box-shadow: 0 0 0 0 rgba(215,64,9,0); }
+}
+/* Botón "Agregar otro tipo" — el atributo [hidden] no gana contra el
+   display:inline-flex del .naowee-btn del DS, así que lo forzamos. */
+.wz-add-inc[hidden]{ display: none !important; }
+
+/* Single mode: simplifica la card — sin badge "#1", sin botón remove,
+   sin accent border (ya se comunica "single" por el toggle card activo
+   y el mensaje informative arriba). */
+.wz-inc-list--single .wz-inc-card__badge{ display: none; }
+.wz-inc-list--single .wz-inc-card__remove{ display: none; }
+.wz-inc-list--single .wz-inc-card__head{ display: none; }
+
+/* Multi mode: badge prominente + card con accent en head */
+/* Multi mode: badge low-contrast del DS (sin override de color) */
+
+/* ═════ Helper text (label de ayuda bajo inputs) ═════ */
+.naowee-textfield__helper{
+  font-size: 11.5px;
+  color: var(--naowee-color-text-secondary, #646587);
+  margin-top: 6px;
+  line-height: 1.4;
+  transition: color .2s;
+}
+.naowee-textfield--error .naowee-textfield__helper,
+.naowee-textfield__helper.is-error{
+  color: var(--naowee-color-feedback-text-negative-loud, #b42318);
+}
+
+/* Flash ring sobre el campo cuando se invalidó automáticamente */
+.naowee-textfield.wz-flash-error .naowee-textfield__input-wrap{
+  animation: wzFlashErr 2s cubic-bezier(.4,0,.2,1) both;
+}
+@keyframes wzFlashErr{
+  0%   { box-shadow: 0 0 0 3px rgba(237, 49, 74, .25); border-color: #ed314a; }
+  80%  { box-shadow: 0 0 0 0 rgba(237, 49, 74, 0);   border-color: #ed314a; }
+  100% { box-shadow: none; }
+}
+
+/* ═════ Datepicker — día fuera de rango ═════ */
+.wz-dp__day--disabled{
+  color: var(--naowee-color-border-default, #c9ccdc) !important;
+  cursor: not-allowed !important;
+  background: transparent !important;
+  pointer-events: none;
+  text-decoration: line-through;
+  opacity: .55;
+}
+
+/* Toggle card body — flex para que el texto no se desborde */
+.toggle-card__body{ flex: 1; min-width: 0; }
+
+/* ═════ STEP 5 · budget message (usa naowee-message del DS) ═════ */
+.wz-budget{ margin-bottom: 14px; }
+.wz-budget .naowee-message{ padding: 12px 14px; }
+.wz-budget .naowee-message strong{ font-weight: 700; }
+
+/* File chip (post upload) */
+.wz-file-chip{
+  display: flex; align-items: center; gap: 10px;
+  margin-top: 10px; padding: 10px 14px;
+  border: 1px solid var(--naowee-color-border-default, #e7e9f3);
+  border-radius: 10px; background: #fff;
+  font-size: 12.5px;
+}
+.wz-file-chip__ico{
+  width: 32px; height: 32px; border-radius: 8px;
+  background: var(--naowee-color-feedback-fill-positive-quiet, #e6f4e7);
+  color: var(--naowee-color-feedback-fill-positive-loud, #1f8923);
+  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.wz-file-chip__body{ flex: 1; min-width: 0; }
+.wz-file-chip__name{ font-weight: 700; color: var(--naowee-color-text-primary, #282834); }
+.wz-file-chip__meta{ font-size: 11.5px; color: var(--naowee-color-text-secondary, #646587); }
+.wz-file-chip__remove{
+  border: none; background: transparent; cursor: pointer;
+  color: var(--naowee-color-text-secondary, #646587);
+  padding: 6px; border-radius: 6px;
+}
+.wz-file-chip__remove:hover{ background: #fff0ee; color: #b42318; }
+
+/* ═════ TOAST (naowee-message canónico del DS, fixed bottom-right) ═════
+   El componente (fondo, radius 20px, ícono círculo coloreado con glifo blanco,
+   __body, __dismiss) lo pinta el DS. Aquí SOLO va lo propio del toast:
+   posición flotante, elevación y anchos. Sin overrides de variantes. */
+/* bottom:64px para no tapar el pill de versionamiento (.naowee-floating-footer,
+   fijo en bottom:14px right:20px). */
+.wz-toast-wrap{
+  position:fixed;bottom:64px;right:24px;
+  z-index:1500;display:flex;flex-direction:column;gap:8px;
+  pointer-events:none;max-width:calc(100vw - 48px);
+}
+.wz-toast-wrap .wz-toast{
+  pointer-events:auto;
+  min-width:320px;max-width:480px;
+  box-shadow:0 12px 32px rgba(40,40,52,.18);
+}
+/* Toast de una línea: centrar verticalmente ícono/texto/dismiss */
+.wz-toast .naowee-message__header{align-items:center}
+
+/* ═════ DIALOG: Guardar progreso (warning al cerrar) ═════ */
+.wz-warn-overlay{
+  position:fixed;inset:0;z-index:1200;
+  background:rgba(0,43,91,.45);backdrop-filter:blur(2px);
+  display:none;align-items:center;justify-content:center;padding:24px;
+}
+.wz-warn-overlay.open{display:flex;animation:wzWarnFade .25s ease}
+@keyframes wzWarnFade{from{opacity:0}to{opacity:1}}
+.wz-warn-card{
+  width:500px;max-width:100%;background:#fff;border-radius:16px;
+  box-shadow:0 24px 48px rgba(0,0,0,.25);
+  display:flex;flex-direction:column;
+  animation:wzWarnScale .35s cubic-bezier(.175,.885,.32,1.275);
+}
+@keyframes wzWarnScale{from{opacity:0;transform:scale(.92) translateY(16px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.wz-warn-card__body{
+  padding:40px 32px 20px;
+  display:flex;flex-direction:column;gap:16px;align-items:center;text-align:center;
+}
+.wz-warn-card__icon{
+  width:72px;height:72px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--naowee-color-text-accent,#d74009);color:#fff;
+  margin-bottom:4px;
+}
+.wz-warn-card__icon svg{width:40px;height:40px}
+.wz-warn-card__title{
+  font-size:20px;font-weight:700;letter-spacing:-.01em;
+  color:var(--naowee-color-text-primary,#282834);margin:0;
+}
+.wz-warn-card__sub{
+  font-size:14px;line-height:20px;
+  color:var(--naowee-color-text-secondary,#646587);
+  font-weight:600;margin:0;
+}
+.wz-warn-list{
+  display:flex;flex-direction:column;gap:16px;
+  margin:8px 0 0;width:100%;padding:0;list-style:none;text-align:left;
+}
+.wz-warn-list__item{
+  display:flex;gap:12px;align-items:flex-start;
+  font-size:14px;line-height:20px;
+  color:var(--naowee-color-text-secondary,#646587);
+}
+.wz-warn-list__check{
+  flex-shrink:0;width:20px;height:20px;border-radius:50%;
+  background:var(--naowee-color-feedback-fill-positive-loud,#1f8923);color:#fff;
+  display:flex;align-items:center;justify-content:center;margin-top:2px;
+}
+.wz-warn-list__check svg{width:12px;height:12px;stroke-width:3}
+.wz-warn-card__footer{
+  display:flex;gap:12px;justify-content:space-between;
+  padding:0 32px 28px;
+}
+.wz-warn-card__footer .naowee-btn{min-width:120px;flex:1}
+
+/* ═════ SUCCESS MODAL ═════ */
+.wz-success-overlay{
+  display: none;
+  background: rgba(0, 43, 91, .45);
+  backdrop-filter: blur(4px);
+}
+.wz-success-overlay.open{
+  display: flex; align-items: center; justify-content: center;
+}
+.wz-success-modal{
+  position: relative;
+  width: 520px; max-width: calc(100vw - 48px);
+  padding: 40px 36px 24px;
+  border-radius: 18px;
+  text-align: center;
+  animation: wzScaleIn .38s cubic-bezier(.175,.885,.32,1.275);
+  background: linear-gradient(180deg, #fff 0%, #fafbfd 100%);
+  box-shadow: 0 28px 56px rgba(0, 43, 91, .28);
+  overflow: hidden;
+}
+
+/* Halo radial estático (patrón escenario-11) */
+.wz-success-hero{
+  position: relative;
+  display: flex; justify-content: center;
+  margin: 4px 0 20px;
+}
+.wz-success-hero::before{
+  content: ""; position: absolute;
+  top: -50px; left: 50%; transform: translateX(-50%);
+  width: 300px; height: 300px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(31,137,35,.14) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.wz-success-ico{
+  position: relative; z-index: 2;
+  width: 88px; height: 88px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #25a12a, #1f8923);
+  color: #fff;
+  display: inline-flex; align-items: center; justify-content: center;
+  box-shadow: 0 8px 28px rgba(31, 137, 35, .35);
+  transform: scale(.5); opacity: 0;
+}
+.wz-success-overlay.open .wz-success-ico{
+  animation: wzSuccessPop .5s cubic-bezier(.34, 1.56, .64, 1) forwards;
+}
+@keyframes wzSuccessPop{
+  0%{ transform: scale(.5); opacity: 0; }
+  100%{ transform: scale(1); opacity: 1; }
+}
+
+/* Confetti cayendo (patrón escenario-11) */
+.wz-confetti{
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 1;
+}
+.wz-confetti__piece{
+  position: absolute;
+  top: 0;
+  width: 8px; height: 12px;
+  opacity: 0;
+  animation: wzConfettiFall 2.6s linear forwards;
+}
+@keyframes wzConfettiFall{
+  0%{ transform: translateY(-30px) rotate(0); opacity: 0; }
+  15%{ opacity: 1; }
+  100%{ transform: translateY(520px) rotate(720deg); opacity: 0; }
+}
+
+.wz-success-title{
+  font-size: 22px; font-weight: 700; letter-spacing: -.015em;
+  color: var(--naowee-color-text-primary, #282834);
+  margin-bottom: 8px;
+}
+.wz-success-sub{
+  font-size: 13.5px; color: var(--naowee-color-text-secondary, #646587);
+  line-height: 1.5; margin-bottom: 24px;
+  max-width: 380px; margin-left: auto; margin-right: auto;
+}
+
+/* ═════ Stats — editorial glass cards ═════
+   Diseño: sin borde duro; gradient bg sutil teñido por variante; icono
+   con gradient color + soft glow + borde interior para sensación de
+   "etched surface"; label uppercase tight con dot accent; valor bold. */
+.wz-success-stats{
+  display: grid; grid-template-columns: 1fr 1fr 1.5fr;
+  gap: 10px; margin-bottom: 24px;
+}
+.wz-success-stat{
+  position: relative;
+  display: flex; flex-direction: column; gap: 10px;
+  align-items: flex-start; text-align: left;
+  padding: 14px 14px 16px;
+  border-radius: 14px;
+  box-shadow:
+    inset 0 0 0 1px rgba(40,40,52,.05),
+    0 1px 2px rgba(40,40,52,.03);
+  transition: transform .25s cubic-bezier(.4,0,.2,1),
+              box-shadow .25s cubic-bezier(.4,0,.2,1);
+}
+.wz-success-stat:hover{
+  transform: translateY(-2px);
+}
+/* Tints de fondo sutiles por variante */
+.wz-success-stat:has(.wz-success-stat__ico[data-variant="rubro"]){
+  background: linear-gradient(160deg, #fff 0%, #fff8f2 100%);
+}
+.wz-success-stat:has(.wz-success-stat__ico[data-variant="rubro"]):hover{
+  box-shadow:
+    inset 0 0 0 1px rgba(215,64,9,.14),
+    0 10px 24px rgba(215,64,9,.10);
+}
+.wz-success-stat:has(.wz-success-stat__ico[data-variant="codigos"]){
+  background: linear-gradient(160deg, #fff 0%, #f6faff 100%);
+}
+.wz-success-stat:has(.wz-success-stat__ico[data-variant="codigos"]):hover{
+  box-shadow:
+    inset 0 0 0 1px rgba(31,120,209,.14),
+    0 10px 24px rgba(31,120,209,.10);
+}
+.wz-success-stat:has(.wz-success-stat__ico[data-variant="vigencia"]){
+  background: linear-gradient(160deg, #fff 0%, #f5fbf6 100%);
+}
+.wz-success-stat:has(.wz-success-stat__ico[data-variant="vigencia"]):hover{
+  box-shadow:
+    inset 0 0 0 1px rgba(31,137,35,.14),
+    0 10px 24px rgba(31,137,35,.10);
+}
+
+.wz-success-overlay.open .wz-success-stat{
+  animation: wzStatIn .5s cubic-bezier(.4, 0, .2, 1) both;
+}
+.wz-success-overlay.open .wz-success-stat:nth-child(1){ animation-delay: .55s; }
+.wz-success-overlay.open .wz-success-stat:nth-child(2){ animation-delay: .65s; }
+.wz-success-overlay.open .wz-success-stat:nth-child(3){ animation-delay: .75s; }
+@keyframes wzStatIn{
+  from{ opacity: 0; transform: translateY(14px) scale(.98); }
+  to{ opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── Icono: gradient color + borde sutil + glow suave ── */
+.wz-success-stat__ico{
+  width: 40px; height: 40px; border-radius: 11px;
+  display: inline-flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.6);
+}
+.wz-success-stat__ico svg{
+  width: 20px; height: 20px;
+  stroke-width: 1.9;
+  filter: drop-shadow(0 1px 1px rgba(40,40,52,.08));
+}
+.wz-success-stat__ico[data-variant="rubro"]{
+  background: linear-gradient(135deg, #ffe7cc 0%, #fff3e6 100%);
+  color: var(--naowee-color-text-accent, #d74009);
+  box-shadow: inset 0 0 0 1px rgba(215,64,9,.10),
+              0 2px 6px rgba(215,64,9,.12);
+}
+.wz-success-stat__ico[data-variant="codigos"]{
+  background: linear-gradient(135deg, #d6e7fa 0%, #eef5ff 100%);
+  color: #1f78d1;
+  box-shadow: inset 0 0 0 1px rgba(31,120,209,.10),
+              0 2px 6px rgba(31,120,209,.12);
+}
+.wz-success-stat__ico[data-variant="vigencia"]{
+  background: linear-gradient(135deg, #cfe8d0 0%, #e6f4e7 100%);
+  color: var(--naowee-color-feedback-fill-positive-loud, #1f8923);
+  box-shadow: inset 0 0 0 1px rgba(31,137,35,.10),
+              0 2px 6px rgba(31,137,35,.12);
+}
+
+/* ── Cuerpo de texto ── */
+.wz-success-stat__body{ min-width: 0; width: 100%; }
+.wz-success-stat__lbl{
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 9.5px; font-weight: 700; letter-spacing: 1px;
+  color: var(--naowee-color-text-secondary, #646587);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.wz-success-stat__lbl::before{
+  content: ""; width: 4px; height: 4px; border-radius: 50%;
+  background: currentColor; opacity: .5;
+}
+/* Dot accent del label coloreado por variante (más personalidad) */
+.wz-success-stat:has(.wz-success-stat__ico[data-variant="rubro"]) .wz-success-stat__lbl::before{
+  background: var(--naowee-color-text-accent, #d74009); opacity: .9;
+}
+.wz-success-stat:has(.wz-success-stat__ico[data-variant="codigos"]) .wz-success-stat__lbl::before{
+  background: #1f78d1; opacity: .9;
+}
+.wz-success-stat:has(.wz-success-stat__ico[data-variant="vigencia"]) .wz-success-stat__lbl::before{
+  background: var(--naowee-color-feedback-fill-positive-loud, #1f8923); opacity: .9;
+}
+.wz-success-stat__val{
+  font-family: 'Inter', sans-serif;
+  font-size: 15.5px; font-weight: 700;
+  color: var(--naowee-color-text-primary, #282834);
+  line-height: 1.3;
+  letter-spacing: -.005em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Vigencia es la más larga (05 abr 2026 → 17 abr 2026) — font más
+   compacto + stat más ancho para que quepa en una sola línea. */
+.wz-success-stat--vigencia .wz-success-stat__val{
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+/* Actions — full width proporcional al modal */
+.wz-success-actions{
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 10px;
+}
+.wz-success-actions .naowee-btn{
+  justify-content: center;
+  width: 100%;
+}
+
+/* Manual entry zone (step 5) */
+.wz-manual{
+  border: 1.5px dashed rgba(215, 64, 9, .38);
+  border-radius: 14px;
+  padding: 18px;
+  background: linear-gradient(180deg, #fffaf5 0%, #fff 100%);
+}
+.wz-manual__cols{
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 1fr 32px;
+  gap: 8px;
+  padding: 0 10px 8px;
+  font-size: 10.5px; font-weight: 700;
+  color: var(--naowee-color-text-secondary, #646587);
+  text-transform: uppercase; letter-spacing: .4px;
+}
+.wz-manual--code-only .wz-manual__cols{ grid-template-columns: 1fr 32px; }
+.wz-manual__rows{ display: flex; flex-direction: column; gap: 0; }
+.wz-manual__rows .manual-row{ margin-bottom: 6px; }
+.wz-manual__hint{
+  margin-top: 10px;
+  font-size: 11.5px;
+  color: var(--naowee-color-text-secondary, #646587);
+  line-height: 1.5;
+}
+.wz-manual__hint strong{
+  color: var(--naowee-color-text-accent, #d74009);
+  font-weight: 700;
+}
+
+/* Drag & drop zone — dashed naranja sutil */
+.wz-dropzone{
+  position: relative;
+  border: 1.5px dashed rgba(215, 64, 9, .38);
+  border-radius: 14px;
+  padding: 36px 20px;
+  text-align: center;
+  background: linear-gradient(180deg, #fffaf5 0%, #fff 100%);
+  cursor: pointer;
+  transition: border-color .18s, background .18s, transform .18s;
+}
+.wz-dropzone:hover,
+.wz-dropzone.is-dragover{
+  border-color: rgba(215, 64, 9, .85);
+  background: #fff6ee;
+}
+.wz-dropzone.is-dragover{ transform: scale(1.005); }
+.wz-dropzone__ico{
+  width: 52px; height: 52px; margin: 0 auto 12px;
+  border-radius: 50%; background: #fff;
+  border: 1px solid var(--naowee-color-border-default, #e7e9f3);
+  color: var(--naowee-color-text-accent, #d74009);
+  display: flex; align-items: center; justify-content: center;
+}
+.wz-dropzone__title{ font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.wz-dropzone__sub{
+  font-size: 12px; color: var(--naowee-color-text-secondary, #646587);
+  line-height: 1.4; max-width: 420px; margin: 0 auto;
+}
+.wz-dropzone__sub code{
+  font-family: 'SF Mono', monospace; font-size: 11px;
+  color: var(--naowee-color-text-accent, #d74009);
+  background: #fff; padding: 1px 5px; border-radius: 4px;
+  border: 1px solid var(--naowee-color-border-default, #e7e9f3);
+}
+.wz-dropzone__fmts{ display: flex; gap: 5px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
+
+/* File input (textfield-style + ghost CTA + DS green tag) — Step 1 resolución */
+.wz-fileinput{ display: flex; flex-direction: column; gap: 6px; }
+.wz-fileinput__label{
+  font-size: 13px; font-weight: 500;
+  color: var(--naowee-color-text-primary, #282834);
+}
+.wz-fileinput__field{
+  display: flex; align-items: center; gap: 10px;
+  min-height: 44px; padding: 6px 6px 6px 12px;
+  border: 1px solid var(--naowee-color-border-strong, #d0d4e6);
+  border-radius: 8px;
+  background: var(--naowee-color-surface, #fff);
+  transition: border-color .18s, box-shadow .18s, background .18s;
+}
+.wz-fileinput[data-state="empty"] .wz-fileinput__field:focus-within,
+.wz-fileinput__field.is-dragover{
+  border-color: var(--naowee-color-text-accent, #d74009);
+  box-shadow: 0 0 0 3px rgba(215, 64, 9, .12);
+}
+.wz-fileinput__field.is-dragover{ background: #fff8f3; }
+.wz-fileinput__slot{
+  flex: 1; min-width: 0;
+  display: flex; align-items: center; gap: 6px;
+}
+.wz-fileinput__placeholder{
+  font-size: 13px;
+  color: var(--naowee-color-text-secondary, #646587);
+}
+.wz-fileinput__action{ display: inline-flex; align-items: center; flex-shrink: 0; }
+.wz-fileinput__cta{ flex-shrink: 0; }
+
+/* Pending filename (during upload, neutral text on the left) */
+.wz-fileinput__pending{
+  display: inline-flex; align-items: center; gap: 6px;
+  min-width: 0; max-width: 100%;
+  font-size: 13px; font-weight: 500;
+  color: var(--naowee-color-text-primary, #282834);
+  animation: wzFileFadeIn .18s ease-out both;
+}
+.wz-fileinput__pending-ico{ color: var(--naowee-color-text-secondary, #646587); flex-shrink: 0; }
+.wz-fileinput__pending-name{
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* Determinate progress spinner — green, on the right (CTA side) */
+.wz-fileinput__progress{
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 32px; padding: 0 4px;
+  font-size: 12.5px;
+  color: var(--naowee-color-feedback-text-positive-loud, #1f8923);
+  animation: wzFileFadeIn .22s ease-out both;
+}
+.wz-fileinput__ring{
+  flex-shrink: 0;
+  color: var(--naowee-color-feedback-icon-positive-loud, #1f8923);
+  animation: wzRingSpin 1.6s linear infinite;
+  transform-origin: 50% 50%;
+}
+.wz-fileinput__ring-track{
+  stroke: var(--naowee-color-green-100, #DEFADE);
+}
+.wz-fileinput__ring-fill{
+  stroke: currentColor;
+  transition: stroke-dashoffset .25s cubic-bezier(.4, 0, .2, 1);
+}
+.wz-fileinput__progress-pct{
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  letter-spacing: .2px;
+  min-width: 32px; text-align: right;
+}
+
+/* DS tag — name truncation + entrance animation */
+.wz-fileinput__tag{ animation: wzTagPop .26s cubic-bezier(.34, 1.4, .5, 1) both; }
+.wz-fileinput__tag-name{
+  max-width: 280px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+@keyframes wzRingSpin{
+  to{ transform: rotate(360deg); }
+}
+@keyframes wzFileFadeIn{
+  from{ opacity: 0; transform: translateX(4px); }
+  to{ opacity: 1; transform: translateX(0); }
+}
+@keyframes wzTagPop{
+  from{ opacity: 0; transform: scale(.92); }
+  to{ opacity: 1; transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce){
+  .wz-fileinput__ring,
+  .wz-fileinput__pending,
+  .wz-fileinput__progress,
+  .wz-fileinput__tag{ animation: none !important; }
+  .wz-fileinput__ring-fill{ transition: none !important; }
+}
+
+.wz-fileinput__hint{
+  font-size: 11.5px;
+  color: var(--naowee-color-text-secondary, #646587);
+}
+.fmt{
+  font-size: 9.5px; font-weight: 700; padding: 2px 7px;
+  border-radius: 4px; background: #fff;
+  border: 1px solid var(--naowee-color-border-default, #e7e9f3);
+  color: var(--naowee-color-text-secondary, #646587);
+  text-transform: uppercase; letter-spacing: .3px;
+}
+
+/* Manual code row — card blanca que contrasta con el bg peach del
+   wz-manual, conteniendo claramente los 3 campos + X (así la X no
+   "flota" entre la caja y la línea punteada exterior). */
+.manual-row{
+  display: grid; grid-template-columns: 1.3fr 1fr 1fr 32px; gap: 8px;
+  align-items: center; padding: 10px;
+  background: #fff;
+  border: 1px solid var(--naowee-color-border-default, #e7e9f3);
+  border-radius: 10px; margin-bottom: 8px;
+  box-shadow: 0 1px 2px rgba(40,40,52,.04);
+}
+.manual-row--code-only{ grid-template-columns: 1fr 32px; }
+.manual-row > .x-btn{
+  justify-self: center;
+}
+/* Los campos de manual-row usan los componentes reales del DS:
+   .naowee-textfield para código y valor, .naowee-dropdown para categoría.
+   No hay overrides de altura/border — hereda del DS. El código mantiene
+   font mono para consistencia con identificadores. */
+.manual-row .manual-row__code input{ font-family: 'SF Mono', monospace; }
+
+/* Botón Agregar código — alineación dentro del bloque manual */
+.wz-add-manual{
+  align-self: flex-start;
+  margin-top: 10px;
+}
+
+/* Summary chip */
+.summary-chip{
+  display: flex; gap: 14px; padding: 14px 18px;
+  background: linear-gradient(90deg, #fff3e6, #fff);
+  border: 1px solid var(--naowee-color-border-default, #e7e9f3);
+  border-radius: 12px; margin-bottom: 16px;
+}
+.summary-chip__ico{
+  width: 40px; height: 40px; border-radius: 10px; background: #fff;
+  border: 1px solid var(--naowee-color-border-default, #e7e9f3);
+  color: var(--naowee-color-text-accent, #d74009);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.summary-chip__title{ font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+.summary-chip__desc{ font-size: 11.5px; color: var(--naowee-color-text-secondary, #646587); line-height: 1.4; }
+
+/* Custom date-picker popup — fixed, ancho seteado por JS al ancho del input */
+.wz-datepicker{
+  position: fixed; z-index: 1500;
+  background: #fff; border: 1px solid var(--naowee-color-border-default, #e7e9f3);
+  border-radius: 12px; box-shadow: 0 12px 32px rgba(40,40,52,.14);
+  padding: 14px;
+  min-width: 240px;
+  opacity: 0; transform: translateY(-6px); pointer-events: none;
+  transition: opacity .18s, transform .18s;
+}
+.wz-datepicker.open{ opacity: 1; transform: translateY(0); pointer-events: auto; }
+.wz-dp__head{
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px;
+}
+.wz-dp__month{ font-size: 13px; font-weight: 700; color: var(--naowee-color-text-primary, #282834); text-transform: capitalize; }
+.wz-dp__nav{
+  width: 28px; height: 28px; border-radius: 6px; border: none;
+  background: transparent; cursor: pointer;
+  color: var(--naowee-color-text-secondary, #646587);
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.wz-dp__nav:hover{ background: #f5f6fa; color: var(--naowee-color-text-accent, #d74009); }
+.wz-dp__weekdays, .wz-dp__days{
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px;
+}
+.wz-dp__weekdays{ margin-bottom: 4px; }
+.wz-dp__weekday{
+  font-size: 10px; font-weight: 700; text-align: center;
+  color: var(--naowee-color-text-secondary, #646587);
+  padding: 6px 0; text-transform: uppercase; letter-spacing: .3px;
+}
+.wz-dp__day{
+  height: 32px; border-radius: 6px; border: none;
+  background: transparent; cursor: pointer; font: inherit;
+  font-size: 12px; color: var(--naowee-color-text-primary, #282834);
+  transition: background .12s, color .12s;
+}
+.wz-dp__day:hover{ background: #fff3e6; color: var(--naowee-color-text-accent, #d74009); }
+.wz-dp__day--muted{ color: #b5b9d4; }
+.wz-dp__day--today{ font-weight: 800; color: var(--naowee-color-text-accent, #d74009); }
+.wz-dp__day--selected{
+  background: var(--naowee-color-text-accent, #d74009);
+  color: #fff;
+}
+.wz-dp__day--selected:hover{ background: var(--naowee-color-text-accent, #d74009); color: #fff; }
+
+.naowee-textfield.has-datepicker .naowee-textfield__input-wrap{ cursor: pointer; }
+.naowee-textfield.has-datepicker input{ cursor: pointer; caret-color: transparent; }
+.naowee-textfield.has-datepicker .naowee-textfield__suffix{
+  color: #9c9ebf;
+  padding: 0; margin-right: 2px;
+  display: flex; align-items: center;
+}
+.naowee-textfield.has-datepicker .naowee-textfield__suffix svg{ display: block; }
+
+/* Dropdown menu dentro del wizard: fixed para no clipearse por el modal body */
+.wz-modal .naowee-dropdown--open .naowee-dropdown__menu{
+  position: fixed;
+  max-height: 260px;
+  z-index: 1500;
+}
+
+/* ═══ Ajustes reunión 22-09-2026 ═══ */
+
+/* Plantilla Juegos Intercolegiados en el paso 1 */
+.wz-template-msg{ margin: 0 0 20px; }
+.wz-template-msg__actions{ margin-top: 10px; padding-left: 32px; }
+
+/* Vigencia opcional: helper bajo el par de fechas */
+.wz-vigencia-helper{ margin: -6px 0 4px; }
+
+/* Códigos manuales con tipo de incentivo */
+.wz-manual--typed .wz-manual__cols,
+.manual-row--typed{ grid-template-columns: 1fr 1fr 32px; }
+.manual-row--typed .naowee-dropdown{ min-width: 0; }
+
+/* Condiciones predefinidas (solo lectura) */
+.wz-preset-rules{
+  list-style: none; margin: 0 0 12px; padding: 0;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.wz-preset-rule{
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  padding: 8px 12px;
+  background: var(--naowee-color-bg-subtle, #f7f8fb);
+  border: 1px solid var(--naowee-color-border-default, #e7e9f3);
+  border-radius: 10px;
+  font-size: 13px;
+  color: var(--naowee-color-text-primary, #282834);
+}
+.wz-preset-rule__lock{ display: inline-flex; color: var(--naowee-color-text-secondary, #646587); }
+.wz-preset-rule__op{ color: var(--naowee-color-text-secondary, #646587); font-weight: 600; }
+
+/* Conteo de códigos por incentivo */
+.wz-codes-table{
+  width: 100%; border-collapse: collapse; font-size: 13px;
+  border: 1px solid var(--naowee-color-border-default, #e7e9f3);
+  border-radius: 10px; overflow: hidden;
+}
+.wz-codes-table th, .wz-codes-table td{
+  padding: 8px 12px; text-align: left;
+  border-bottom: 1px solid var(--naowee-color-border-default, #e7e9f3);
+}
+.wz-codes-table th{
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px;
+  color: var(--naowee-color-text-secondary, #646587);
+  background: var(--naowee-color-bg-subtle, #f7f8fb);
+}
+.wz-codes-table tr:last-child td{ border-bottom: 0; }
+.wz-codes-table .num{ text-align: right; font-variant-numeric: tabular-nums; }
+.wz-template-dl{ margin-top: 10px; }
+.wz-grid > .naowee-dropdown{ min-width: 0; }
+.wz-demo-badge{ margin-right: 6px; vertical-align: 1px; }
+
+/* Tooltip de ayuda en labels (sobre naowee-tooltip del DS; texto largo) */
+.wz-tip{ vertical-align: -3px; margin-left: 4px; cursor: help; color: var(--naowee-color-text-secondary, #646587); }
+.wz-tip > svg{ width: 15px; height: 15px; }
+.wz-tip:focus-visible{ outline: 2px solid var(--naowee-color-text-accent, #d74009); outline-offset: 2px; border-radius: 50%; }
+.wz-tip .naowee-tooltip__content{
+  width: 260px; white-space: normal; text-align: left; line-height: 1.45;
+  font-weight: 400; text-transform: none; letter-spacing: 0;
+  left: 50%; transform: translateX(-50%);
+  pointer-events: none;
+}
+.wz-tip:focus .naowee-tooltip__content{ opacity: 1; }
+
+/* SOLO DEMO · nota de validaciones para devs */
+.wz-devnote-row{ display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.wz-devnote-row .wz-subtitle, .wz-devnote-row .wz-pane__title{ margin-bottom: 0; }
+.wz-devnote-row{ margin-bottom: 10px; }
+.wz-devnote{
+  position: relative; display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px 4px 4px; border-radius: 999px;
+  border: 1px dashed #d9a441; background: #fff8e6;
+  font-size: 12px; font-weight: 600; color: #8a5a00; cursor: help;
+}
+.wz-devnote:focus-visible{ outline: 2px solid var(--naowee-color-text-accent, #d74009); outline-offset: 2px; }
+.wz-devnote__pop{
+  position: absolute; right: 0; top: calc(100% + 8px); z-index: 1200;
+  width: 420px; max-width: 80vw; max-height: 60vh; overflow: auto;
+  padding: 14px 16px; border-radius: 12px;
+  background: #282834; color: #fff;
+  font-size: 12.5px; font-weight: 400; line-height: 1.45;
+  box-shadow: 0 12px 32px rgba(40,40,52,.28);
+  opacity: 0; visibility: hidden; transition: opacity .15s;
+}
+.wz-devnote:hover .wz-devnote__pop, .wz-devnote:focus .wz-devnote__pop, .wz-devnote:focus-within .wz-devnote__pop{ opacity: 1; visibility: visible; }
+.wz-devnote__head{ display: block; font-weight: 700; margin-bottom: 8px; }
+.wz-devnote__head em{ font-weight: 400; opacity: .7; }
+.wz-devnote__sec + .wz-devnote__sec{ margin-top: 10px; }
+.wz-devnote__sec-title{ font-weight: 700; color: #ffd27a; margin-bottom: 4px; }
+.wz-devnote__pop ul{ margin: 0; padding-left: 16px; }
+.wz-devnote__pop li + li{ margin-top: 3px; }
+/* Campos de la columna derecha: el tooltip crece hacia la izquierda */
+.wz-tip--end .naowee-tooltip__content{ left: auto; right: -10px; transform: none; }
+.wz-tip--end .naowee-tooltip__content::after{ left: auto; right: 12px; transform: none; }
+
+/* Armador de condiciones bloqueado (paso 3) */
+.cond-locked__notice{
+  display: flex; align-items: center; gap: 6px; margin: 0 0 10px;
+  font-size: 12px; font-weight: 600; color: var(--naowee-color-text-secondary, #646587);
+}
+.cond-builder--locked .cond-row--locked{ grid-template-columns: 220px 70px 1fr; }
+.cond-locked__cell{
+  min-height: 38px; display: flex; align-items: center; flex-wrap: wrap; gap: 4px;
+  padding: 6px 12px; border-radius: 8px;
+  border: 1px solid var(--naowee-color-border-default, #e7e9f3);
+  background: var(--naowee-color-bg-subtle, #f7f8fb);
+  font-size: 13px; color: var(--naowee-color-text-primary, #282834);
+  cursor: not-allowed;
+}
+.cond-locked__field{ font-weight: 600; }
+.cond-locked__op{ justify-content: center; font-weight: 700; color: var(--naowee-color-text-secondary, #646587); }
+.cond-locked__arrow{ color: var(--naowee-color-text-secondary, #646587); font-weight: 700; }
+.cond-builder--locked .cond-rows{ display: flex; flex-direction: column; gap: 6px; }
+@media (max-width: 720px){
+  .cond-builder--locked .cond-row--locked{ grid-template-columns: 1fr; }
+}
+.cond-builder--locked .cond-row--locked{ grid-template-columns: minmax(150px, 200px) 84px minmax(0, 1fr); }
+.cond-locked__cell{ min-width: 0; }
+.cond-locked__val .naowee-tag{ white-space: normal; height: auto; max-width: 100%; text-align: left; line-height: 1.3; padding-top: 2px; padding-bottom: 2px; }
+.cond-locked__op{ text-align: center; white-space: nowrap; }
+
+/* Armador simple (paso 3): filas campo / operador / valor, todas Y */
+.cond-row--simple{ grid-template-columns: minmax(150px, 200px) 84px minmax(0, 1fr) 32px; align-items: start; }
+.cond-row--simple select{
+  width: 100%; min-height: 38px; padding: 6px 10px; border-radius: 8px;
+  border: 1px solid var(--naowee-color-border-default, #d5d7e5); background: #fff;
+  font: inherit; font-size: 13px; color: var(--naowee-color-text-primary, #282834);
+}
+.cond-row--simple > .x-btn{ align-self: center; }
+.cond-simple__chips{ display: flex; flex-wrap: wrap; gap: 6px; min-height: 38px; align-items: center; }
+.cond-chip{
+  padding: 5px 10px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--naowee-color-border-default, #d5d7e5); background: #fff;
+  font: inherit; font-size: 12.5px; color: var(--naowee-color-text-primary, #282834);
+}
+.cond-chip.is-on{ border-color: var(--naowee-color-text-accent, #d74009); background: #fff3ec; color: var(--naowee-color-text-accent, #d74009); font-weight: 600; }
+.cond-chip:focus-visible{ outline: 2px solid var(--naowee-color-text-accent, #d74009); outline-offset: 2px; }
+.cond-simple__hint{ color: var(--naowee-color-text-secondary, #646587); font-style: italic; }
+.cond-simple__intro{ margin: 0 0 10px; }
+.cond-simple__error{ margin-top: 8px; }
+.cond-locked__notice .naowee-btn{ margin-left: auto; }
+.wz-cond-panel--error{ border-color: var(--naowee-color-border-negative, #d92d20) !important; }
+.cond-builder--locked .cond-group > .wz-add-cond{ margin-top: 8px; }
+@media (max-width: 720px){ .cond-row--simple{ grid-template-columns: 1fr; } }
+
+/* Armador editable: botones de valores y avisos */
+.cond-simple__hint-inline{ font-size: 11.5px; color: var(--naowee-color-text-secondary, #646587); font-style: italic; }
+.cond-locked__notice{ flex-wrap: wrap; }
+.cond-locked__notice .naowee-badge{ flex-shrink: 0; }
+.cond-builder--locked .cond-group > .wz-add-cond{ margin-top: 10px; }
+
+/* Armador en edición: desplegables compactos */
+.cond-row--simple{ align-items: center; }
+.cond-row--simple .cond-dd{ min-width: 0; }
+.cond-row--simple .cond-dd .naowee-dropdown__value{ white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ═══ Paso Códigos: alcance, forma de carga excluyente y plantilla ═══ */
+.wz-codes-scope{ margin: 0 0 18px; }
+.wz-codes-choice{ display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.wz-codes-choice .toggle-card{ cursor: pointer; }
+.wz-codes-choice .toggle-card:focus-visible{ outline: 2px solid var(--naowee-color-text-accent, #d74009); outline-offset: 2px; }
+.wz-codes-choice__note{ margin: 8px 0 16px; font-size: 12px; color: var(--naowee-color-text-secondary, #646587); }
+@media (max-width: 640px){ .wz-codes-choice{ grid-template-columns: 1fr; } }
+
+.wz-codes-steps{ list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.wz-codes-steps li{
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px; border-radius: 10px;
+  border: 1px solid var(--naowee-color-border-default, #e7e9f3); background: #fff;
+}
+.wz-codes-steps__num{
+  flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: #fff3e6; color: var(--naowee-color-text-accent, #d74009);
+  font-size: 12px; font-weight: 700;
+}
+.wz-codes-steps__body{ flex: 1; min-width: 0; display: flex; flex-direction: column; font-size: 13px; color: var(--naowee-color-text-primary, #282834); }
+.wz-codes-steps__body span{ font-size: 12px; color: var(--naowee-color-text-secondary, #646587); }
+.wz-codes-steps .naowee-btn{ flex-shrink: 0; }
+
+/* Diálogo sobre el wizard abierto */
+.wz-warn-overlay--top{ z-index: 3100; }
+
+/* ═══ Códigos uno por uno: un bloque por incentivo con campo de etiquetas ═══ */
+.wz-manual-codes{ display: flex; flex-direction: column; gap: 12px; }
+.wz-mc{
+  padding: 12px 14px; border-radius: 12px;
+  border: 1px solid var(--naowee-color-border-default, #e7e9f3); background: #fff;
+}
+.wz-mc__head{ display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+.wz-mc__name{ font-size: 13.5px; font-weight: 700; color: var(--naowee-color-text-primary, #282834); flex: 1; min-width: 0; }
+.wz-mc__count{ font-size: 12.5px; color: var(--naowee-color-text-secondary, #646587); }
+.wz-mc__count strong{ color: var(--naowee-color-text-primary, #282834); }
+.wz-mc__field{
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  min-height: 44px; max-height: 180px; overflow-y: auto;
+  padding: 6px 8px; border-radius: 8px; cursor: text;
+  border: 1px solid var(--naowee-color-border-strong, #b9bcd1); background: #fff;
+}
+.wz-mc__field:focus-within{ border-color: var(--naowee-color-text-accent, #d74009); box-shadow: 0 0 0 3px rgba(215,64,9,.12); }
+.wz-mc__field--error{ border-color: var(--naowee-color-border-negative, #d92d20); }
+.wz-mc__chip{ font-family: 'SF Mono', ui-monospace, monospace; gap: 4px; }
+.wz-mc__rm{
+  border: 0; background: transparent; cursor: pointer; padding: 0 2px;
+  font-size: 14px; line-height: 1; color: var(--naowee-color-text-secondary, #646587);
+}
+.wz-mc__rm:hover{ color: #b42318; }
+.wz-mc__input{
+  flex: 1; min-width: 180px; border: 0; outline: 0; background: transparent;
+  font: inherit; font-size: 13px; font-family: 'SF Mono', ui-monospace, monospace; padding: 4px 2px;
+}
+.wz-mc__foot{ display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-top: 6px; }
+.wz-mc__msg{ font-size: 11.5px; color: var(--naowee-color-text-secondary, #646587); line-height: 1.4; }
+.wz-mc__msg--negative{ color: #b42318; }
+.wz-mc__demo{
+  flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px;
+  border: 1px dashed #d9a441; background: #fff8e6; color: #8a5a00;
+  border-radius: 999px; padding: 3px 10px 3px 4px; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer;
+}
+.wz-mc__demo:focus-visible{ outline: 2px solid var(--naowee-color-text-accent, #d74009); outline-offset: 2px; }
+
+/* ═══ Editar por sección (desde el detalle del programa) ═══ */
+.wz-modal[data-section] #wzTemplateMsg{ display: none; }
+.wz-modal[data-section="equipo"] .wz-pane[data-pane="1"] .wz-field-group > :not([data-wz-block="equipo"]),
+.wz-modal[data-section="equipo"] .wz-pane[data-pane="1"] > .wz-devnote-row,
+.wz-modal[data-section="equipo"] .wz-pane[data-pane="1"] > .wz-pane__sub{ display: none; }
+.wz-modal[data-section="equipo"] [data-wz-block="equipo"] > .wz-subtitle{ display: none; }
+.wz-modal[data-section="datos"] [data-wz-block="equipo"]{ display: none; }
+
+/* Incentivo desactivado (tenía entregas: no se borra) */
+.wz-inc-card--inactive{ background: #f7f8fb; }
+.wz-inc-card--inactive .wz-inc-card__grid{ opacity: .55; pointer-events: none; }
+.wz-inc-card__state{ display: inline-flex; align-items: center; gap: 8px; margin-left: auto; }
+.wz-inc-card__head{ display: flex; align-items: center; gap: 8px; }
+
+/* Gestor de programa: en "equipo" solo asigna operadores (el gestor lo define el gestor de incentivos) */
+.wz-modal[data-actor="programa"][data-section="equipo"] [data-wz-name="gestor-programa"]{ display: none; }
+.wz-modal[data-actor="programa"][data-section="equipo"] [data-wz-block="equipo"] .wz-grid{ grid-template-columns: 1fr; }
+
+/* Crear gestor u operador desde el equipo del programa */
+.wz-team-new{border:none;background:none;padding:0;margin-left:4px;font:inherit;font-size:inherit;font-weight:700;color:var(--naowee-color-text-accent,#d74009);cursor:pointer}
+.wz-team-new:hover{text-decoration:underline}

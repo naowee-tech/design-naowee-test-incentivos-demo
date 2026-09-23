@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Naowee Incentivos — Asignación exitosa</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.4.0/dist/design-system.css"/>
+<link rel="stylesheet" href="shared/shell.css?v=20260922200101"/>
+
+<style>
+  .success-wrap{
+    max-width:760px;margin:0 auto;padding:0 0 28px;
+    animation:fadeInUp .4s cubic-bezier(.4,0,.2,1);
+  }
+  @keyframes fadeInUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+  .success-hero{
+    background:linear-gradient(180deg,#fff 0%,#fafbfd 100%);
+    border:1px solid var(--border);border-radius:var(--radius-xl);
+    padding:40px 36px;text-align:center;
+    margin-bottom:20px;position:relative;overflow:hidden;
+  }
+  .success-hero::before{
+    content:"";position:absolute;top:-40px;left:50%;transform:translateX(-50%);
+    width:280px;height:280px;border-radius:50%;
+    background:radial-gradient(circle, rgba(31,137,35,.12) 0%, transparent 70%);
+    pointer-events:none;
+  }
+  .success-check{
+    width:88px;height:88px;border-radius:50%;
+    background:linear-gradient(135deg,#25a12a,#1f8923);
+    display:inline-flex;align-items:center;justify-content:center;color:#fff;
+    margin-bottom:18px;box-shadow:0 8px 28px rgba(31,137,35,.35);
+    animation:pop .5s cubic-bezier(.34,1.56,.64,1);
+    position:relative;z-index:1;
+  }
+  @keyframes pop{0%{transform:scale(.5);opacity:0}100%{transform:scale(1);opacity:1}}
+  .success-hero h1{font-size:28px;font-weight:800;letter-spacing:-.02em;margin-bottom:8px;position:relative;z-index:1}
+  .success-hero p{font-size:14px;color:var(--text-secondary);line-height:1.5;max-width:480px;margin:0 auto;position:relative;z-index:1}
+  .success-stamp{
+    display:inline-flex;align-items:center;gap:6px;margin-top:14px;
+    font-family:'SF Mono',monospace;font-size:11.5px;font-weight:700;
+    color:var(--text-secondary);padding:5px 12px;background:#fff;
+    border:1px solid var(--border);border-radius:var(--radius-full);
+    position:relative;z-index:1;
+  }
+
+  /* Confetti */
+  .confetti{position:absolute;inset:0;pointer-events:none;z-index:0}
+  .confetti span{
+    position:absolute;width:8px;height:12px;
+    animation:fall 2.4s linear forwards;opacity:0;
+  }
+  @keyframes fall{
+    0%{transform:translateY(-30px) rotate(0);opacity:0}
+    15%{opacity:1}
+    100%{transform:translateY(280px) rotate(720deg);opacity:0}
+  }
+
+  /* Receipt card */
+  .receipt{
+    background:#fff;border:1px solid var(--border);border-radius:var(--radius-xl);
+    overflow:hidden;margin-bottom:20px;
+  }
+  .receipt__head{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:20px 28px;border-bottom:1px dashed var(--border);
+  }
+  .receipt__head h3{font-size:13px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.6px}
+  .receipt__id{
+    font-family:'SF Mono',monospace;font-size:12.5px;font-weight:700;
+    color:var(--accent);background:#fff3e6;padding:4px 10px;border-radius:var(--radius-md);
+  }
+
+  .receipt__body{padding:24px 28px;display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:center}
+  @media(max-width:640px){ .receipt__body{grid-template-columns:1fr} }
+  .receipt__ava{
+    width:88px;height:88px;border-radius:50%;
+    background:linear-gradient(135deg,#ffbf75,#d74009);
+    display:flex;align-items:center;justify-content:center;color:#fff;font-size:32px;font-weight:800;
+    border:3px solid #fff;
+    box-shadow:
+      0 0 0 1px var(--border),
+      0 12px 32px rgba(215,64,9,.32),
+      0 3px 8px rgba(215,64,9,.18);
+  }
+  .receipt__person{display:flex;flex-direction:column;gap:4px}
+  .receipt__person-name{font-size:19px;font-weight:800;letter-spacing:-.01em;color:var(--text-primary)}
+  .receipt__person-meta{font-size:12.5px;color:var(--text-secondary)}
+
+  /* Receipt details — kv-row pattern del paso 1 con íconos */
+  .receipt__details{padding:8px 28px 20px;display:flex;flex-direction:column;gap:0}
+  .kv-row{
+    display:grid;grid-template-columns:36px 1fr auto;gap:14px;align-items:center;
+    padding:14px 0;border-bottom:1px solid var(--border);
+  }
+  .kv-row:last-child{border-bottom:none}
+  .kv-row__ico{
+    width:36px;height:36px;border-radius:10px;
+    background:#f5f6fa;color:var(--text-secondary);
+    display:inline-flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+  }
+  .kv-row__ico svg{width:18px;height:18px}
+  .kv-row__lbl{font-size:12.5px;color:var(--text-secondary);font-weight:500}
+  .kv-row__val{
+    font-size:13px;color:var(--text-primary);
+    font-weight:700;text-align:right;
+  }
+  .kv-row--highlight .kv-row__ico{background:var(--green-bg);color:var(--green)}
+  .kv-row--highlight .kv-row__val{color:var(--green);font-size:15px}
+  .kv-row__val code{font-family:'SF Mono',monospace;font-size:12px;color:var(--accent);font-weight:700}
+
+  .receipt__footer{
+    padding:18px 28px;border-top:1px dashed var(--border);
+    display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;
+    font-size:11.5px;color:var(--text-secondary);background:#fafbfd;
+  }
+  .receipt__footer strong{color:var(--text-primary)}
+
+  /* Actions row */
+  .actions{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;margin-bottom:24px}
+  @media(max-width:640px){ .actions{grid-template-columns:1fr} }
+
+  /* Status change banner */
+  .status-banner{
+    background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);
+    padding:14px 20px;display:flex;gap:14px;align-items:center;margin-bottom:20px;
+  }
+  .status-banner__ico{
+    width:40px;height:40px;border-radius:var(--radius-md);
+    background:var(--green-bg);color:var(--green);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .status-banner__body{flex:1;min-width:0}
+  .status-banner__title{font-size:13px;font-weight:700;color:var(--text-primary);margin-bottom:2px}
+  .status-banner__sub{font-size:12px;color:var(--text-secondary)}
+  .status-transition{display:inline-flex;align-items:center;gap:8px}
+  .status-transition .naowee-badge{text-decoration:none}
+  .status-transition .is-prev{opacity:.55;text-decoration:line-through}
+
+  /* Help footer */
+  .help{
+    text-align:center;font-size:12px;color:var(--text-secondary);line-height:1.5;
+  }
+  .help a{color:var(--accent);font-weight:600}
+  .success-check--pending{background:#fff3e6 !important;color:#d97706 !important;box-shadow:0 10px 28px rgba(217,119,6,.22) !important}
+  [hidden]{display:none !important}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <button class="burger-btn" onclick="document.getElementById('sidebar').classList.toggle('collapsed')" aria-label="Toggle sidebar">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="#282834" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+      <img src="shared/logos/ministerio.svg" alt="Ministerio del Deporte" class="sb-logo-img"/>
+      <div class="logo-sep"></div>
+      <img src="shared/logos/suid.png" alt="SUID" class="sb-logo-img"/>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">INCENTIVOS</div>
+      <div class="nav-row active">
+        <div class="active-bar"></div>
+        <div class="icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d74009" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg></div>
+        <span class="lbl">Asignar incentivo</span>
+      </div>
+      <div class="nav-row" onclick="fadeAndGo('incentivo-14-mis-asignaciones.html')">
+        <div class="icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7h13M8 12h13M8 17h13"/><circle cx="4" cy="7" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="17" r="1"/></svg></div>
+        <span class="lbl">Mis asignaciones</span>
+      </div>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="nav-row" onclick="fadeAndGo('incentivo-01-login.html')">
+        <div class="icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <span class="lbl">Cerrar sesión</span>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="top-header">
+      <div class="profile-switcher" id="profileSwitcher">
+        <div class="user-chip" onclick="toggleProfileDD(event)">
+          <div class="ava"><div class="ava-ring" style="background:#ffdfb5;color:#92400e">JR</div><div class="ava-dot"></div></div>
+          <div class="user-info"><span class="user-name">Juan Rodríguez</span><span class="user-role">Operador</span></div>
+          <button class="user-chip__chevron" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>
+        </div>
+      </div>
+    </header>
+
+    <div class="page">
+
+      <div class="success-wrap">
+
+        <div class="success-hero">
+          <div class="confetti" id="confetti"></div>
+          <div class="success-check" id="heroCheck">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <h1 id="heroTitle">¡Incentivo entregado con éxito!</h1>
+          <p id="heroText">El incentivo quedó registrado en el perfil del beneficiario, con su evidencia de entrega. Estado: <strong>Entregado</strong>.</p>
+          <div class="success-stamp" id="stamp">ID · #—</div>
+        </div>
+
+        <!-- Status transition -->
+        <div class="status-banner">
+          <div class="status-banner__ico">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <div class="status-banner__body">
+            <div class="status-banner__title">Estado del incentivo actualizado</div>
+            <div class="status-banner__sub">El cambio quedó registrado en el historial con fecha, hora y datos del operador.</div>
+          </div>
+          <div class="status-transition">
+            <span class="naowee-badge naowee-badge--caution naowee-badge--quiet naowee-badge--small is-prev">Disponible</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            <span class="naowee-badge naowee-badge--positive naowee-badge--quiet naowee-badge--small" id="stateNow">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Entregado
+            </span>
+          </div>
+        </div>
+
+        <!-- Receipt -->
+        <div class="receipt">
+          <div class="receipt__head">
+            <h3>Comprobante de entrega</h3>
+            <span class="receipt__id" id="receiptId">#INC-2026-04821</span>
+          </div>
+          <div class="receipt__body">
+            <div class="receipt__ava" id="receiptAva">MC</div>
+            <div class="receipt__person">
+              <div class="receipt__person-name" id="receiptName">María Camila Herrera Rojas</div>
+              <div class="receipt__person-meta"><span id="receiptDoc">CC 1.001.234.567</span><span id="receiptMetaExtra"></span></div>
+            </div>
+          </div>
+          <div class="receipt__details">
+            <div class="kv-row">
+              <span class="kv-row__ico">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4a2 2 0 01-2-2V5h4M18 9h2a2 2 0 002-2V5h-4M6 5h12v6a6 6 0 01-12 0V5zM10 17h4l1 4H9z"/></svg>
+              </span>
+              <span class="kv-row__lbl">Incentivo</span>
+              <span class="kv-row__val" id="receiptInc">Beca educativa · Medallistas de oro</span>
+            </div>
+            <!-- Valor entregado retirado del comprobante (feedback Danna): el beneficiario no debe ver el costo de lo asignado. -->
+            <!-- Código asignado retirado del comprobante por seguridad (feedback Danna): es el código redimible, no debe exponerse en resúmenes. -->
+            <div class="kv-row">
+              <span class="kv-row__ico">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+              </span>
+              <span class="kv-row__lbl">Programa</span>
+              <span class="kv-row__val" id="receiptProgram">Juegos Intercolegiados 2026</span>
+            </div>
+            <div class="kv-row">
+              <span class="kv-row__ico">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              </span>
+              <span class="kv-row__lbl">Operador</span>
+              <span class="kv-row__val">Juan Rodríguez</span>
+            </div>
+            <div class="kv-row">
+              <span class="kv-row__ico">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </span>
+              <span class="kv-row__lbl">Fecha y hora</span>
+              <span class="kv-row__val" id="receiptDate">—</span>
+            </div>
+            <div class="kv-row">
+              <span class="kv-row__ico">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              </span>
+              <span class="kv-row__lbl">Evidencia</span>
+              <span class="kv-row__val" id="receiptEvidence">Registrada</span>
+            </div>
+          </div>
+          <div class="receipt__footer">
+            <span id="receiptZoneLbl">Departamento: <strong id="receiptZone">Atlántico · Barranquilla</strong></span>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="actions">
+          <button id="btnUploadNow" class="naowee-btn naowee-btn--loud naowee-btn--large" hidden onclick="uploadNow()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+            Subir evidencia ahora
+          </button>
+          <button id="btnNewAssignment" class="naowee-btn naowee-btn--loud naowee-btn--large" onclick="newAssignment()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nueva asignación
+          </button>
+          <button class="naowee-btn naowee-btn--mute naowee-btn--large" onclick="fadeAndGo('incentivo-14-mis-asignaciones.html')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7h13M8 12h13M8 17h13"/><circle cx="4" cy="7" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="17" r="1"/></svg>
+            Mis asignaciones
+          </button>
+        </div>
+
+        <div class="help">
+          ¿Necesitas revertir esta asignación? Hazlo desde
+          <a href="incentivo-14-mis-asignaciones.html">Mis asignaciones</a> (acción <strong>Revertir</strong>, con motivo obligatorio).
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* Confetti */
+(function confetti(){
+  const colors = ['#FF7500','#d74009','#1f8923','#1f78d1','#ffbf75','#fff'];
+  const wrap = document.getElementById('confetti');
+  for(let i=0;i<40;i++){
+    const s = document.createElement('span');
+    s.style.left = (Math.random()*100)+'%';
+    s.style.background = colors[Math.floor(Math.random()*colors.length)];
+    s.style.animationDelay = (Math.random()*.6)+'s';
+    s.style.animationDuration = (1.8 + Math.random()*1.4)+'s';
+    s.style.top = '0';
+    s.style.borderRadius = Math.random() > .5 ? '2px':'50%';
+    wrap.appendChild(s);
+  }
+})();
+
+/* Generate receipt ID */
+const rid = '#INC-2026-' + String(Math.floor(Math.random()*90000)+10000);
+document.getElementById('receiptId').textContent = rid;
+document.getElementById('stamp').textContent = 'ID · ' + rid;
+
+/* Date */
+const now = new Date();
+document.getElementById('receiptDate').textContent = now.toLocaleString('es-CO', {
+  day:'2-digit', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit'
+});
+
+/* Hydrate from session */
+try{
+  const s = JSON.parse(sessionStorage.getItem('inc-assignment-complete') || '{}');
+  if(s.name) document.getElementById('receiptName').textContent = s.name;
+  if(s.initials) document.getElementById('receiptAva').textContent = s.initials;
+  if(s.doc) document.getElementById('receiptDoc').textContent = `${s.docType || 'CC'} ${s.doc}`;
+  const metaExtra = document.getElementById('receiptMetaExtra');
+  if(metaExtra && s.name){
+    metaExtra.textContent = s.role==='institution' ? ` · ${s.zone||''}${s.oros ? ' · ' + s.oros + ' oros 2026' : ''}`
+      : s.role==='coach' ? ` · ${s.coachRole||'Docente'}${s.deporte ? ' · ' + s.deporte : ''}`
+      : `${s.grado ? ' · Grado ' + s.grado : ''}${s.deporte ? ' · ' + s.deporte : ''}`;
+  }
+  if(s.incentive) document.getElementById('receiptInc').textContent = s.incentive;
+  if(s.programName) document.getElementById('receiptProgram').textContent = s.programName;
+  /* Código retirado del comprobante por seguridad (feedback Danna): el código redimible no se muestra en resúmenes. */
+  /* receiptValue retirado (feedback Danna): valor oculto en la vista del operador. */
+  /* Evidencia pendiente (validar → entregar → evidencia después, reunión 22-09 00:27:10). */
+  if(s.evidencePending){
+    document.getElementById('confetti').innerHTML = '';
+    const chk = document.getElementById('heroCheck');
+    chk.classList.add('success-check--pending');
+    chk.innerHTML = '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
+    document.getElementById('heroTitle').textContent = 'Entregado · falta la evidencia';
+    document.getElementById('heroText').innerHTML = 'La entrega quedó registrada y el código asignado. Falta la <strong>foto de evidencia</strong>: súbela ahora o después, desde <strong>Mis asignaciones</strong> o buscando de nuevo al beneficiario.';
+    const now = document.getElementById('stateNow');
+    now.className = 'naowee-badge naowee-badge--caution naowee-badge--quiet naowee-badge--small';
+    now.textContent = 'Entregado · evidencia pendiente';
+    const ev = document.getElementById('receiptEvidence');
+    ev.innerHTML = '<span class="naowee-badge naowee-badge--caution naowee-badge--quiet naowee-badge--small">Pendiente</span>';
+    document.getElementById('btnUploadNow').hidden = false;
+    const na = document.getElementById('btnNewAssignment');
+    na.className = 'naowee-btn naowee-btn--mute naowee-btn--large';
+  } else if(s.evidence){
+    document.getElementById('receiptEvidence').textContent = s.evidence.replace('Archivo subido · ','')
+      + (Array.isArray(s.evidenceAlso) && s.evidenceAlso.length ? ` · también para ${s.evidenceAlso.join(', ')}` : '');
+    if(s.evidenceOnly){
+      document.getElementById('heroTitle').textContent = 'Evidencia registrada';
+      document.getElementById('heroText').innerHTML = 'La evidencia quedó asociada a la entrega. Estado: <strong>Entregado</strong>.';
+      const prev = document.querySelector('.status-transition .is-prev'); if(prev) prev.textContent = 'Evidencia pendiente';
+    }
+  }
+  /* Zona: para institución usar "Sede", para persona usar "Zona". */
+  if(s.zone){
+    document.getElementById('receiptZone').textContent = s.zone;
+    const zLbl = document.getElementById('receiptZoneLbl');
+    if(zLbl && s.role==='institution'){
+      zLbl.innerHTML = 'Sede: <strong id="receiptZone">'+s.zone+'</strong>';
+    }
+  }
+}catch(e){}
+
+/* El flujo terminó: al volver a "Asignar incentivo" se arranca con la búsqueda limpia (uploadNow solo usa inc-assignment). */
+try{ sessionStorage.removeItem('inc-profile'); }catch(e){}
+
+/* Helpers */
+function uploadNow(){
+  try{
+    const s = JSON.parse(sessionStorage.getItem('inc-assignment-complete') || '{}');
+    const a = JSON.parse(sessionStorage.getItem('inc-assignment') || '{}');
+    sessionStorage.setItem('inc-assignment', JSON.stringify(Object.assign({}, a, { evidenceOnly:true, from:'exito', assignedAt: a.assignedAt || s.assignedAt })));
+  }catch(e){}
+  fadeAndGo('incentivo-09-validar-foto.html?evidencia=1');
+}
+function newAssignment(){
+  try{ sessionStorage.removeItem('inc-profile'); sessionStorage.removeItem('inc-assignment'); }catch(e){}
+  fadeAndGo('incentivo-08-asignar-buscar.html');
+}
+function fadeAndGo(url){
+  if('startViewTransition' in document || CSS.supports('view-transition-name: x')){
+    window.location.href = url;
+    return;
+  }
+  document.body.style.transition = 'opacity .25s ease';
+  document.body.style.opacity = '0';
+  setTimeout(() => { window.location.href = url; }, 260);
+}
+function toggleProfileDD(ev){ ev.stopPropagation(); document.getElementById('profileSwitcher')?.classList.toggle('open'); }
+document.addEventListener('click', (e) => { const sw = document.getElementById('profileSwitcher'); if(sw && !sw.contains(e.target)) sw.classList.remove('open'); });
+
+</script>
+
+<script src="shared/profile-switcher.js?v=20260923080917" defer></script>
+
+<script src="shared/footer-scroll.js" defer></script>
+<script src="shared/tour.js?v=20260923080917" defer></script>
+
+<!-- Footer flotante Naowee -->
+<div class="naowee-floating-footer" role="contentinfo" aria-label="Pie de página Naowee">
+  <img src="shared/logos/naowee.svg" alt="Naowee" class="naowee-floating-footer__logo"/>
+  <div class="naowee-floating-footer__sep"></div>
+  <span class="naowee-floating-footer__text">Todos los derechos reservados <strong>&copy; 2026</strong></span>
+</div>
+
+</body>
+</html>

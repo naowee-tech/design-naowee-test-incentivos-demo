@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>SUID – Incentivos · Confirmar asignación</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.4.0/dist/design-system.css"/>
+<link rel="stylesheet" href="shared/shell.css?v=20260922200101"/>
+
+<style>
+  .page-header{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:24px;flex-wrap:wrap}
+  .page-title{font-size:24px;font-weight:700;line-height:1.2;letter-spacing:-.01em;margin-bottom:4px;color:var(--naowee-color-text-primary,#282834)}
+  .page-sub{font-size:14px;color:var(--naowee-color-text-secondary,#646587);line-height:1.5;max-width:640px}
+
+  /* Stepper — paridad con paso 1: sticky directo, sin wrap full-bleed */
+  .stepper{
+    position:sticky;top:0;z-index:10;
+    display:flex;align-items:center;gap:0;
+    padding:14px 20px;background:#fff;
+    border:1px solid var(--naowee-color-border-default,#e7e9f3);
+    border-radius:14px;
+    margin:0 0 24px;
+    overflow-x:auto;
+    transition:box-shadow .22s,border-radius .22s,border-color .22s,padding .18s ease;
+  }
+  .stepper.is-stuck{
+    box-shadow:0 4px 16px rgba(40,40,52,.08);
+  }
+  .step{display:flex;align-items:center;gap:10px;flex-shrink:0;font-size:12.5px;font-weight:600;color:var(--naowee-color-text-secondary,#646587)}
+  .step-lbl{display:inline-block;white-space:nowrap;overflow:hidden;transition:max-width .18s ease,opacity .18s ease,margin-left .18s ease}
+  .step .n{
+    width:26px;height:26px;border-radius:50%;
+    border:1.5px solid #d0d4e6;background:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-size:11px;font-weight:700;color:var(--naowee-color-text-secondary,#646587);
+    transition:all .25s;
+  }
+  .step.active .n{
+    background:var(--naowee-color-text-accent,#d74009);
+    border-color:var(--naowee-color-text-accent,#d74009);color:#fff;
+    animation:stepPulse 2s cubic-bezier(.4,0,.6,1) infinite;
+  }
+  @keyframes stepPulse{
+    0%,100%{box-shadow:0 0 0 0 rgba(215,64,9,.35)}
+    50%{box-shadow:0 0 0 6px rgba(215,64,9,0)}
+  }
+  .step.active{color:var(--naowee-color-text-primary,#282834)}
+  .step.done .n{background:var(--naowee-color-feedback-fill-positive-loud,#1f8923);border-color:var(--naowee-color-feedback-fill-positive-loud,#1f8923);color:#fff}
+  .step-sep{flex:1;height:1.5px;background:var(--naowee-color-border-default,#e7e9f3);min-width:20px;margin:0 12px;border-radius:1px;transition:background .3s}
+  .step.done + .step-sep{background:var(--naowee-color-feedback-fill-positive-loud,#1f8923)}
+
+  /* Pane fade in (consistencia con wizard modal) */
+  .pane-anim{animation:paneFadeIn .4s cubic-bezier(.4,0,.2,1)}
+  @keyframes paneFadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+  /* Recap deportista (sin shadow) */
+  .recap{
+    display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;
+    background:#fff;border:1px solid var(--naowee-color-border-default,#e7e9f3);
+    border-radius:14px;padding:14px 18px;margin-bottom:20px;
+  }
+  .recap__ava{
+    width:48px;height:48px;border-radius:50%;
+    background:linear-gradient(135deg,#ffbf75,#d74009);
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;font-weight:800;font-size:15px;flex-shrink:0;
+    border:2px solid #fff;
+    box-shadow:
+      0 0 0 1px var(--naowee-color-border-default,#e7e9f3),
+      0 6px 16px rgba(215,64,9,.28),
+      0 2px 4px rgba(215,64,9,.16);
+  }
+  .recap__info{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .recap__name{font-size:14px;font-weight:700;color:var(--naowee-color-text-primary,#282834)}
+  .recap__meta{font-size:11.5px;color:var(--naowee-color-text-secondary,#646587);display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .recap__meta .dot{width:3px;height:3px;background:#d0d4e6;border-radius:50%}
+
+  .layout{display:grid;grid-template-columns:1fr 360px;gap:20px;align-items:start}
+  @media(max-width:1100px){.layout{grid-template-columns:1fr}}
+
+  /* Container unificado: recap + incentivos + códigos + footer */
+  .flow-card{
+    background:#fff;border:1px solid var(--naowee-color-border-default,#e7e9f3);
+    border-radius:16px;overflow:hidden;
+  }
+  .flow-section{padding:22px 26px;border-bottom:1px solid var(--naowee-color-border-default,#e7e9f3)}
+  .flow-section:last-of-type{border-bottom:none}
+  .flow-section h3{
+    font-size:13px;font-weight:700;color:var(--naowee-color-text-primary,#282834);
+    margin-bottom:4px;display:flex;align-items:center;gap:8px;
+  }
+  .flow-section h3 .step-num{
+    width:22px;height:22px;border-radius:50%;
+    background:var(--naowee-color-text-accent,#d74009);color:#fff;
+    display:inline-flex;align-items:center;justify-content:center;
+    font-size:11px;font-weight:700;flex-shrink:0;
+  }
+  .flow-section p.desc{font-size:12.5px;color:var(--naowee-color-text-secondary,#646587);margin-bottom:18px;line-height:1.5}
+
+  /* Progressive disclosure: paso 2 oculto hasta que se seleccione un incentivo */
+  .flow-section--hidden{display:none}
+  .flow-section--reveal{animation:revealSection .42s cubic-bezier(.16,1,.3,1) both}
+  @keyframes revealSection{
+    0%{opacity:0;transform:translateY(-8px);max-height:0;padding-top:0;padding-bottom:0;border-top:0}
+    40%{opacity:.4}
+    100%{opacity:1;transform:translateY(0);max-height:1200px;padding-top:22px;padding-bottom:22px}
+  }
+  /* Pulse del step-num del paso 2 al aparecer para guiar la vista */
+  .flow-section--reveal h3 .step-num{
+    animation:stepNumPulse 1.8s cubic-bezier(.4,0,.6,1) 1 .2s both;
+  }
+  @keyframes stepNumPulse{
+    0%{box-shadow:0 0 0 0 rgba(215,64,9,.5)}
+    70%{box-shadow:0 0 0 10px rgba(215,64,9,0)}
+    100%{box-shadow:0 0 0 0 rgba(215,64,9,0)}
+  }
+
+  /* Recap inline dentro del flow-card */
+  .flow-recap{
+    display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;
+    padding:18px 26px;background:linear-gradient(180deg,#fafbfd 0%,#fff 100%);
+    border-bottom:1px solid var(--naowee-color-border-default,#e7e9f3);
+  }
+  .flow-recap__ava{
+    width:48px;height:48px;border-radius:50%;
+    background:linear-gradient(135deg,#ffbf75,#d74009);
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;font-weight:800;font-size:15px;flex-shrink:0;
+    border:2px solid #fff;
+    box-shadow:
+      0 0 0 1px var(--naowee-color-border-default,#e7e9f3),
+      0 6px 16px rgba(215,64,9,.28),
+      0 2px 4px rgba(215,64,9,.16);
+  }
+  .flow-recap__info{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .flow-recap__name{font-size:14px;font-weight:700;color:var(--naowee-color-text-primary,#282834)}
+  .flow-recap__meta{font-size:11.5px;color:var(--naowee-color-text-secondary,#646587);display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .flow-recap__meta .dot{width:3px;height:3px;background:#d0d4e6;border-radius:50%}
+
+  /* Footer nav consistente con wizard — fondo blanco */
+  .flow-footer{
+    padding:16px 26px;background:#fff;
+    display:flex;justify-content:space-between;align-items:center;gap:12px;
+  }
+
+  /* Incentive selector */
+  .incentive-list{display:flex;flex-direction:column;gap:10px}
+  .inc{
+    display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;
+    padding:14px 16px;border:1.5px solid var(--naowee-color-border-default,#e7e9f3);
+    border-radius:12px;cursor:pointer;
+    transition:border-color .18s,background .18s,transform .15s;
+    position:relative;
+  }
+  .inc:hover{border-color:#d0d4e6;background:#fafbfd}
+  .inc.selected{
+    border-color:var(--naowee-color-text-accent,#d74009);background:#fff3e6;
+    transform:scale(1.005);
+  }
+  .inc.selected::after{
+    content:"";position:absolute;top:10px;right:12px;width:20px;height:20px;border-radius:50%;
+    background:var(--naowee-color-text-accent,#d74009) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'/></svg>") center/14px no-repeat;
+  }
+  .inc__ico{
+    width:40px;height:40px;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .inc__body{display:flex;flex-direction:column;gap:3px;min-width:0}
+  .inc__name{font-size:13.5px;font-weight:700;color:var(--naowee-color-text-primary,#282834)}
+  .inc__desc{font-size:11.5px;color:var(--naowee-color-text-secondary,#646587);line-height:1.4}
+  .inc__tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+  .inc__value{
+    font-family:'Inter',sans-serif;
+    font-size:15px;font-weight:700;color:var(--naowee-color-text-primary,#282834);padding-right:30px;
+  }
+
+  /* Code selector — vista tabla */
+  .code-toolbar{
+    display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap;
+  }
+  .code-toolbar .naowee-searchbox{flex:1;min-width:240px;max-width:380px}
+  .code-toolbar .naowee-searchbox .naowee-searchbox__input-wrap{border-radius:9999px;height:36px;padding:4px 12px}
+  .code-toolbar__count{
+    font-size:12px;color:var(--naowee-color-text-secondary,#646587);
+    font-variant-numeric:tabular-nums;
+  }
+  .code-toolbar__count strong{color:var(--naowee-color-text-primary,#282834);font-weight:700}
+
+  .code-table-wrap{
+    margin-top:12px;border:1px solid var(--naowee-color-border-default,#e7e9f3);
+    border-radius:12px;overflow:hidden;
+  }
+  .code-table-scroll{max-height:380px;overflow-y:auto}
+  .code-table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
+  .code-table thead th{
+    position:sticky;top:0;z-index:1;
+    font-family:'Inter',sans-serif;
+    font-size:11px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;
+    color:var(--naowee-color-text-secondary,#646587);
+    padding:11px 14px;text-align:left;background:#f5f6fa;border:none;white-space:nowrap;
+  }
+  .code-table tbody tr{cursor:pointer;transition:background .12s}
+  .code-table tbody tr:hover{background:#fafbfd}
+  .code-table tbody tr.selected{background:#fff7f2}
+  .code-table tbody tr.selected td{color:var(--naowee-color-text-primary,#282834)}
+  .code-table tbody td{
+    padding:11px 14px;border-bottom:1px solid var(--naowee-color-border-default,#e7e9f3);
+    color:var(--naowee-color-text-primary,#282834);vertical-align:middle;
+  }
+  .code-table tbody tr:last-child td{border-bottom:none}
+  .code-table th.col-radio,.code-table td.col-radio{width:36px;padding-right:0}
+  .code-table th.col-num{width:36%}
+  .code-table th.col-value,.code-table td.col-value{text-align:right;font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+  .code-table .num-cell{font-family:'SF Mono','JetBrains Mono',monospace;font-size:12.5px;font-weight:700;letter-spacing:.3px;color:var(--naowee-color-text-primary,#282834)}
+  .code-table .meta-cell{font-size:11.5px;color:var(--naowee-color-text-secondary,#646587)}
+
+  /* Radio mini DS */
+  .code-radio{
+    width:18px;height:18px;border-radius:50%;border:2px solid #c4c7dc;
+    display:inline-flex;align-items:center;justify-content:center;
+    transition:border-color .15s,background .15s;flex-shrink:0;
+  }
+  .code-table tr.selected .code-radio{border-color:var(--naowee-color-text-accent,#d74009)}
+  .code-table tr.selected .code-radio::after{
+    content:'';width:8px;height:8px;border-radius:50%;background:var(--naowee-color-text-accent,#d74009);
+  }
+  .code-table tr:hover .code-radio:not(.selected){border-color:#9c9ebf}
+
+  .code-empty{padding:36px 18px;text-align:center;color:#9c9ebf;font-size:13px}
+
+  .code-pager{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:10px 14px;border-top:1px solid var(--naowee-color-border-default,#e7e9f3);
+    font-size:12px;color:var(--naowee-color-text-secondary,#646587);
+    background:#fff;
+  }
+  .code-pager .naowee-pagination__pages{margin-right:14px}
+
+  /* Summary sidebar sin shadow */
+  .summary{
+    background:linear-gradient(180deg,#fff 0%,#fafbfd 100%);
+    border:1px solid var(--naowee-color-border-default,#e7e9f3);
+    border-radius:16px;padding:24px;position:sticky;top:106px;
+    display:flex;flex-direction:column;gap:18px;
+  }
+  .summary h4{
+    font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;
+    color:#9c9ebf;
+  }
+  .summary-row{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;font-size:13px}
+  .summary-row .lbl{color:var(--naowee-color-text-secondary,#646587);font-weight:500}
+  .summary-row .val{
+    color:var(--naowee-color-text-primary,#282834);font-weight:700;
+    text-align:right;max-width:60%;overflow:hidden;text-overflow:ellipsis;
+    font-family:'Inter',sans-serif;font-style:normal;
+  }
+  .summary-row.big .val{font-size:20px;font-weight:700;color:var(--naowee-color-text-accent,#d74009)}
+  .summary-row.pending .val{color:#9c9ebf;font-weight:400;font-style:normal;font-family:'Inter',sans-serif}
+  .summary hr{border:none;border-top:1px dashed var(--naowee-color-border-default,#e7e9f3);margin:2px 0}
+  .summary-actions{display:flex;flex-direction:column;gap:8px}
+  /* Reunión 22-09: incentivo elegido (solo lectura) + consulta de códigos */
+  .chosen-inc{cursor:default;grid-template-columns:auto 1fr auto}
+  [hidden]{display:none !important}
+  .inc-conds{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .inc-cond{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;color:#1f6f23;background:#eaf6eb;border-radius:999px;padding:3px 9px}
+  .inc-cond svg{width:11px;height:11px}
+  .inc-cond b{font-weight:700;color:#14532d}
+  .inc--done{cursor:default;background:#fafbfd}
+  .inc--done:hover{background:#fafbfd;border-color:var(--naowee-color-border-default,#e7e9f3)}
+  .inc--done .inc__name{color:#646587}
+  .inc__state{display:flex;flex-direction:column;align-items:flex-end;gap:4px;padding-right:30px;text-align:right}
+  .inc__state small{font-size:11px;color:#646587}
+  .code-bonos{display:flex;gap:10px;flex-wrap:wrap;margin:-4px 0 14px}
+  .code-bono{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:9px 14px;border:1.5px solid var(--naowee-color-border-default,#e7e9f3);border-radius:10px;background:#fff;cursor:pointer;font-family:inherit;text-align:left}
+  .code-bono__name{font-size:13px;font-weight:700;color:#282834}
+  .code-bono__state{font-size:11.5px;font-weight:600;color:#b45309}
+  .code-bono.is-done .code-bono__state{color:#1f8923}
+  .code-bono.is-active{border-color:var(--naowee-color-text-accent,#d74009);background:#fff3e6}
+  .inc__state .inc__hint{color:#b45309;font-weight:600;max-width:180px}
+  .flow-section h3 .opt{font-weight:500;color:#9c9ebf;font-size:12px;margin-left:4px}
+  .obs-field{width:100%}
+  .obs-field textarea{min-height:56px;resize:vertical;font-family:inherit}
+  .chosen-inc::after{display:none}
+  .code-scope{height:36px}
+  .code-lookup{margin:0 0 12px}
+  .code-table tbody tr.is-taken{cursor:not-allowed;background:#fafbfd}
+  .code-table tbody tr.is-taken .num-cell{color:var(--naowee-color-text-secondary,#646587)}
+  [hidden]{display:none !important}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <button class="burger-btn" onclick="document.getElementById('sidebar').classList.toggle('collapsed')" aria-label="Toggle sidebar">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="#282834" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+      <img src="shared/logos/ministerio.svg" alt="Ministerio del Deporte" class="sb-logo-img"/>
+      <div class="logo-sep"></div>
+      <img src="shared/logos/suid.png" alt="SUID" class="sb-logo-img"/>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">INCENTIVOS</div>
+      <div class="nav-row active">
+        <div class="active-bar"></div>
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d74009" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg></div>
+        <span class="lbl">Asignar incentivo</span>
+      </div>
+      <div class="nav-row" onclick="fadeAndGo('incentivo-14-mis-asignaciones.html')">
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7h13M8 12h13M8 17h13"/><circle cx="4" cy="7" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="17" r="1"/></svg></div>
+        <span class="lbl">Mis asignaciones</span>
+      </div>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="nav-row" onclick="fadeAndGo('incentivo-01-login.html')">
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <span class="lbl">Cerrar sesión</span>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="top-header">
+      <div class="profile-switcher">
+        <div class="user-chip">
+          <div class="ava"><div class="ava-ring" style="background:#ffdfb5;color:#92400e">JR</div><div class="ava-dot"></div></div>
+          <div class="user-info"><span class="user-name">Juan Rodríguez</span><span class="user-role">Operador</span></div>
+          <button class="user-chip__chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>
+        </div>
+      </div>
+    </header>
+
+    <div class="page">
+
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Asignar incentivo</h1>
+          <p class="page-sub">Elige el incentivo que entregas y, si es un bono, su código.</p>
+        </div>
+      </div>
+
+      <!-- Stepper sticky (paridad con paso 1) -->
+      <div class="stepper" id="stepperWrap">
+        <div class="step done"><span class="n"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span><span class="step-lbl">Verificar datos</span></div>
+        <span class="step-sep"></span>
+        <div class="step active"><span class="n">2</span><span class="step-lbl">Entregar</span></div>
+        <span class="step-sep"></span>
+        <div class="step"><span class="n">3</span><span class="step-lbl">Evidencia</span></div>
+      </div>
+
+      <div class="layout">
+        <!-- Container único: recap + incentivo + código + footer -->
+        <div class="flow-card pane-anim">
+          <div class="flow-recap">
+            <div class="flow-recap__ava">MC</div>
+            <div class="flow-recap__info">
+              <div class="flow-recap__name">María Camila Herrera Rojas</div>
+              <div class="flow-recap__meta">
+                <span><strong>CC</strong> 1.001.234.567</span><span class="dot"></span>
+                <span>19 años</span><span class="dot"></span>
+                <span>Atletismo · Prejuvenil</span><span class="dot"></span>
+                <span>Atlántico · Barranquilla</span><span class="dot"></span>
+                <span style="color:var(--naowee-color-feedback-fill-positive-loud,#1f8923);font-weight:600">Medalla de oro · JN 2025</span>
+              </div>
+            </div>
+            <button class="naowee-btn naowee-btn--link naowee-btn--small" onclick="try{sessionStorage.removeItem('inc-profile')}catch(e){};fadeAndGo('incentivo-08-asignar-buscar.html')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
+              Cambiar beneficiario
+            </button>
+          </div>
+
+          <!-- El incentivo se elige aquí, una vez verificados los datos. Cada uno
+               muestra las condiciones que cumple y su estado. -->
+          <div class="flow-section">
+            <h3><span class="step-num">1</span> Incentivos a entregar</h3>
+            <p class="desc">Marca los que entregas ahora; puedes entregar varios a la vez. Cada uno queda como un registro aparte.</p>
+            <div class="incentive-list" id="incList" role="group" aria-label="Incentivos a entregar"></div>
+          </div>
+
+          <div class="flow-section" id="noCodePanel" hidden>
+            <h3><span class="step-num">2</span> Código del inventario</h3>
+            <div class="naowee-message naowee-message--informative">
+              <div class="naowee-message__header">
+                <div class="naowee-message__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
+                <div class="naowee-message__text">Este incentivo <strong>no maneja códigos</strong> de inventario. Confirma la asignación para continuar.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flow-section" id="codePanel" hidden>
+            <h3><span class="step-num">2</span> Código del inventario</h3>
+            <p class="desc">Estos son los códigos del <strong id="codeIncName">Bono Deportivo</strong>. Selecciona uno disponible, o escribe un código para <strong>consultar si está disponible o ya asignado</strong> (reunión 22-09, 00:29:22). Al confirmar queda asignado a este beneficiario.</p>
+
+            <div class="code-bonos" id="codeBonos" hidden role="tablist" aria-label="Bono al que le eliges código"></div>
+            <div class="code-toolbar">
+              <div class="naowee-searchbox naowee-searchbox--small naowee-searchbox--pill">
+                <div class="naowee-searchbox__input-wrap">
+                  <span class="naowee-searchbox__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  </span>
+                  <input type="text" class="naowee-searchbox__input" id="codeSearch" placeholder="Buscar o consultar código (ej. 2026BD-00045)" oninput="filterCodes()"/>
+                  <button type="button" class="naowee-searchbox__clear" onclick="clearCodeSearch()" aria-label="Limpiar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
+                </div>
+              </div>
+              <div class="naowee-segment code-scope" role="tablist" aria-label="Estado de los códigos">
+                <div class="naowee-segment__pill"></div>
+                <button type="button" class="naowee-segment__item naowee-segment__item--active" data-scope="disp" onclick="setScope('disp', this)">Disponibles</button>
+                <button type="button" class="naowee-segment__item" data-scope="all" onclick="setScope('all', this)">Todos</button>
+              </div>
+              <span class="code-toolbar__count" id="codeCount">—</span>
+            </div>
+            <div id="codeLookup" class="code-lookup" hidden></div>
+
+            <div class="code-table-wrap">
+              <div class="code-table-scroll">
+                <table class="code-table">
+                  <thead>
+                    <tr>
+                      <th class="col-radio" aria-label="Selección"></th>
+                      <th class="col-num">Código</th>
+                      <th>Estado</th>
+                      <th>Cargado</th>
+                    </tr>
+                  </thead>
+                  <tbody id="codeTbody"></tbody>
+                </table>
+              </div>
+              <div class="code-pager" id="codePager">
+                <span id="codePagerInfo">—</span>
+                <div class="naowee-pagination naowee-pagination--small">
+                  <div class="naowee-pagination__pages">
+                    <span class="naowee-pagination__label">Página</span>
+                    <input type="text" class="naowee-pagination__input" id="codePageInput" value="1" inputmode="numeric"/>
+                    <span class="naowee-pagination__total">de <strong id="codePageTotal">1</strong></span>
+                  </div>
+                  <div class="naowee-pagination__controls">
+                    <button type="button" class="naowee-pagination__btn" id="codePrev" onclick="changeCodePage(-1)" aria-label="Anterior">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+                    </button>
+                    <button type="button" class="naowee-pagination__btn" id="codeNext" onclick="changeCodePage(1)" aria-label="Siguiente">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flow-section" id="obsPanel" hidden>
+            <h3><span class="step-num" id="obsNum">3</span> Observaciones <span class="opt">(opcional)</span></h3>
+            <div class="naowee-textfield naowee-textfield--textarea obs-field">
+              <div class="naowee-textfield__input-wrap">
+                <textarea class="naowee-textfield__input" id="deliveryObs" rows="2" maxlength="400" placeholder="Ej. Se corrigió el teléfono registrado en la inscripción."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Footer nav (consistente) -->
+          <div class="flow-footer">
+            <button class="naowee-btn naowee-btn--mute naowee-btn--large" onclick="fadeAndGo('incentivo-08-asignar-buscar.html')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+              Volver a verificar datos
+            </button>
+            <button class="naowee-btn naowee-btn--loud naowee-btn--large" id="btnNext" disabled onclick="confirmAssignment()">
+              <span id="btnNextLbl">Selecciona un incentivo</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <aside class="summary pane-anim">
+          <h4>Resumen de la asignación</h4>
+
+          <div class="summary-row">
+            <span class="lbl">Deportista</span>
+            <span class="val">María C. Herrera</span>
+          </div>
+          <div class="summary-row">
+            <span class="lbl">Documento</span>
+            <span class="val">CC 1.001.234.567</span>
+          </div>
+          <hr/>
+          <div class="summary-row">
+            <span class="lbl">Programa</span>
+            <span class="val" id="sumPrg">Juegos Intercolegiados 2026</span>
+          </div>
+          <div class="summary-row" id="sumInc">
+            <span class="lbl">Incentivos</span>
+            <span class="val">—</span>
+          </div>
+          <!-- Código retirado del resumen por seguridad (feedback Danna): código redimible. La selección del código sigue en la tabla del inventario. -->
+          <!-- Valor retirado del resumen (feedback Danna): el beneficiario no debe ver el costo de lo asignado. -->
+          <hr/>
+          <div class="summary-row">
+            <span class="lbl">Operador</span>
+            <span class="val">Juan Rodríguez</span>
+          </div>
+          <div class="summary-row">
+            <span class="lbl">Fecha</span>
+            <span class="val" id="nowLabel">—</span>
+          </div>
+
+          <div class="naowee-message naowee-message--informative">
+            <div class="naowee-message__header">
+              <div class="naowee-message__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+              </div>
+              <div class="naowee-message__text"><strong>Al confirmar</strong>, el código queda asignado y el incentivo pasa a <strong>Entregado · evidencia pendiente</strong>. La foto de la entrega la puedes subir en el siguiente paso o después, desde Mis asignaciones.</div>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═════ Registro local de asignaciones de la demo (compartido 08 · 09 · 10 · 13 · 14) ═════ */
+const LEDGER_KEY = 'inc-op-ledger';
+function ledgerAll(){ try{ return JSON.parse(localStorage.getItem(LEDGER_KEY) || '{}') || {}; }catch(e){ return {}; } }
+function ledgerPut(rec){ try{ const all = ledgerAll(); all[rec.id] = Object.assign({}, all[rec.id] || {}, rec); localStorage.setItem(LEDGER_KEY, JSON.stringify(all)); }catch(e){} }
+
+/* Inventario de códigos del Bono Deportivo (único incentivo con códigos). Algunos ya asignados
+   para que la consulta muestre ambos estados (reunión 22-09, 00:29:22 – 00:30:59). */
+const MONTHS = ['jul','ago','sep'];
+const HOLDERS = ['Juan S. Rodríguez','Laura V. Mejía','Tomás Restrepo','Mariana Soto','Isabella Gil','Esteban Mora'];
+function makePool(prefix, n, start){
+  const arr = [];
+  for(let i=0; i<n; i++){
+    const taken = i % 4 === 2;
+    arr.push({ code:`${prefix}-${String(start + i).padStart(5,'0')}`, fecha:`${String(((i*5)%27)+1).padStart(2,'0')} ${MONTHS[i%MONTHS.length]} 2026`,
+      estado: taken ? 'asig' : 'disp', holder: taken ? HOLDERS[i % HOLDERS.length] : null, holderDate: taken ? `${String(((i*3)%20)+1).padStart(2,'0')} sep 2026` : null });
+  }
+  return arr;
+}
+/* Cada bono tiene su propio inventario (y su prefijo): un código de un bono no sirve para otro. */
+const CODE_POOLS = {
+  'bono-transp': makePool('2026TR', 40, 120),
+  'bono-alim':   makePool('2026AL', 30, 10),
+  'bono-dep': (function(){
+    const arr = [];
+    for(let i=0; i<60; i++){
+      const num = String(42 + i).padStart(5,'0');
+      const day = String(((i*7)%27)+1).padStart(2,'0');
+      const taken = i % 5 === 1;   // ~20% ya asignados
+      arr.push({ code:`2026BD-${num}`, fecha:`${day} ${MONTHS[i%MONTHS.length]} 2026`,
+        estado: taken ? 'asig' : 'disp', holder: taken ? HOLDERS[i % HOLDERS.length] : null, holderDate: taken ? `${String(((i*3)%20)+1).padStart(2,'0')} sep 2026` : null });
+    }
+    return arr;
+  })()
+};
+/* Códigos reservados en esta demo (ledger) cuentan como asignados; los revertidos vuelven a disponibles. */
+(function applyLedgerToCodes(){
+  const L = ledgerAll();
+  Object.values(L).forEach(r => {
+    if(!r.code) return;
+    const c = (CODE_POOLS[r.incId] || []).find(x => x.code === r.code);
+    if(!c) return;
+    if(r.estado === 'rev'){ c.estado = 'disp'; c.holder = null; }
+    else { c.estado = 'asig'; c.holder = r.name; c.holderDate = r.fecha; }
+  });
+})();
+
+const PAGE_SIZE = 10;
+let selectedInc = null;
+let selectedCode = null;
+let scope = 'disp';
+let searchQ = '';
+let codePage = 1;
+
+function pool(){ return (selectedInc && CODE_POOLS[selectedInc.id]) || []; }
+
+function setScope(val, el){
+  scope = val; codePage = 1;
+  document.querySelectorAll('.code-scope .naowee-segment__item').forEach(t => t.classList.toggle('naowee-segment__item--active', t === el));
+  moveScopePill(el);
+  renderCodes();
+}
+function moveScopePill(item){
+  const seg = item.closest('.naowee-segment'); const pill = seg && seg.querySelector('.naowee-segment__pill');
+  if(!pill) return;
+  const r = item.getBoundingClientRect(), pr = seg.getBoundingClientRect();
+  if(!r.width) return;
+  pill.style.width = r.width + 'px';
+  pill.style.setProperty('--segment-pill-x', (r.left - pr.left - (parseFloat(getComputedStyle(seg).borderLeftWidth) || 0)) + 'px');
+}
+
+function filterCodes(){
+  const inp = document.getElementById('codeSearch');
+  searchQ = inp.value.trim().toLowerCase();
+  const clear = inp.parentElement.querySelector('.naowee-searchbox__clear');
+  if(clear) clear.style.display = searchQ ? 'inline-flex' : 'none';
+  codePage = 1;
+  renderCodes();
+}
+
+function clearCodeSearch(){
+  const inp = document.getElementById('codeSearch');
+  inp.value = '';
+  searchQ = '';
+  codePage = 1;
+  const clear = inp.parentElement.querySelector('.naowee-searchbox__clear');
+  if(clear) clear.style.display = 'none';
+  inp.focus();
+  renderCodes();
+}
+
+/* Al buscar, se consulta sobre TODOS los códigos (para saber si está disponible o asignado). */
+function getFilteredCodes(){
+  return pool().filter(c => {
+    if(searchQ) return c.code.toLowerCase().includes(searchQ);
+    return scope === 'all' || c.estado === 'disp';
+  });
+}
+
+function renderLookup(list){
+  const box = document.getElementById('codeLookup');
+  if(!box) return;
+  const exact = searchQ && pool().find(c => c.code.toLowerCase() === searchQ);
+  if(!searchQ || (!exact && list.length)){ box.hidden = true; box.innerHTML = ''; return; }
+  box.hidden = false;
+  const ico = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>';
+  let cls, txt;
+  const other = !exact && selectedIncs.filter(x => x.hasCodes && x.id !== selectedInc.id)
+    .find(x => (CODE_POOLS[x.id] || []).some(c => c.code.toLowerCase() === searchQ));
+  if(other){ cls = 'caution'; txt = `El código <strong>${searchQ.toUpperCase()}</strong> es del <strong>${other.name}</strong>, no del ${selectedInc.name}. Cámbiate a ese bono para usarlo.`; }
+  else if(!exact){ cls = 'negative'; txt = `El código <strong>${searchQ.toUpperCase()}</strong> no existe en el inventario del ${selectedInc.name}.`; }
+  else if(exact.estado === 'disp'){ cls = 'positive'; txt = `El código <strong>${exact.code}</strong> está <strong>disponible</strong>. Selecciónalo en la tabla para asignarlo.`; }
+  else { cls = 'caution'; txt = `El código <strong>${exact.code}</strong> ya está <strong>asignado</strong> a ${exact.holder} (${exact.holderDate}). No se puede volver a entregar.`; }
+  box.innerHTML = `<div class="naowee-message naowee-message--${cls}"><div class="naowee-message__header"><div class="naowee-message__icon">${ico}</div><div class="naowee-message__text">${txt}</div></div></div>`;
+}
+
+function renderCodes(){
+  const tbody = document.getElementById('codeTbody');
+  const list = getFilteredCodes();
+  const total = list.length;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  if(codePage > totalPages) codePage = totalPages;
+  const start = (codePage - 1) * PAGE_SIZE;
+  const end = Math.min(start + PAGE_SIZE, total);
+  const slice = list.slice(start, end);
+  const disp = pool().filter(c => c.estado === 'disp').length;
+
+  const countEl = document.getElementById('codeCount');
+  if(countEl) countEl.innerHTML = `<strong>${disp}</strong> disponible${disp===1?'':'s'} de ${pool().length}`;
+  renderLookup(list);
+
+  if(!total){
+    tbody.innerHTML = `<tr><td colspan="4"><div class="code-empty">Sin códigos con ese filtro. Prueba otro número o limpia el buscador.</div></td></tr>`;
+  } else {
+    tbody.innerHTML = slice.map(c => {
+      const isSel = selectedCode === c.code;
+      const isDisp = c.estado === 'disp';
+      const badge = isDisp
+        ? '<span class="naowee-badge naowee-badge--positive naowee-badge--quiet naowee-badge--small">Disponible</span>'
+        : `<span class="naowee-badge naowee-badge--neutral naowee-badge--quiet naowee-badge--small">Asignado</span><div class="meta-cell">${c.holder} · ${c.holderDate}</div>`;
+      return `
+        <tr class="${isSel ? 'selected' : ''}${isDisp ? '' : ' is-taken'}" ${isDisp ? `onclick="selectCode('${c.code}')"` : 'aria-disabled="true" title="Código ya asignado"'}>
+          <td class="col-radio">${isDisp ? '<span class="code-radio"></span>' : ''}</td>
+          <td class="col-num"><span class="num-cell">${c.code}</span></td>
+          <td>${badge}</td>
+          <td class="meta-cell">${c.fecha}</td>
+        </tr>`;
+    }).join('');
+  }
+
+  document.getElementById('codePagerInfo').innerHTML = total === 0
+    ? 'Sin resultados'
+    : `Mostrando <strong style="color:var(--naowee-color-text-primary,#282834)">${start+1}–${end}</strong> de <strong style="color:var(--naowee-color-text-primary,#282834)">${total}</strong>`;
+  document.getElementById('codePageInput').value = codePage;
+  document.getElementById('codePageTotal').textContent = totalPages;
+  document.getElementById('codePrev').disabled = codePage <= 1;
+  document.getElementById('codeNext').disabled = codePage >= totalPages;
+}
+
+function changeCodePage(delta){
+  const totalPages = Math.max(1, Math.ceil(getFilteredCodes().length / PAGE_SIZE));
+  codePage = Math.max(1, Math.min(totalPages, codePage + delta));
+  renderCodes();
+}
+
+function selectCode(code){
+  const c = pool().find(x => x.code === code);
+  if(!c || c.estado !== 'disp') return;
+  selectedCode = code;
+  selectedCodes[selectedInc.id] = code;
+  renderCodes();
+  renderBonoTabs();
+  updateSummary();
+}
+
+function updateSummary(){
+  const sumInc = document.getElementById('sumInc');
+  if(sumInc) sumInc.querySelector('.val').innerHTML = selectedIncs.length ? selectedIncs.map(x => x.name).join('<br/>') : '—';
+  /* Código NO se muestra en el resumen (regla de seguridad: código redimible). */
+  const missing = selectedIncs.filter(x => x.hasCodes && !selectedCodes[x.id]);
+  const ready = selectedIncs.length > 0 && !missing.length;
+  document.getElementById('btnNext').disabled = !ready;
+  const lbl = document.getElementById('btnNextLbl');
+  const n = selectedIncs.length;
+  if(lbl) lbl.textContent = !n ? 'Selecciona un incentivo' : (!ready ? (missing.length === 1 && selectedIncs.filter(x => x.hasCodes).length > 1 ? `Falta el código de ${missing[0].name}` : (missing.length > 1 ? `Faltan ${missing.length} códigos` : 'Selecciona el código del bono')) : (n === 1 ? 'Confirmar entrega' : `Confirmar entrega · ${n} incentivos`));
+}
+
+document.getElementById('nowLabel').textContent = new Date().toLocaleString('es-CO', {day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'});
+
+(function initSearchClear(){
+  const inp = document.getElementById('codeSearch');
+  if(!inp) return;
+  const clear = inp.parentElement.querySelector('.naowee-searchbox__clear');
+  if(clear && !inp.value) clear.style.display = 'none';
+})();
+
+(function bindCodePageInput(){
+  const el = document.getElementById('codePageInput');
+  if(!el) return;
+  el.addEventListener('change', e => {
+    const v = parseInt(e.target.value, 10) || 1;
+    const totalPages = Math.max(1, Math.ceil(getFilteredCodes().length / PAGE_SIZE));
+    codePage = Math.max(1, Math.min(totalPages, v));
+    renderCodes();
+  });
+})();
+
+/* ── Incentivos del beneficiario: cada uno con sus condiciones y su estado ── */
+let PROFILE = {};
+const IC_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+function condsFor(pr){
+  const all = PROFILE.conditions || [];
+  return Array.isArray(pr.conds) ? pr.conds.map(i => all[i]).filter(Boolean) : all;
+}
+function renderIncList(){
+  const box = document.getElementById('incList');
+  box.innerHTML = (PROFILE.programs || []).map(pr => {
+    const st = INC_STYLE[pr.incId] || INC_STYLE['bono-dep'];
+    const ico = `<div class="inc__ico" style="background:${st.bg};color:${st.fg}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${st.path}</svg></div>`;
+    const conds = condsFor(pr).map(c => `<span class="inc-cond">${IC_CHECK}${c.label}${c.val ? ` · <b>${c.val}</b>` : ''}</span>`).join('');
+    const body = `<div class="inc__body"><div class="inc__name">${pr.name}</div><div class="inc__desc">${pr.desc || ''}</div>${conds ? `<div class="inc-conds">${conds}</div>` : ''}</div>`;
+    if(pr.assigned){
+      const a = pr.assigned;
+      const badge = a.evidencePending
+        ? '<span class="naowee-badge naowee-badge--caution naowee-badge--quiet naowee-badge--small">Entregado · falta evidencia</span>'
+        : '<span class="naowee-badge naowee-badge--neutral naowee-badge--quiet naowee-badge--small">Ya entregado</span>';
+      const note = a.evidencePending ? '<small class="inc__hint">Puedes incluir su evidencia en el paso siguiente</small>' : '';
+      return `<div class="inc inc--done" aria-disabled="true">${ico}${body}<div class="inc__state">${badge}<small>${a.operator} · ${a.date}</small>${note}</div></div>`;
+    }
+    return `<div class="inc" data-inc="${pr.incId}" role="checkbox" aria-checked="false" tabindex="0" onclick="toggleInc('${pr.incId}')" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();toggleInc('${pr.incId}')}">${ico}${body}<div class="inc__state"><span class="naowee-badge naowee-badge--informative naowee-badge--quiet naowee-badge--small">Disponible</span></div></div>`;
+  }).join('');
+}
+/* Varios incentivos por entrega. El que maneja códigos (Bono) pide el suyo:
+   `selectedInc` es ese incentivo y alimenta el panel de códigos. */
+let selectedIncs = [];
+function toggleInc(incId){
+  const pr = (PROFILE.programs || []).find(x => x.incId === incId && !x.assigned);
+  if(!pr) return;
+  const i = selectedIncs.findIndex(x => x.id === incId);
+  if(i >= 0) selectedIncs.splice(i, 1);
+  else selectedIncs.push({ id: pr.incId, name: pr.name, desc: pr.desc || '', hasCodes: !!pr.hasCodes });
+  document.querySelectorAll('#incList .inc[data-inc]').forEach(el => {
+    const on = selectedIncs.some(x => x.id === el.dataset.inc);
+    el.classList.toggle('selected', on); el.setAttribute('aria-checked', on ? 'true' : 'false');
+  });
+  const codeIncs = selectedIncs.filter(x => x.hasCodes);
+  Object.keys(selectedCodes).forEach(id => { if(!codeIncs.some(x => x.id === id)) delete selectedCodes[id]; });
+  /* El bono activo en el panel: se mantiene si sigue marcado; si no, el primero sin código. */
+  const keep = selectedInc && codeIncs.find(x => x.id === selectedInc.id);
+  const codeInc = keep || codeIncs.find(x => !selectedCodes[x.id]) || codeIncs[0] || null;
+  setActiveBono(codeInc);
+  document.getElementById('codePanel').hidden = !codeInc;
+  document.getElementById('noCodePanel').hidden = true;
+  document.getElementById('obsPanel').hidden = !selectedIncs.length;
+  document.getElementById('obsNum').textContent = codeInc ? '3' : '2';
+  updateSummary();
+}
+
+/* Código elegido por cada bono marcado. */
+const selectedCodes = {};
+function setActiveBono(inc){
+  const changed = !inc || !selectedInc || inc.id !== selectedInc.id;
+  selectedInc = inc;
+  if(!inc){ selectedCode = null; renderBonoTabs(); return; }
+  if(changed){
+    selectedCode = selectedCodes[inc.id] || null; searchQ = ''; codePage = 1;
+    const cs = document.getElementById('codeSearch'); if(cs) cs.value = '';
+  }
+  document.getElementById('codeIncName').textContent = inc.name;
+  renderBonoTabs();
+  renderCodes();
+  requestAnimationFrame(() => { const a = document.querySelector('.code-scope .naowee-segment__item--active'); if(a) moveScopePill(a); });
+}
+function switchBono(id){ const inc = selectedIncs.find(x => x.id === id && x.hasCodes); if(inc){ setActiveBono(inc); updateSummary(); } }
+/* Con dos o más bonos, una pestaña por bono con su estado: así se sabe a cuál se le elige el código. */
+function renderBonoTabs(){
+  const box = document.getElementById('codeBonos');
+  const codeIncs = selectedIncs.filter(x => x.hasCodes);
+  if(codeIncs.length < 2){ box.hidden = true; box.innerHTML = ''; return; }
+  box.hidden = false;
+  box.innerHTML = codeIncs.map(x => {
+    const on = selectedInc && selectedInc.id === x.id, done = !!selectedCodes[x.id];
+    return `<button type="button" role="tab" aria-selected="${on}" class="code-bono${on ? ' is-active' : ''}${done ? ' is-done' : ''}" onclick="switchBono('${x.id}')">
+      <span class="code-bono__name">${x.name}</span>
+      <span class="code-bono__state">${done ? '✓ Código elegido' : 'Falta el código'}</span></button>`;
+  }).join('');
+}
+
+/* ── Hidratar beneficiario verificado en el paso 1 ── */
+const INC_STYLE = {
+  'bono-dep': { bg:'#fff3e6', fg:'#d74009', path:'<circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>' },
+  'credito':  { bg:'#eef5ff', fg:'#1f78d1', path:'<path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1 2.7 3 6 3s6-2 6-3v-5"/>' },
+  'kit':      { bg:'#e6f4f1', fg:'#0d9488', path:'<rect x="5" y="8" width="14" height="12" rx="2"/><path d="M9 8V5a3 3 0 016 0v3"/>' },
+  'bono-transp': { bg:'#fff3e6', fg:'#d74009', path:'<rect x="3" y="6" width="18" height="11" rx="2"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/>' },
+  'bono-alim':   { bg:'#fef6e0', fg:'#b45309', path:'<path d="M3 2v7a3 3 0 003 3v10M9 2v7M6 2v7"/><path d="M18 22V2a4 4 0 00-4 4v7h4"/>' }
+};
+function typeLabel(p){ return p.role==='institution' ? (p.level==='organizacion' ? 'Organización' : 'Institución') : p.role==='coach' ? (p.level==='docente-asistente' ? 'Docente asistente' : 'Docente entrenador') : (p.level==='paradeportista' ? 'Paradeportista' : 'Deportista'); }
+function shortName(name){ const w=(name||'').trim().split(/\s+/); return w.length>2 ? w.slice(0,2).join(' ')+' '+w.slice(2).map(x=>x[0]+'.').join('') : (name||''); }
+function benefMetaHTML(p){
+  const dot='<span class="dot"></span>';
+  if(p.role==='institution') return `<span><strong>${p.docType||'DANE'}</strong> ${p.doc}</span>${dot}<span>${p.zone||''}</span>${dot}<span>${p.oros||0} oros 2026</span>`;
+  if(p.role==='coach') return `<span><strong>${p.docType||'CC'}</strong> ${p.doc}</span>${dot}<span>${p.coachRole||''}</span>${dot}<span>${p.deporte||''}</span>${dot}<span>${p.departamento||''}</span>`;
+  return `<span><strong>${p.docType||'TI'}</strong> ${p.doc}</span>${dot}<span>Grado ${p.grado||'—'}</span>${dot}<span>${p.deporte||''}</span>${dot}<span>${p.departamento||''}</span>${p.medal ? dot+`<span style="color:var(--naowee-color-feedback-fill-positive-loud,#1f8923);font-weight:600">${p.medal}</span>` : ''}`;
+}
+
+(function hydrate(){
+  let p = {};
+  try{ p = JSON.parse(sessionStorage.getItem('inc-profile') || '{}'); }catch(e){}
+  /* Sin beneficiario verificado (acceso directo) → el paso 1 es obligatorio. */
+  if(!p.name || !Array.isArray(p.programs)){ window.location.replace('incentivo-08-asignar-buscar.html'); return; }
+  PROFILE = p;
+  document.querySelector('.flow-recap__ava').textContent = p.initials || '—';
+  document.querySelector('.flow-recap__name').textContent = p.name;
+  document.querySelector('.flow-recap__meta').innerHTML = benefMetaHTML(p);
+  const rows = document.querySelectorAll('.summary .summary-row');
+  if(rows[0]){ rows[0].querySelector('.lbl').textContent = typeLabel(p); rows[0].querySelector('.val').textContent = p.role==='institution' ? p.name : shortName(p.name); }
+  if(rows[1]){ rows[1].querySelector('.val').textContent = `${p.docType || 'CC'} ${p.doc}`; }
+  renderIncList();
+  const avail = p.programs.filter(pr => !pr.assigned);
+  if(avail.length === 1) toggleInc(avail[0].incId);
+  updateSummary();
+})();
+
+/* Confirmar asignación (validar → entregar → evidencia, 00:27:10 – 00:28:12):
+   el código queda asignado y el incentivo pasa a "Entregado · evidencia pendiente". */
+/* Programa en el que se entrega (lo elige el operador en "Asignar incentivo"). */
+(function(){
+  try{ const p = JSON.parse(sessionStorage.getItem('inc-profile') || '{}'); if(p.programName) document.getElementById('sumPrg').textContent = p.programName; }catch(e){}
+})();
+
+function confirmAssignment(){
+  if(!selectedIncs.length || selectedIncs.some(x => x.hasCodes && !selectedCodes[x.id])) return;
+  let p = {};
+  try{ p = JSON.parse(sessionStorage.getItem('inc-profile') || '{}'); }catch(e){}
+  const now = new Date();
+  const MES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  const fecha = `${String(now.getDate()).padStart(2,'0')} ${MES[now.getMonth()]} ${now.getFullYear()}`;
+  const hora = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const obs = (document.getElementById('deliveryObs').value || '').trim();
+  const deliveryId = 'E-' + now.getTime().toString(36).toUpperCase();
+  /* Un registro por incentivo (se revierten por separado), agrupados por la entrega. */
+  const recs = selectedIncs.map((inc, i) => ({
+    id: 'N-' + (now.getTime() + i).toString(36).toUpperCase(), deliveryId,
+    isNew: true, estado: 'asig', evidence: null,
+    doc: p.doc, docType: p.docType, name: p.name, initials: p.initials, role: p.role, level: p.level, kind: p.kind,
+    zone: p.departamento || p.zone || '', incId: inc.id, incName: inc.name, code: inc.hasCodes ? selectedCodes[inc.id] : null,
+    obs, operator: 'Juan Rodríguez',
+    programId: p.programId || 'PRG-2026-010', programName: p.programName || 'Juegos Intercolegiados 2026',
+    fecha, hora, ts: now.getTime() + i
+  }));
+  recs.forEach(ledgerPut);
+  /* Entregas anteriores de esta persona sin evidencia: la foto de ahora puede cubrirlas. */
+  const pendingEv = (p.programs || []).filter(pr => pr.assigned && pr.assigned.evidencePending && pr.assigned.recId)
+    .map(pr => ({ recId: pr.assigned.recId, name: pr.name, date: pr.assigned.date }));
+  sessionStorage.setItem('inc-assignment', JSON.stringify(Object.assign({}, p, {
+    recId: recs[0].id, recIds: recs.map(r => r.id), deliveryId, obs,
+    incentives: selectedIncs.map(x => ({ id: x.id, name: x.name })),
+    incentive: { id: selectedIncs[0].id, name: selectedIncs.map(x => x.name).join(' + ') },
+    code: selectedCode || null, codes: Object.assign({}, selectedCodes), pendingEv, assignedAt: `${fecha} · ${hora}`, ts: now.getTime()
+  })));
+  fadeAndGo('incentivo-09-validar-foto.html');
+}
+
+function fadeAndGo(url){
+  if('startViewTransition' in document || CSS.supports('view-transition-name: x')){
+    window.location.href = url;
+    return;
+  }
+  document.body.style.transition='opacity .25s ease';
+  document.body.style.opacity='0';
+  setTimeout(() => { window.location.href = url; }, 260);
+}
+
+/* Progressive sticky collapse — paridad con paso 1.
+   Al hacer scroll: full-bleed, colapso de labels, pierde radii top, pegado al header. */
+(function(){
+  const stepper = document.getElementById('stepperWrap');
+  if(!stepper) return;
+  const labels = stepper.querySelectorAll('.step-lbl');
+  const seps = stepper.querySelectorAll('.step-sep');
+  const page = document.querySelector('.page');
+  if(!page) return;
+
+  const COLLAPSE_RANGE = 60;
+  const labelWidths = Array.from(labels).map(el => {
+    const w = Math.ceil(el.getBoundingClientRect().width) + 2;
+    el.style.maxWidth = w + 'px';
+    return w;
+  });
+
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const pagePadTop = parseFloat(getComputedStyle(page).paddingTop) || 0;
+
+  function apply(progress){
+    stepper.classList.toggle('is-stuck', progress > 0);
+
+    const mH = lerp(0, -32, progress);
+    stepper.style.marginLeft = mH + 'px';
+    stepper.style.marginRight = mH + 'px';
+
+    const ty = lerp(0, -pagePadTop, progress);
+    stepper.style.transform = `translateY(${ty}px)`;
+
+    const radTop = lerp(14, 0, progress);
+    stepper.style.borderRadius = `${radTop}px ${radTop}px 14px 14px`;
+    if(progress >= .98){
+      stepper.style.borderTopWidth = '0';
+      stepper.style.paddingTop = (lerp(14, 11, progress) + 1) + 'px';
+    } else {
+      stepper.style.borderTopWidth = '';
+      stepper.style.paddingTop = lerp(14, 11, progress) + 'px';
+    }
+    stepper.style.paddingBottom = lerp(14, 11, progress) + 'px';
+    const padH = lerp(20, 44, progress);
+    stepper.style.paddingLeft = padH + 'px';
+    stepper.style.paddingRight = padH + 'px';
+
+    labels.forEach((el, i) => {
+      el.style.maxWidth = lerp(labelWidths[i], 0, progress) + 'px';
+      el.style.opacity = 1 - progress;
+      el.style.marginLeft = lerp(0, -6, progress) + 'px';
+    });
+    seps.forEach(s => {
+      s.style.minWidth = lerp(20, 12, progress) + 'px';
+      s.style.margin = `0 ${lerp(12, 6, progress)}px`;
+    });
+  }
+
+  function onScroll(){
+    const pageRectTop = page.getBoundingClientRect().top;
+    const pageContentTop = pageRectTop + pagePadTop;
+    const stepperRectTop = stepper.getBoundingClientRect().top;
+    const dist = stepperRectTop - pageContentTop;
+    const progress = Math.min(1, Math.max(0, 1 - dist / COLLAPSE_RANGE));
+    apply(progress);
+  }
+
+  page.addEventListener('scroll', onScroll, { passive:true });
+  window.addEventListener('resize', onScroll);
+  onScroll();
+})();
+</script>
+<script src="shared/profile-switcher.js?v=20260923080917" defer></script>
+
+<script src="shared/footer-scroll.js" defer></script>
+<script src="shared/tour.js?v=20260923080917" defer></script>
+
+<!-- Footer flotante Naowee -->
+<div class="naowee-floating-footer" role="contentinfo" aria-label="Pie de página Naowee">
+  <img src="shared/logos/naowee.svg" alt="Naowee" class="naowee-floating-footer__logo"/>
+  <div class="naowee-floating-footer__sep"></div>
+  <span class="naowee-floating-footer__text">Todos los derechos reservados <strong>&copy; 2026</strong></span>
+</div>
+
+</body>
+</html>

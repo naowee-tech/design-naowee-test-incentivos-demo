@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>SUID – Incentivos · Inventario de códigos</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.4.0/dist/design-system.css"/>
+<link rel="stylesheet" href="shared/shell.css?v=20260922200101"/>
+<script src="shared/programs-data.js?v=20260923080917"></script>
+
+<style>
+  .page-header{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:24px;flex-wrap:wrap}
+  .page-title{font-size:24px;font-weight:700;line-height:1.2;letter-spacing:-.01em;margin-bottom:4px;color:var(--naowee-color-text-primary,#282834)}
+  .page-sub{font-size:14px;color:var(--naowee-color-text-secondary,#646587);line-height:1.5;max-width:640px}
+  .page-header__actions{display:flex;gap:10px;align-items:center}
+
+  /* ═════ KPI cards ═════ */
+  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+  @media(max-width:1100px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
+  .kpi-card{
+    background:#fff;border:1px solid var(--naowee-color-border-default,#e7e9f3);
+    border-radius:16px;padding:18px 20px;
+    display:flex;flex-direction:column;gap:12px;
+    transition:transform .15s,box-shadow .15s;
+  }
+  .kpi-card:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(145,158,171,.12)}
+  .kpi-card__top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+  .kpi-card__lbl{font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--naowee-color-text-secondary,#646587);line-height:1.3}
+  .kpi-card__ico{width:40px;height:40px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+  .kpi-card__ico svg{width:20px;height:20px}
+  .kpi-card__ico--brand{background:#eef5ff;color:#1f78d1}
+  .kpi-card__ico--positive{background:#e6f4e7;color:#15803d}
+  .kpi-card__ico--caution{background:#fff3e6;color:#d74009}
+  .kpi-card__ico--negative{background:#ffe4ee;color:#be185d}
+  .kpi-card__val{font-family:'Inter',sans-serif;font-size:30px;font-weight:700;line-height:1;letter-spacing:-.02em;color:var(--naowee-color-text-primary,#282834)}
+  .kpi-card__foot{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--naowee-color-text-secondary,#646587);margin-top:2px}
+  .kpi-pct{
+    display:inline-flex;align-items:center;
+    padding:2px 7px;border-radius:9999px;
+    font-size:10.5px;font-weight:700;
+    background:#f5f6fa;color:var(--naowee-color-text-secondary,#646587);
+  }
+
+  /* ═════ TABLET (patrón programas) ═════ */
+  .tablet{
+    border:1px solid var(--naowee-color-border-default,#e7e9f3);
+    border-radius:16px;padding:20px;background:#fff;
+    display:flex;flex-direction:column;gap:18px;
+  }
+  .tablet-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .tablet-toolbar__left{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+
+  /* Search pill */
+  .tablet .naowee-searchbox--pill{width:280px;max-width:100%}
+  .tablet .naowee-searchbox--pill .naowee-searchbox__input-wrap{border-radius:9999px;height:36px;padding:4px 12px}
+
+  /* Toolbar dropdown */
+  .toolbar-dd-wrap{position:relative;display:inline-flex}
+  .toolbar-dd{
+    position:relative;display:inline-flex;align-items:center;gap:8px;justify-content:space-between;
+    height:36px;padding:4px 12px 4px 14px;
+    background:#fff;border:1px solid #8788ab;border-radius:8px;
+    font-family:'Inter',sans-serif;font-size:12.5px;font-weight:500;
+    color:var(--naowee-color-text-primary,#282834);
+    cursor:pointer;transition:border-color .15s,box-shadow .15s;
+  }
+  .toolbar-dd:hover{border-color:#646587}
+  .toolbar-dd.open,.toolbar-dd:focus-visible{
+    outline:none;border-color:var(--naowee-color-text-accent,#d74009);
+    box-shadow:0 0 0 3px rgba(215,64,9,.15);
+  }
+  .toolbar-dd svg{width:16px;height:16px;flex-shrink:0;color:var(--naowee-color-text-secondary,#646587);transition:transform .2s}
+  .toolbar-dd.open svg{transform:rotate(180deg)}
+  .toolbar-dd-menu{
+    position:absolute;top:calc(100% + 6px);left:0;z-index:50;
+    min-width:100%;background:#fff;white-space:nowrap;
+    border:1px solid var(--naowee-color-border-default,#e7e9f3);border-radius:10px;
+    box-shadow:0 12px 32px rgba(40,40,52,.12);padding:6px;
+    opacity:0;transform:translateY(-6px);pointer-events:none;
+    transition:opacity .18s,transform .18s;
+  }
+  .toolbar-dd-wrap.open .toolbar-dd-menu{opacity:1;transform:translateY(0);pointer-events:auto}
+  .toolbar-dd-item{
+    display:flex;align-items:center;gap:10px;
+    padding:9px 10px;border-radius:6px;
+    font-size:13px;cursor:pointer;transition:background .12s;
+  }
+  .toolbar-dd-item:hover{background:#f5f6fa}
+  .toolbar-dd-item[aria-selected="true"]{background:#fff3e6;color:var(--naowee-color-text-accent,#d74009);font-weight:600}
+  .toolbar-dd-item .dd-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .toolbar-dd-item .dd-count{margin-left:auto;font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:9999px;background:#f5f6fa;color:var(--naowee-color-text-secondary,#646587)}
+  .toolbar-dd-item[aria-selected="true"] .dd-count{background:#fff;color:var(--naowee-color-text-accent,#d74009)}
+
+  /* Pagination */
+  .naowee-pagination{display:flex;align-items:center;gap:0;font-family:'Inter',sans-serif}
+  .naowee-pagination__pages{display:flex;align-items:center;gap:6px}
+  .naowee-pagination__label,.naowee-pagination__total{font-size:12px;line-height:16px;color:var(--naowee-color-text-secondary,#646587);white-space:nowrap}
+  .naowee-pagination__input{
+    width:48px;height:32px;border:1px solid var(--naowee-color-border-default,#e7e9f3);
+    border-radius:8px;text-align:center;font:inherit;font-size:12px;font-weight:400;
+    color:var(--naowee-color-text-primary,#282834);outline:none;background:#fff;padding:4px 6px;
+  }
+  .naowee-pagination__input:focus{border-width:2px;border-color:var(--naowee-color-text-accent,#d74009);padding:3px 5px}
+  .naowee-pagination__total strong{color:var(--naowee-color-text-primary,#282834);font-weight:600}
+  .naowee-pagination__controls{display:flex;gap:6px;margin-left:8px}
+  .naowee-pagination__btn{
+    width:32px;height:32px;border:none;border-radius:8px;
+    background:#fff3e6;cursor:pointer;
+    display:inline-flex;align-items:center;justify-content:center;
+    color:var(--naowee-color-text-accent,#d74009);transition:background .15s;
+    flex-shrink:0;padding:0;
+  }
+  .naowee-pagination__btn:hover:not(:disabled){background:#ffdaa3}
+  .naowee-pagination__btn:disabled{opacity:.35;cursor:not-allowed;pointer-events:none}
+  .naowee-pagination__btn svg{width:16px;height:16px}
+
+  /* Tabla */
+  .cod-table{width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed}
+  .cod-table thead th{
+    font-family:'Inter',sans-serif;
+    font-size:11px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;
+    color:var(--naowee-color-text-secondary,#646587);
+    padding:12px 18px;text-align:left;background:#f5f6fa;border:none;
+  }
+  .cod-table thead th:first-child{border-top-left-radius:12px;border-bottom-left-radius:12px}
+  .cod-table thead th:last-child{border-top-right-radius:12px;border-bottom-right-radius:12px}
+  .cod-table tbody td{
+    padding:16px 18px;font-size:13px;vertical-align:middle;
+    border-bottom:1px solid var(--naowee-color-border-default,#e7e9f3);
+  }
+  .cod-table tbody tr{cursor:pointer;transition:background .12s}
+  .cod-table tbody tr:hover{background:#fafbfd}
+  .cod-table tbody tr:last-child td{border-bottom:none}
+  .cod-table code{font-family:'SF Mono',monospace;font-size:12px;color:var(--naowee-color-text-accent,#d74009)}
+
+  /* Column widths */
+  .cod-table th:nth-child(1),.cod-table td:nth-child(1){width:16%}
+  .cod-table th:nth-child(2),.cod-table td:nth-child(2){width:22%}
+  .cod-table th:nth-child(3),.cod-table td:nth-child(3){width:12%}
+  .cod-table th:nth-child(4),.cod-table td:nth-child(4){width:16%}
+  .cod-table th:nth-child(5),.cod-table td:nth-child(5){width:13%}
+  .cod-table th:nth-child(6),.cod-table td:nth-child(6){width:11%}
+  .cod-table th:nth-child(7),.cod-table td:nth-child(7){width:10%;text-align:right;padding-right:18px}
+
+  /* Program cell compacto */
+  .prg-mini{display:flex;align-items:center;gap:10px;min-width:0}
+  .prg-mini__ico{
+    width:28px;height:28px;border-radius:8px;flex-shrink:0;
+    display:inline-flex;align-items:center;justify-content:center;
+  }
+  .prg-mini__ico svg{width:15px;height:15px}
+  .prg-mini__body{min-width:0}
+  .prg-mini__name{font-weight:600;color:var(--naowee-color-text-primary,#282834);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .prg-mini__id{font-family:'SF Mono',monospace;font-size:10.5px;color:#9c9ebf;margin-top:2px}
+
+  .benef-cell{font-size:12.5px;color:var(--naowee-color-text-primary,#282834)}
+  .benef-cell.muted{color:#9c9ebf}
+  .op-cell{font-size:12.5px;color:var(--naowee-color-text-primary,#282834)}
+  .fecha-cell{font-size:12px;color:var(--naowee-color-text-secondary,#646587)}
+  .valor-cell{font-weight:700;color:var(--naowee-color-text-primary,#282834)}
+  .valor-cell.muted{color:#9c9ebf;font-weight:400}
+
+  .tablet-foot{
+    display:flex;justify-content:space-between;align-items:center;
+    font-size:12.5px;color:var(--naowee-color-text-secondary,#646587);
+  }
+
+  /* ═════ Revertir: botón en tabla + modal ═════ */
+  .cod-revert-btn{white-space:nowrap}
+
+  /* ═══ Icono + popover de historial de reversión ═══ */
+  .cod-cell{display:inline-flex;align-items:center;gap:8px}
+  .rev-history-btn{
+    width:24px;height:24px;border-radius:6px;border:none;background:#fff3e6;
+    display:inline-flex;align-items:center;justify-content:center;cursor:pointer;
+    color:#d74009;transition:background .15s,color .15s,transform .12s;flex-shrink:0;
+  }
+  .rev-history-btn:hover{background:#ffdaa3;transform:scale(1.08)}
+  .rev-history-btn svg{width:14px;height:14px}
+
+  .rev-popover{
+    position:fixed;z-index:200;
+    background:#fff;border:1px solid var(--naowee-color-border-default,#e7e9f3);
+    border-radius:12px;box-shadow:0 16px 40px rgba(40,40,52,.16);
+    width:560px;max-width:calc(100vw - 24px);padding:0;
+    opacity:0;transform:translateY(-4px);pointer-events:none;
+    transition:opacity .18s,transform .18s;
+  }
+  .rev-popover.is-open{opacity:1;transform:translateY(0);pointer-events:auto}
+  .rv-pop__head{
+    display:flex;justify-content:space-between;align-items:center;gap:10px;
+    padding:12px 16px;border-bottom:1px solid var(--naowee-color-border-default,#e7e9f3);
+  }
+  .rv-pop__title{font-size:13px;font-weight:700;color:var(--naowee-color-text-primary,#282834)}
+  .rv-pop__sub{font-size:11px;color:var(--naowee-color-text-secondary,#646587);margin-top:1px;font-family:'SF Mono',monospace}
+  .rv-pop__close{
+    width:26px;height:26px;border-radius:6px;border:none;background:transparent;
+    color:#9ca3af;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
+  }
+  .rv-pop__close:hover{background:#f5f6fa;color:#282834}
+  .rv-pop__close svg{width:14px;height:14px}
+
+  .rv-pop__body{padding:14px 18px;display:grid;grid-template-columns:1fr 1fr;gap:12px 18px;max-height:70vh;overflow-y:auto}
+  .rv-row.rv-row--full{grid-column:1 / -1}
+  @media(max-width:560px){.rv-pop__body{grid-template-columns:1fr}}
+
+  /* Timeline de estados */
+  .rv-trail{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .rv-state{
+    display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:9999px;
+    font-size:11px;font-weight:700;letter-spacing:.2px;
+  }
+  .rv-state--asig{background:#e6f4e7;color:#15803d}
+  .rv-state--rev{background:#ffe4ee;color:#be185d}
+  .rv-state--disp{background:#eef5ff;color:#1f78d1}
+  .rv-state__dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+  .rv-arrow{color:#c4c7dc;font-size:12px;display:inline-flex;align-items:center}
+
+  .rv-row{display:flex;flex-direction:column;gap:2px;padding-bottom:10px;border-bottom:1px dashed var(--naowee-color-border-default,#e7e9f3)}
+  .rv-row:last-child{border-bottom:none;padding-bottom:0}
+  .rv-row__lbl{font-size:10.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--naowee-color-text-secondary,#646587)}
+  .rv-row__val{font-size:12.5px;color:var(--naowee-color-text-primary,#282834);font-weight:500;line-height:1.45}
+  .rv-row__val strong{font-weight:700}
+  .cod-noaction{color:#b5b9d4;font-size:13px}
+
+  /* Helper text del modal — base + error */
+  .rv-helper{
+    font-size:11.5px;color:var(--naowee-color-text-secondary,#646587);
+    margin-top:6px;line-height:1.4;
+  }
+  .naowee-textfield__helper{
+    font-size:11.5px;color:var(--naowee-color-text-secondary,#646587);
+    margin-top:6px;line-height:1.4;
+    transition:color .2s;
+  }
+  /* Helper en rojo cuando el field está en error */
+  .naowee-dropdown--error .rv-helper,
+  .naowee-dropdown--error .naowee-textfield__helper,
+  .naowee-textfield--error .naowee-textfield__helper{
+    color:var(--naowee-color-feedback-text-negative-loud,#b42318);
+    font-weight:600;
+  }
+
+  /* Realizado por — pseudo-readonly: card sutil con icono y texto, sin input */
+  .rv-readonly{
+    display:flex;align-items:center;gap:10px;
+    padding:0 14px;height:42px;
+    background:#f7f8fc;
+    border:1px solid var(--naowee-color-border-default,#e7e9f3);
+    border-radius:10px;
+    color:var(--naowee-color-text-secondary,#646587);
+  }
+  .rv-readonly__ico{flex-shrink:0;color:var(--naowee-color-text-accent,#d74009)}
+  .rv-readonly__val{font-size:13px;font-weight:500;color:var(--naowee-color-text-primary,#282834)}
+
+  /* Wiggle animation al fallar validación */
+  @keyframes rvShake{
+    0%, 100%{ transform: translateX(0); }
+    15%{ transform: translateX(-6px); }
+    30%{ transform: translateX(5px); }
+    45%{ transform: translateX(-4px); }
+    60%{ transform: translateX(3px); }
+    75%{ transform: translateX(-2px); }
+    90%{ transform: translateX(1px); }
+  }
+  .rv-shake{ animation: rvShake .45s cubic-bezier(.36,.07,.19,.97); }
+
+  /* Error states */
+  .naowee-dropdown--error .naowee-dropdown__trigger{
+    border-color:var(--naowee-color-feedback-border-negative-loud,#ed314a);
+    box-shadow:0 0 0 3px rgba(237,49,74,.15);
+  }
+
+  /* CTA del toast de éxito */
+  .rv-toast__cta{
+    display:inline-flex;align-items:center;gap:4px;
+    margin-top:8px;
+    font-size:12px;font-weight:700;
+    color:var(--naowee-color-text-accent,#d74009);
+    background:transparent;border:none;padding:4px 0;cursor:pointer;
+    text-decoration:underline;text-underline-offset:3px;
+    font-family:'Inter',sans-serif;
+  }
+  .rv-toast__cta:hover{color:#b8340a}
+  .rv-toast__cta svg{width:12px;height:12px}
+  .rv-toast .naowee-message__text{display:flex;flex-direction:column;gap:2px}
+
+  .rv-overlay{
+    position:fixed;inset:0;z-index:1000;
+    background:rgba(0,43,91,.45);backdrop-filter:blur(3px);
+    display:none;align-items:center;justify-content:center;padding:24px;
+  }
+  .rv-overlay.open{display:flex;animation:rvFade .2s ease}
+  @keyframes rvFade{from{opacity:0}to{opacity:1}}
+  .rv-modal{
+    width:540px;max-width:100%;background:#fff;border-radius:16px;
+    box-shadow:0 24px 48px rgba(0,0,0,.25);
+    display:flex;flex-direction:column;max-height:calc(100vh - 48px);
+    animation:rvScale .3s cubic-bezier(.175,.885,.32,1.275);
+    overflow:hidden;
+  }
+  @keyframes rvScale{from{opacity:0;transform:scale(.95) translateY(16px)}to{opacity:1;transform:scale(1) translateY(0)}}
+
+  .rv-header{padding:20px 24px 4px;border-bottom:none;display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+  .rv-header__title{font-size:18px;font-weight:700;color:var(--naowee-color-text-primary,#282834);line-height:1.2;margin:0 0 4px}
+  .rv-header__sub{font-size:13px;color:var(--naowee-color-text-secondary,#646587);line-height:1.45}
+  .rv-close{
+    width:32px;height:32px;border-radius:8px;border:none;background:transparent;
+    display:inline-flex;align-items:center;justify-content:center;cursor:pointer;
+    color:var(--naowee-color-text-secondary,#646587);flex-shrink:0;
+  }
+  .rv-close:hover{background:#f5f6fa;color:var(--naowee-color-text-primary,#282834)}
+  .rv-close svg{width:18px;height:18px}
+
+  .rv-body{padding:8px 24px 24px;overflow-y:auto;display:flex;flex-direction:column;gap:16px}
+
+  /* Summary card del código a revertir — top con icon+code+monto, divider,
+     filas Programa/Beneficiario abajo. Jerarquía clara y typo deliberada. */
+  .rv-summary{
+    padding:16px 18px;
+    background:#f5f6fa;
+    border:1px solid var(--naowee-color-border-default,#e7e9f3);
+    border-radius:14px;
+  }
+  .rv-summary__top{
+    display:flex;align-items:center;gap:14px;
+  }
+  .rv-summary__ico{
+    width:44px;height:44px;border-radius:12px;flex-shrink:0;
+    background:#fff;
+    color:var(--naowee-color-text-secondary,#646587);
+    display:inline-flex;align-items:center;justify-content:center;
+    box-shadow:inset 0 0 0 1px var(--naowee-color-border-default,#e7e9f3);
+  }
+  .rv-summary__main{flex:1;min-width:0}
+  .rv-summary__lbl{
+    font-size:10.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;
+    color:var(--naowee-color-text-secondary,#646587);
+  }
+  .rv-summary__code{
+    font-family:'SF Mono',monospace;font-size:15px;font-weight:700;
+    color:var(--naowee-color-text-primary,#282834);
+    letter-spacing:.2px;margin-top:2px;
+  }
+  .rv-summary__amount{text-align:right;flex-shrink:0}
+  .rv-summary__amount-lbl{
+    font-size:10.5px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;
+    color:var(--naowee-color-text-secondary,#646587);
+  }
+  .rv-summary__val{
+    font-size:18px;font-weight:800;color:var(--naowee-color-text-primary,#282834);
+    font-variant-numeric:tabular-nums;letter-spacing:-.01em;line-height:1.1;margin-top:2px;
+  }
+  .rv-summary__divider{
+    height:1px;background:var(--naowee-color-border-default,#e7e9f3);
+    margin:14px -18px;
+  }
+  .rv-summary__rows{
+    display:flex;flex-direction:column;gap:6px;
+  }
+  .rv-summary__row{
+    display:grid;grid-template-columns:110px 1fr;gap:12px;
+    font-size:12.5px;
+  }
+  .rv-summary__row-lbl{
+    color:var(--naowee-color-text-secondary,#646587);font-weight:500;
+  }
+  .rv-summary__row-val{
+    color:var(--naowee-color-text-primary,#282834);font-weight:600;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+
+  /* Helper "Este campo es obligatorio" — badge negative del DS
+     Visible solo cuando el field padre tiene .--error */
+  .rv-error-only{display:none}
+  .naowee-textfield--error .rv-error-only,
+  .naowee-dropdown--error .rv-error-only{
+    display:inline-flex;align-items:center;gap:6px;
+    margin-top:6px;
+    padding:3px 10px;border-radius:9999px;
+    background:#fff0ee;color:#b42318;
+    font-family:'Inter',sans-serif;font-size:11.5px;font-weight:600;
+    letter-spacing:.2px;line-height:1.4;
+    width:fit-content;
+  }
+  .naowee-textfield--error .rv-error-only::before,
+  .naowee-dropdown--error .rv-error-only::before{
+    content:'';width:6px;height:6px;border-radius:50%;
+    background:#b42318;flex-shrink:0;
+  }
+
+  /* Dropdown menú: pegado al trigger sin gap (anula cualquier margin
+     que el helper pueda introducir en flujo) */
+  #rvCatDD .naowee-dropdown__menu{margin-top:4px}
+  #rvCatDD.naowee-dropdown--error .naowee-dropdown__menu{margin-top:4px}
+
+  .rv-footer{
+    padding:16px 24px;border-top:1px solid var(--naowee-color-border-default,#e7e9f3);
+    display:flex;gap:10px;justify-content:flex-end;
+  }
+
+  /* Toast estructura DS naowee-message — bottom-right.
+     Sólo añadimos position fixed, ancho y shadow. El resto de estilos
+     (bg, padding, layout title/text/action/dismiss) viene del DS. */
+  .rv-toast-wrap{
+    position:fixed;bottom:24px;right:24px;z-index:1500;
+    display:flex;flex-direction:column;gap:10px;
+    pointer-events:none;max-width:calc(100vw - 48px);
+  }
+  .rv-toast-wrap .rv-toast{
+    pointer-events:auto;min-width:340px;max-width:420px;
+    box-shadow:0 12px 32px rgba(40,40,52,.18);
+    animation: rvToastIn .25s cubic-bezier(.16,1,.3,1) both;
+  }
+  @keyframes rvToastIn{
+    from{ opacity:0; transform: translateY(8px); }
+    to  { opacity:1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <button class="burger-btn" onclick="document.getElementById('sidebar').classList.toggle('collapsed')" aria-label="Toggle sidebar">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="#282834" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+      <img src="shared/logos/ministerio.svg" alt="Ministerio del Deporte" class="sb-logo-img"/>
+      <div class="logo-sep"></div>
+      <img src="shared/logos/suid.png" alt="SUID" class="sb-logo-img"/>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">INCENTIVOS</div>
+      <div class="nav-row" onclick="fadeAndGo('incentivo-02-dashboard.html')">
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="11" rx="1.5"/><rect x="13" y="3" width="8" height="6" rx="1.5"/><rect x="3" y="16" width="8" height="5" rx="1.5"/><rect x="13" y="11" width="8" height="10" rx="1.5"/></svg></div>
+        <span class="lbl">Dashboard</span>
+      </div>
+      <div class="nav-row" onclick="fadeAndGo('incentivo-03-programas.html')">
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M6 7V5a1 1 0 011-1h10a1 1 0 011 1v2"/><line x1="3" y1="12" x2="21" y2="12"/></svg></div>
+        <span class="lbl">Programas</span>
+      </div>
+      <div class="nav-row active">
+        <div class="active-bar"></div>
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d74009" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 012-2h14a2 2 0 012 2v2a1.5 1.5 0 000 3v3a2 2 0 01-2 2H5a2 2 0 01-2-2v-3a1.5 1.5 0 000-3V8z"/><line x1="13" y1="6" x2="13" y2="9" stroke-dasharray="1.5 1.5"/><line x1="13" y1="11" x2="13" y2="13" stroke-dasharray="1.5 1.5"/><line x1="13" y1="15" x2="13" y2="18" stroke-dasharray="1.5 1.5"/></svg></div>
+        <span class="lbl">Códigos</span>
+      </div>
+      <div class="nav-row" data-role="superadmin" onclick="fadeAndGo('incentivo-12-asignaciones.html')">
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="1.5"/><circle cx="6" cy="12" r="1.5"/><circle cx="6" cy="18" r="1.5"/><line x1="6" y1="7.5" x2="6" y2="10.5"/><line x1="6" y1="13.5" x2="6" y2="16.5"/><line x1="11" y1="6" x2="20" y2="6"/><line x1="11" y1="12" x2="18" y2="12"/><line x1="11" y1="18" x2="16" y2="18"/></svg></div>
+        <span class="lbl">Historial</span>
+      </div>
+      <div class="nav-row" data-role="admin" onclick="fadeAndGo('incentivo-15-reporteria.html')">
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-5"/><circle cx="18" cy="9" r="1.5"/></svg></div>
+        <span class="lbl">Reportería</span>
+      </div>
+      <div class="nav-row" data-role="admin programa" onclick="fadeAndGo('incentivo-16-usuarios.html')">
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
+        <span class="lbl">Usuarios</span>
+      </div>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="nav-row" onclick="fadeAndGo('incentivo-01-login.html')">
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <span class="lbl">Cerrar sesión</span>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="top-header">
+      <div class="profile-switcher">
+        <div class="user-chip">
+          <div class="ava"><div class="ava-ring" style="background:#c4b5fd;color:#4c1d95">DV</div><div class="ava-dot"></div></div>
+          <div class="user-info"><span class="user-name">Doug Vargas</span><span class="user-role">Gestor de incentivos</span></div>
+          <button class="user-chip__chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>
+        </div>
+      </div>
+    </header>
+
+    <div class="page">
+
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Inventario de códigos</h1>
+          <p class="page-sub">Vista consolidada de todos los códigos del sistema. Filtra por programa, estado o busca por código/beneficiario específico.</p>
+        </div>
+      </div>
+
+      <!-- KPI cards -->
+      <div class="kpi-grid">
+        <article class="kpi-card">
+          <div class="kpi-card__top">
+            <div class="kpi-card__lbl">Códigos totales</div>
+            <div class="kpi-card__ico kpi-card__ico--brand">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="9" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="15" y2="20"/><line x1="4" y1="9" x2="20" y2="9"/><line x1="3" y1="15" x2="19" y2="15"/></svg>
+            </div>
+          </div>
+          <div class="kpi-card__val" id="kpiTotal">—</div>
+          <div class="kpi-card__foot"><span>Del total parametrizado</span></div>
+        </article>
+
+        <article class="kpi-card">
+          <div class="kpi-card__top">
+            <div class="kpi-card__lbl">Disponibles</div>
+            <div class="kpi-card__ico kpi-card__ico--caution">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg>
+            </div>
+          </div>
+          <div class="kpi-card__val" id="kpiAvail">—</div>
+          <div class="kpi-card__foot">
+            <span class="kpi-pct" id="kpiAvailPct">—%</span>
+            <span>sin asignar</span>
+          </div>
+        </article>
+
+        <article class="kpi-card">
+          <div class="kpi-card__top">
+            <div class="kpi-card__lbl">Asignados</div>
+            <div class="kpi-card__ico kpi-card__ico--positive">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+          </div>
+          <div class="kpi-card__val" id="kpiAsig">—</div>
+          <div class="kpi-card__foot">
+            <span class="kpi-pct" id="kpiAsigPct">—%</span>
+            <span>ejecutado</span>
+          </div>
+        </article>
+
+        <article class="kpi-card">
+          <div class="kpi-card__top">
+            <div class="kpi-card__lbl">Revertidos</div>
+            <div class="kpi-card__ico kpi-card__ico--negative">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15"/></svg>
+            </div>
+          </div>
+          <div class="kpi-card__val" id="kpiRev">—</div>
+          <div class="kpi-card__foot">
+            <span class="kpi-pct" id="kpiRevPct">—%</span>
+            <span>reversión</span>
+          </div>
+        </article>
+      </div>
+
+      <!-- Tablet -->
+      <section class="tablet">
+        <div class="tablet-toolbar">
+          <div class="tablet-toolbar__left">
+            <div class="naowee-searchbox naowee-searchbox--small naowee-searchbox--pill">
+              <div class="naowee-searchbox__input-wrap">
+                <span class="naowee-searchbox__icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                </span>
+                <input type="text" class="naowee-searchbox__input" placeholder="Buscar código o beneficiario" id="codSearch"/>
+                <button type="button" class="naowee-searchbox__clear" onclick="clearSearch('codSearch')" aria-label="Limpiar">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="toolbar-dd-wrap" id="ddEstadoWrap">
+              <button type="button" class="toolbar-dd" onclick="toggleDD('ddEstadoWrap')">
+                <span id="ddEstadoLabel">Estado: Todos</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="toolbar-dd-menu" role="listbox">
+                <div class="toolbar-dd-item" role="option" aria-selected="true" data-val="all" onclick="setEstado('all','Estado: Todos')">Todos los estados</div>
+                <div class="toolbar-dd-item" role="option" data-val="disp" onclick="setEstado('disp','Disponibles')"><span class="dd-dot" style="background:#9c9ebf"></span>Disponibles</div>
+                <div class="toolbar-dd-item" role="option" data-val="asig" onclick="setEstado('asig','Asignados')"><span class="dd-dot" style="background:#15803d"></span>Asignados</div>
+                <div class="toolbar-dd-item" role="option" data-val="reasig" onclick="setEstado('reasig','Reasignados')"><span class="dd-dot" style="background:#7c3aed"></span>Reasignados</div>
+                <div class="toolbar-dd-item" role="option" data-val="rev" onclick="setEstado('rev','Revertidos')"><span class="dd-dot" style="background:#9e0015"></span>Revertidos</div>
+              </div>
+            </div>
+
+            <div class="toolbar-dd-wrap" id="ddTipoWrap">
+              <button type="button" class="toolbar-dd" onclick="toggleDD('ddTipoWrap')">
+                <span id="ddTipoLabel">Tipo: Todos</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="toolbar-dd-menu" role="listbox">
+                <div class="toolbar-dd-item" role="option" aria-selected="true" data-val="all" onclick="setTipo('all','Tipo: Todos')">Todos los tipos</div>
+                <div class="toolbar-dd-item" role="option" data-val="Bono" onclick="setTipo('Bono','Tipo: Bono')"><span class="dd-dot" style="background:#7c3aed"></span>Bono</div>
+                <div class="toolbar-dd-item" role="option" data-val="Beca" onclick="setTipo('Beca','Tipo: Beca')"><span class="dd-dot" style="background:#d74009"></span>Beca</div>
+                <div class="toolbar-dd-item" role="option" data-val="Kit" onclick="setTipo('Kit','Tipo: Kit')"><span class="dd-dot" style="background:#1f78d1"></span>Kit</div>
+                <div class="toolbar-dd-item" role="option" data-val="Inscripción" onclick="setTipo('Inscripción','Tipo: Inscripción')"><span class="dd-dot" style="background:#15803d"></span>Inscripción</div>
+                <div class="toolbar-dd-item" role="option" data-val="Transporte" onclick="setTipo('Transporte','Tipo: Transporte')"><span class="dd-dot" style="background:#0891b2"></span>Transporte</div>
+              </div>
+            </div>
+
+            <div class="toolbar-dd-wrap" id="ddProgWrap">
+              <button type="button" class="toolbar-dd" onclick="toggleDD('ddProgWrap')">
+                <span id="ddProgLabel">Programa: Todos</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="toolbar-dd-menu" role="listbox" id="ddProgMenu">
+                <div class="toolbar-dd-item" role="option" aria-selected="true" data-val="all" onclick="setProg('all','Programa: Todos')">Todos los programas</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="naowee-pagination naowee-pagination--small">
+            <div class="naowee-pagination__pages">
+              <span class="naowee-pagination__label">Página</span>
+              <input type="text" class="naowee-pagination__input" id="pagInput" value="1" inputmode="numeric"/>
+              <span class="naowee-pagination__total">de <strong id="pagTotal">1</strong></span>
+            </div>
+            <div class="naowee-pagination__controls">
+              <button type="button" class="naowee-pagination__btn" id="pagPrev" onclick="changePage(-1)" aria-label="Anterior">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+              </button>
+              <button type="button" class="naowee-pagination__btn" id="pagNext" onclick="changePage(1)" aria-label="Siguiente">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <table class="cod-table">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Programa</th>
+              <th>Estado</th>
+              <th>Beneficiario</th>
+              <th>Operador</th>
+              <th>Fecha</th>
+              <th>Valor</th>
+              <th style="width:130px">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="codBody"></tbody>
+        </table>
+
+        <div class="tablet-foot">
+          <div id="rowCountFoot">Mostrando 0 de 0 códigos</div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══ Build full codigos universe from PROGRAMS_DATA ══ */
+const PEOPLE = ['Ana García','Pedro Martínez','Andrés García','María C. Herrera','Laura Meza','Camila Ríos','Santiago López','Valentina Pérez','Juan Rodríguez','Diana Torres','Carlos Guzmán','Natalia Ruiz','Esteban Mora','Isabella Gil','Nicolás Bernal'];
+const OPERATORS = ['Doug Vargas','Laura Meza','Carla Suárez','Andrés Polo'];
+
+function buildCodigos(){
+  const all = [];
+  window.PROGRAMS_DATA.forEach(p => {
+    if(!p.codes.total) return;
+    const tipo = p.incentives?.[0]?.category || 'Otro';
+    const isBono = tipo === 'Bono';
+
+    // Bono → inventario completo (disp/asig/reasig/rev)
+    // Resto → solo registros de asignación (asig/reasig/rev), sin código
+    const limit = isBono ? p.codes.total : (p.codes.asig + p.codes.rev);
+    if(!limit) return;
+
+    for(let i = 1; i <= limit; i++){
+      const code = isBono ? `${p.id.replace('PRG-','')}-${String(i).padStart(5, '0')}` : null;
+      let estado;
+      if(isBono){
+        if(i <= p.codes.asig){
+          estado = (i % 12 === 0) ? 'reasig' : 'asig';
+        } else if(i <= p.codes.asig + p.codes.rev){
+          estado = 'rev';
+        } else {
+          estado = 'disp';
+        }
+      } else {
+        // Sin inventario de códigos: solo asig (con reasignaciones esporádicas) + rev
+        if(i <= p.codes.asig){
+          estado = (i % 18 === 0) ? 'reasig' : 'asig';
+        } else {
+          estado = 'rev';
+        }
+      }
+      const benefIdx = (i * 7) % PEOPLE.length;
+      const benef = estado === 'disp' ? null : PEOPLE[benefIdx];
+      const op = estado === 'disp' ? null : OPERATORS[i % OPERATORS.length];
+      const day = Math.max(1, 22 - Math.floor(i / Math.max(5, limit/20)));
+      const hour = String(8 + (i * 3) % 12).padStart(2, '0');
+      const min = String((i * 13) % 60).padStart(2, '0');
+      const fecha = estado === 'disp' ? null : `${day} ${p.from.split(' ')[1]} · ${hour}:${min}`;
+      // Algunos códigos disp en bonos provienen de reversiones previas
+      // (ahora son disponibles otra vez). Los marcamos con history para
+      // mostrar el feature de trazabilidad.
+      const reversionHistory = [];
+      if(isBono && estado === 'disp' && i % 7 === 0){
+        const benefPrev = PEOPLE[(i*11) % PEOPLE.length];
+        const opPrev = OPERATORS[(i*5) % OPERATORS.length];
+        const motivos = [
+          { k:'devolucion', label:'Devolución del beneficiario',
+            just:'El beneficiario solicitó devolver el código por cambio personal de programa.' },
+          { k:'error', label:'Error en la asignación',
+            just:'Se detectó un error en los datos del beneficiario tras la entrega.' },
+          { k:'no-elegible', label:'Beneficiario no elegible',
+            just:'Auditoría posterior identificó que el beneficiario no cumplía el requisito de matrícula activa.' },
+          { k:'fraude', label:'Sospecha de fraude',
+            just:'Caso reportado por la línea de auditoría. Bajo investigación.' }
+        ];
+        const m = motivos[i % motivos.length];
+        const dayR = Math.max(1, day + 3);
+        const hourR = String((parseInt(hour,10)+5) % 24).padStart(2,'0');
+        reversionHistory.push({
+          beneficiarioPrevio: benefPrev,
+          operadorPrevio: opPrev,
+          fechaAsignacion: `${day} ${p.from.split(' ')[1]} · ${hour}:${min}`,
+          motivo: m.k,
+          motivoLabel: m.label,
+          solicitante: ['Carlos Pérez','Mariana Soto','Felipe Cárdenas','Andrea López'][i % 4],
+          justificacion: m.just,
+          autor: 'Doug Vargas · Gestor de incentivos',
+          fecha: `${dayR} ${p.from.split(' ')[1]} 2026 · ${hourR}:${min}`,
+          valor: p.unit
+        });
+      }
+      // _id sintético para lookup (los no-bono no tienen código real)
+      const _id = code || `${p.id}-NC-${String(i).padStart(5,'0')}`;
+      all.push({ _id, code, prg: p, estado, benef, op, fecha, valor: p.unit, tipo, reversionHistory });
+    }
+  });
+  return all;
+}
+
+const ALL = buildCodigos();
+const state = { estado: 'all', prog: 'all', tipo: 'all', search: '', page: 1, pageSize: 10 };
+
+/* ══ KPI numbers ══ */
+function updateKPIs(){
+  const total = ALL.length;
+  const asig = ALL.filter(c => c.estado === 'asig').length;
+  const disp = ALL.filter(c => c.estado === 'disp').length;
+  const rev = ALL.filter(c => c.estado === 'rev').length;
+  document.getElementById('kpiTotal').textContent = total.toLocaleString('es-CO');
+  document.getElementById('kpiAvail').textContent = disp.toLocaleString('es-CO');
+  document.getElementById('kpiAsig').textContent = asig.toLocaleString('es-CO');
+  document.getElementById('kpiRev').textContent = rev.toLocaleString('es-CO');
+  document.getElementById('kpiAvailPct').textContent = `${Math.round((disp/total)*100)}%`;
+  document.getElementById('kpiAsigPct').textContent = `${Math.round((asig/total)*100)}%`;
+  document.getElementById('kpiRevPct').textContent = `${((rev/total)*100).toFixed(1)}%`;
+}
+
+/* ══ Programa dropdown options ══ */
+function populateProgramDD(){
+  const menu = document.getElementById('ddProgMenu');
+  const opts = window.PROGRAMS_DATA.filter(p => p.codes.total > 0).map(p =>
+    `<div class="toolbar-dd-item" role="option" data-val="${p.id}" onclick="setProg('${p.id}','Programa: ${p.name.length > 24 ? p.name.slice(0,22)+'…' : p.name}')"><span class="dd-dot" style="background:${p.iconColor}"></span>${p.name}</div>`
+  );
+  menu.insertAdjacentHTML('beforeend', opts.join(''));
+}
+
+/* ══ Toolbar dropdowns ══ */
+function toggleDD(wrapId){
+  const wrap = document.getElementById(wrapId);
+  if(!wrap) return;
+  const wasOpen = wrap.classList.contains('open');
+  document.querySelectorAll('.toolbar-dd-wrap.open').forEach(w => w.classList.remove('open'));
+  document.querySelectorAll('.toolbar-dd.open').forEach(b => b.classList.remove('open'));
+  if(!wasOpen){
+    wrap.classList.add('open');
+    wrap.querySelector('.toolbar-dd').classList.add('open');
+  }
+}
+document.addEventListener('click', e => {
+  if(!e.target.closest('.toolbar-dd-wrap')){
+    document.querySelectorAll('.toolbar-dd-wrap.open').forEach(w => w.classList.remove('open'));
+    document.querySelectorAll('.toolbar-dd.open').forEach(b => b.classList.remove('open'));
+  }
+});
+function setEstado(val, label){
+  state.estado = val; state.page = 1;
+  document.getElementById('ddEstadoLabel').textContent = label;
+  document.querySelectorAll('#ddEstadoWrap .toolbar-dd-item').forEach(it => it.setAttribute('aria-selected', it.dataset.val === val ? 'true' : 'false'));
+  toggleDD('ddEstadoWrap');
+  renderCodigos();
+}
+function setTipo(val, label){
+  state.tipo = val; state.page = 1;
+  document.getElementById('ddTipoLabel').textContent = label;
+  document.querySelectorAll('#ddTipoWrap .toolbar-dd-item').forEach(it => it.setAttribute('aria-selected', it.dataset.val === val ? 'true' : 'false'));
+  toggleDD('ddTipoWrap');
+  renderCodigos();
+}
+function setProg(val, label){
+  state.prog = val; state.page = 1;
+  document.getElementById('ddProgLabel').textContent = label;
+  document.querySelectorAll('#ddProgWrap .toolbar-dd-item').forEach(it => it.setAttribute('aria-selected', it.dataset.val === val ? 'true' : 'false'));
+  toggleDD('ddProgWrap');
+  renderCodigos();
+}
+function clearSearch(id){
+  const inp = document.getElementById(id);
+  if(!inp) return;
+  inp.value = '';
+  inp.dispatchEvent(new Event('input', { bubbles: true }));
+  inp.focus();
+}
+
+/* ══ Render ══ */
+function filteredCodigos(){
+  return ALL.filter(c => {
+    if(state.estado !== 'all' && c.estado !== state.estado) return false;
+    if(state.tipo !== 'all' && c.tipo !== state.tipo) return false;
+    if(state.prog !== 'all' && c.prg.id !== state.prog) return false;
+    if(state.search){
+      const q = state.search.toLowerCase();
+      const hay = `${c.code || ''} ${c.benef || ''} ${c.op || ''} ${c.prg.name}`.toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+const badges = {
+  disp:   '<span class="naowee-badge naowee-badge--neutral naowee-badge--quiet naowee-badge--small">Disponible</span>',
+  asig:   '<span class="naowee-badge naowee-badge--positive naowee-badge--quiet naowee-badge--small">Asignado</span>',
+  reasig: '<span class="naowee-badge naowee-badge--informative naowee-badge--quiet naowee-badge--small" style="background:#f3e8ff;color:#7c3aed">Reasignado</span>',
+  rev:    '<span class="naowee-badge naowee-badge--negative naowee-badge--quiet naowee-badge--small">Revertido</span>'
+};
+
+// Icono por categoría — reusa window.CAT_ICONS centralizado (paridad
+// con incentivo-14, incentivo-05 y el resto del sistema)
+function iconForType(tipo){
+  const icons = window.CAT_ICONS || {};
+  return icons[tipo] || icons['Beca'] || '';
+}
+
+function renderCodigos(){
+  const list = filteredCodigos();
+  const total = list.length;
+  const totalPages = Math.max(1, Math.ceil(total / state.pageSize));
+  if(state.page > totalPages) state.page = totalPages;
+  const start = (state.page - 1) * state.pageSize;
+  const end = Math.min(start + state.pageSize, total);
+  const slice = list.slice(start, end);
+
+  const body = document.getElementById('codBody');
+  if(!slice.length){
+    body.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:48px;color:#9c9ebf">Sin códigos con estos filtros.</td></tr>`;
+  } else {
+    body.innerHTML = slice.map(c => {
+      const mutedBenef = !c.benef;
+      const mutedValor = c.estado === 'rev';
+      // Sólo asignados se pueden revertir (cualquier tipo, no solo bono)
+      const actionCell = (c.estado === 'asig' || c.estado === 'reasig')
+        ? `<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small cod-revert-btn" onclick="event.stopPropagation(); openRevertModal('${c._id}')">
+             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+             Revertir
+           </button>`
+        : `<span class="cod-noaction">—</span>`;
+      const hasHistory = c.reversionHistory && c.reversionHistory.length > 0;
+      const histBtn = hasHistory
+        ? `<button type="button" class="rev-history-btn" onclick="event.stopPropagation();openRevPopover('${c._id}', this)" aria-label="Historial de reversión" title="Ver historial de reversión">
+             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 109-9"/><polyline points="3 4 3 9 8 9"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg>
+           </button>`
+        : '';
+      const codeCell = c.code
+        ? `<span class="cod-cell"><code>${c.code}</code>${histBtn}</span>`
+        : `<span class="cod-cell"><span style="font-family:'Inter',sans-serif;font-size:12.5px;color:#9c9ebf;font-style:italic">Sin código</span>${histBtn}</span>`;
+      return `
+        <tr onclick="fadeAndGo('incentivo-05-programa-detalle.html?id=${c.prg.id}')">
+          <td>${codeCell}</td>
+          <td>
+            <div class="prg-mini">
+              <div class="prg-mini__ico" style="background:${c.prg.iconBg};color:${c.prg.iconColor}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${iconForType(c.tipo)}</svg>
+              </div>
+              <div class="prg-mini__body">
+                <div class="prg-mini__name">${c.prg.name}</div>
+                <div class="prg-mini__id">${c.prg.id}</div>
+              </div>
+            </div>
+          </td>
+          <td>${badges[c.estado]}</td>
+          <td><span class="benef-cell${mutedBenef ? ' muted' : ''}">${c.benef || '—'}</span></td>
+          <td><span class="op-cell">${c.op || '—'}</span></td>
+          <td><span class="fecha-cell">${c.fecha || '—'}</span></td>
+          <td><span class="valor-cell${mutedValor ? ' muted' : ''}">$${Number(c.valor||0).toLocaleString('es-CO')}</span></td>
+          <td>${actionCell}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  document.getElementById('rowCountFoot').textContent = total === 0 ? 'Sin resultados' : `Mostrando ${start + 1}–${end} de ${total.toLocaleString('es-CO')} códigos`;
+  document.getElementById('pagInput').value = state.page;
+  document.getElementById('pagTotal').textContent = totalPages;
+  document.getElementById('pagPrev').disabled = state.page <= 1;
+  document.getElementById('pagNext').disabled = state.page >= totalPages;
+}
+
+function changePage(delta){
+  const total = filteredCodigos().length;
+  const totalPages = Math.max(1, Math.ceil(total / state.pageSize));
+  state.page = Math.max(1, Math.min(totalPages, state.page + delta));
+  renderCodigos();
+}
+
+document.addEventListener('input', e => {
+  if(e.target.id === 'codSearch'){
+    state.search = e.target.value.trim();
+    state.page = 1;
+    renderCodigos();
+  }
+  if(e.target.id === 'pagInput'){
+    const v = parseInt(e.target.value, 10);
+    if(!isNaN(v)){
+      const total = filteredCodigos().length;
+      const totalPages = Math.max(1, Math.ceil(total / state.pageSize));
+      state.page = Math.max(1, Math.min(totalPages, v));
+      renderCodigos();
+    }
+  }
+});
+
+updateKPIs();
+populateProgramDD();
+renderCodigos();
+
+function fadeAndGo(url){window.location.href=url}
+
+/* ═══════════════════════════════════════════════════════════════
+   REVERTIR CÓDIGO — modal + lógica
+   Flujo: click Revertir → abre modal con detalles → valida campos →
+   cambia estado del código a 'rev' + ajusta contadores del programa
+   + registra en trazabilidad (historial via localStorage) + toast.
+   ═══════════════════════════════════════════════════════════════ */
+let rvTargetCode = null;
+
+function findCod(id){ return ALL.find(c => c._id === id || c.code === id); }
+
+const RV_MOTIVOS = {
+  'devolucion': 'Devolución del beneficiario',
+  'error': 'Error en la asignación',
+  'no-elegible': 'Beneficiario no elegible',
+  'fraude': 'Sospecha de fraude',
+  'cambio-categoria': 'Cambio de categoría / programa',
+  'cancelacion': 'Cancelación del programa',
+  'otro': 'Otro motivo'
+};
+
+function openRevertModal(id){
+  const c = findCod(id);
+  if(!c) return;
+  rvTargetCode = c._id;
+  // Wire listeners on first open (el script se ejecuta antes del HTML del modal)
+  wireRevertModalListeners();
+  // Llenar summary — para non-bono (sin código) mostramos un placeholder
+  document.getElementById('rvCode').textContent = c.code || `${c.tipo} · ${c.prg.id}`;
+  document.getElementById('rvProg').textContent = c.prg.name;
+  document.getElementById('rvBenef').textContent = c.benef || '—';
+  document.getElementById('rvValor').textContent = '$' + Number(c.valor||0).toLocaleString('es-CO');
+  // Reset form
+  resetRevertForm();
+  // Abrir overlay
+  document.getElementById('rvOverlay').classList.add('open');
+  setTimeout(() => document.getElementById('rvSolicitante')?.focus(), 180);
+}
+
+function closeRevertModal(){
+  document.getElementById('rvOverlay').classList.remove('open');
+  rvTargetCode = null;
+}
+
+function resetRevertForm(){
+  // Dropdown motivo
+  const dd = document.getElementById('rvCatDD');
+  dd.classList.remove('naowee-dropdown--open', 'naowee-dropdown--error');
+  delete dd.dataset.val;
+  dd.querySelectorAll('.naowee-dropdown__option').forEach(o => o.classList.remove('naowee-dropdown__option--selected'));
+  const valEl = dd.querySelector('.naowee-dropdown__value, .naowee-dropdown__placeholder');
+  if(valEl){
+    valEl.className = 'naowee-dropdown__placeholder';
+    valEl.textContent = 'Selecciona un motivo';
+  }
+  // Textfields
+  document.getElementById('rvSolicitante').value = '';
+  document.getElementById('rvJust').value = '';
+  ['rvSolicitanteField','rvJustField'].forEach(id => {
+    document.getElementById(id)?.classList.remove('naowee-textfield--error');
+  });
+}
+
+/* Wire lazy — se ejecuta en el primer openRevertModal ya que el modal
+   HTML vive al final del body, después de este script. */
+let rvListenersWired = false;
+function wireRevertModalListeners(){
+  if(rvListenersWired) return;
+  const dd = document.getElementById('rvCatDD');
+  if(!dd) return;
+  rvListenersWired = true;
+
+  // Trigger del dropdown
+  const trigger = dd.querySelector('.naowee-dropdown__trigger');
+  trigger.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const open = dd.classList.contains('naowee-dropdown--open');
+    if(open) dd.classList.remove('naowee-dropdown--open');
+    else dd.classList.add('naowee-dropdown--open');
+  });
+
+  // Options
+  dd.querySelectorAll('.naowee-dropdown__option').forEach(opt => {
+    opt.addEventListener('click', () => {
+      dd.querySelectorAll('.naowee-dropdown__option').forEach(o => o.classList.remove('naowee-dropdown__option--selected'));
+      opt.classList.add('naowee-dropdown__option--selected');
+      dd.dataset.val = opt.dataset.val;
+      const ph = dd.querySelector('.naowee-dropdown__placeholder, .naowee-dropdown__value');
+      if(ph){
+        ph.className = 'naowee-dropdown__value';
+        ph.textContent = opt.textContent;
+      }
+      dd.classList.remove('naowee-dropdown--open', 'naowee-dropdown--error');
+    });
+  });
+
+  // Cerrar dropdown al clickear fuera
+  document.addEventListener('click', (e) => {
+    if(!e.target.closest('#rvCatDD')) dd.classList.remove('naowee-dropdown--open');
+  });
+
+  // Cerrar modal con click en overlay o Escape
+  document.getElementById('rvOverlay').addEventListener('click', (e) => {
+    if(e.target.id === 'rvOverlay') closeRevertModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape' && document.getElementById('rvOverlay')?.classList.contains('open')) closeRevertModal();
+  });
+
+  // Limpia error al escribir
+  ['rvSolicitante','rvJust'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', function(){
+      this.closest('.naowee-textfield')?.classList.remove('naowee-textfield--error');
+    });
+  });
+}
+
+function doRevert(){
+  if(!rvTargetCode) return;
+  const c = findCod(rvTargetCode);
+  if(!c) return;
+  // Validaciones: motivo, solicitante y justificación son obligatorios.
+  const motivo = document.getElementById('rvCatDD').dataset.val;
+  const solicitante = document.getElementById('rvSolicitante').value.trim();
+  const just = document.getElementById('rvJust').value.trim();
+  const invalid = [];
+  if(!motivo){
+    document.getElementById('rvCatDD').classList.add('naowee-dropdown--error');
+    invalid.push(document.getElementById('rvCatDD'));
+  }
+  if(!solicitante){
+    const f = document.getElementById('rvSolicitanteField');
+    f.classList.add('naowee-textfield--error');
+    invalid.push(f);
+  }
+  if(!just){
+    const f = document.getElementById('rvJustField');
+    f.classList.add('naowee-textfield--error');
+    invalid.push(f);
+  }
+  if(invalid.length){
+    // Wiggle a todos los campos inválidos + scroll al primero
+    invalid.forEach(el => {
+      el.classList.remove('rv-shake');
+      void el.offsetWidth; // force reflow para reiniciar animación
+      el.classList.add('rv-shake');
+      setTimeout(() => el.classList.remove('rv-shake'), 500);
+    });
+    const body = document.querySelector('.rv-body');
+    const first = invalid[0];
+    if(body && first){
+      const bodyRect = body.getBoundingClientRect();
+      const fieldRect = first.getBoundingClientRect();
+      const targetTop = body.scrollTop + (fieldRect.top - bodyRect.top) - 16;
+      body.scrollTo({ top: Math.max(0, targetTop), behavior: 'smooth' });
+    } else {
+      first?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    return;
+  }
+
+  // 1) Snapshot de quién lo tenía antes — se conserva sólo en el
+  //    historial. El código vuelve a estar disponible.
+  const prevBenef = c.benef || '—';
+  const prevOp = c.op || '—';
+  const prevFecha = c.fecha || '—';
+
+  // 2) Actualiza el código in-memory: vuelve a "disponible"
+  c.estado = 'disp';
+  c.benef = null;
+  c.op = null;
+  c.fecha = null;
+
+  // 3) Ajusta contadores del programa: -1 asignado, +1 disponible.
+  //    NO se incrementa rev (la reversión ya no es un estado del código,
+  //    es una entrada en el historial).
+  if(c.prg && c.prg.codes){
+    c.prg.codes.asig  = Math.max(0, (c.prg.codes.asig  || 1) - 1);
+    c.prg.codes.avail = (c.prg.codes.avail || 0) + 1;
+  }
+
+  // 4) Registra en historial — ATADO al código (in-memory) Y en localStorage
+  const entry = {
+    code: c.code,
+    programa: c.prg.name,
+    programaId: c.prg.id,
+    beneficiarioPrevio: prevBenef,
+    operadorPrevio: prevOp,
+    fechaAsignacion: prevFecha,
+    valor: c.valor,
+    motivo,
+    motivoLabel: RV_MOTIVOS[motivo] || motivo,
+    solicitante,
+    justificacion: just,
+    autor: 'Doug Vargas · Gestor de incentivos',
+    fecha: (() => {
+      const d = new Date();
+      const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+      return `${String(d.getDate()).padStart(2,'0')} ${months[d.getMonth()]} ${d.getFullYear()} · ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    })()
+  };
+  if(!Array.isArray(c.reversionHistory)) c.reversionHistory = [];
+  c.reversionHistory.push(entry);
+  try {
+    const hist = JSON.parse(localStorage.getItem('naowee-reversiones') || '[]');
+    hist.push({ ...entry, codeId: c._id });
+    localStorage.setItem('naowee-reversiones', JSON.stringify(hist));
+  } catch(_) {}
+
+  // 4) Feedback + cierre
+  closeRevertModal();
+  updateKPIs();
+  renderCodigos();
+  const valM = '$' + Number(c.valor||0).toLocaleString('es-CO');
+  showRvToast({
+    variant: 'positive',
+    title: `Código ${c.code} de nuevo disponible`,
+    text: `${valM} volvió al rubro de ${c.prg.name} y el código queda disponible para una nueva asignación. La reversión queda registrada en el historial.`,
+    cta: {
+      label: 'Ver programa',
+      url: `incentivo-05-programa-detalle.html?id=${c.prg.id}&from=codigos`
+    }
+  });
+}
+
+/* Toast estilo naowee-message del DS — estructura: header (icon + title +
+   dismiss) + content (text + action). Mantenemos las clases del DS para
+   que tipografía/colores/padding vengan del system. */
+/* ═══ Popover de historial de reversión ═══ */
+function openRevPopover(id, btn){
+  const c = findCod(id);
+  if(!c || !c.reversionHistory || !c.reversionHistory.length) return;
+  const entry = c.reversionHistory[c.reversionHistory.length - 1]; // la más reciente
+  const pop = document.getElementById('revPopover');
+  if(!pop) return;
+
+  // Estados según el flujo: el código fue Asignado → Revertido → ahora Disponible
+  const stateLine = c.estado === 'disp'
+    ? `<span class="rv-state rv-state--asig"><span class="rv-state__dot"></span>Asignado</span><span class="rv-arrow">→</span><span class="rv-state rv-state--rev"><span class="rv-state__dot"></span>Revertido</span><span class="rv-arrow">→</span><span class="rv-state rv-state--disp"><span class="rv-state__dot"></span>Disponible</span>`
+    : `<span class="rv-state rv-state--asig"><span class="rv-state__dot"></span>Asignado</span><span class="rv-arrow">→</span><span class="rv-state rv-state--rev"><span class="rv-state__dot"></span>Revertido</span>`;
+
+  pop.querySelector('.rv-pop__title').textContent = 'Historial de reversión';
+  pop.querySelector('.rv-pop__sub').textContent = c.code || `${c.tipo} · ${c.prg.id}`;
+  pop.querySelector('.rv-pop__body').innerHTML = `
+    <div class="rv-row rv-row--full">
+      <div class="rv-row__lbl">Estados</div>
+      <div class="rv-trail">${stateLine}</div>
+    </div>
+    <div class="rv-row">
+      <div class="rv-row__lbl">Motivo</div>
+      <div class="rv-row__val"><strong>${entry.motivoLabel}</strong></div>
+    </div>
+    <div class="rv-row">
+      <div class="rv-row__lbl">Solicitada por</div>
+      <div class="rv-row__val">${entry.solicitante}</div>
+    </div>
+    <div class="rv-row">
+      <div class="rv-row__lbl">Revertida por</div>
+      <div class="rv-row__val">${entry.autor}</div>
+    </div>
+    <div class="rv-row">
+      <div class="rv-row__lbl">Fecha y hora</div>
+      <div class="rv-row__val">${entry.fecha}</div>
+    </div>
+    <div class="rv-row rv-row--full">
+      <div class="rv-row__lbl">Beneficiario previo</div>
+      <div class="rv-row__val">${entry.beneficiarioPrevio} <span style="color:#646587">(asignado por ${entry.operadorPrevio} · ${entry.fechaAsignacion})</span></div>
+    </div>
+    ${entry.justificacion ? `
+    <div class="rv-row rv-row--full">
+      <div class="rv-row__lbl">Justificación</div>
+      <div class="rv-row__val">${entry.justificacion}</div>
+    </div>` : ''}
+  `;
+
+  // Posicionar popover cerca del botón disparador
+  const r = btn.getBoundingClientRect();
+  const popW = 560;
+  let left = r.right + 8;
+  if(left + popW > window.innerWidth - 12) left = r.left - popW - 8;
+  if(left < 12) left = 12;
+  let top = r.top + r.height/2 - 60;
+  if(top + 360 > window.innerHeight - 12) top = window.innerHeight - 372;
+  if(top < 12) top = 12;
+  pop.style.left = left + 'px';
+  pop.style.top = top + 'px';
+  pop.classList.add('is-open');
+}
+function closeRevPopover(){ document.getElementById('revPopover')?.classList.remove('is-open'); }
+document.addEventListener('click', e => {
+  if(!e.target.closest('#revPopover') && !e.target.closest('.rev-history-btn')) closeRevPopover();
+});
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeRevPopover(); });
+
+function showRvToast(opts){
+  if(typeof opts === 'string') opts = { text: opts, variant: 'positive' };
+  const { variant = 'positive', title, text, cta } = opts;
+  const wrap = document.getElementById('rvToastWrap');
+  if(!wrap) return;
+  const el = document.createElement('div');
+  el.className = `rv-toast naowee-message naowee-message--${variant}`;
+  const icoSvg = variant === 'positive'
+    ? '<polyline points="20 6 9 17 4 12"/>'
+    : '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>';
+  const titleHTML = title ? `<div class="naowee-message__title">${title}</div>` : '';
+  const textHTML  = text  ? `<div class="naowee-message__text">${text}</div>`  : '';
+  const ctaHTML   = cta
+    ? `<button type="button" class="naowee-message__action" data-cta-url="${cta.url}">${cta.label}</button>`
+    : '';
+  // Si hay title + text/cta, el body va dentro de __content (col layout DS)
+  const bodyHTML = (title && (text || cta))
+    ? `<div class="naowee-message__content">${textHTML}${ctaHTML}</div>`
+    : `${textHTML}${ctaHTML}`;
+  el.innerHTML = `
+    <div class="naowee-message__header">
+      <div class="naowee-message__icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${icoSvg}</svg>
+      </div>
+      ${titleHTML}
+      <button type="button" class="naowee-message__dismiss" aria-label="Cerrar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    ${bodyHTML}`;
+  wrap.appendChild(el);
+  const dismiss = () => { el.style.transition = 'opacity .2s'; el.style.opacity = '0'; setTimeout(() => el.remove(), 220); };
+  el.querySelector('.naowee-message__dismiss').addEventListener('click', dismiss);
+  const ctaBtn = el.querySelector('.naowee-message__action');
+  if(ctaBtn){
+    ctaBtn.addEventListener('click', () => {
+      const url = ctaBtn.dataset.ctaUrl;
+      if(url) window.location.href = url;
+    });
+  }
+  setTimeout(dismiss, cta ? 7000 : 5000);
+}
+
+</script>
+<script src="shared/profile-switcher.js?v=20260923080917" defer></script>
+
+
+<script src="shared/footer-scroll.js" defer></script>
+<script src="shared/tour.js?v=20260923080917" defer></script>
+
+<!-- Footer flotante Naowee -->
+<div class="naowee-floating-footer" role="contentinfo" aria-label="Pie de página Naowee">
+  <img src="shared/logos/naowee.svg" alt="Naowee" class="naowee-floating-footer__logo"/>
+  <div class="naowee-floating-footer__sep"></div>
+  <span class="naowee-floating-footer__text">Todos los derechos reservados <strong>&copy; 2026</strong></span>
+</div>
+
+<!-- ═══ MODAL: Revertir código ═══ -->
+<div class="rv-overlay" id="rvOverlay" role="dialog" aria-modal="true" aria-labelledby="rvTitle">
+  <div class="rv-modal">
+    <header class="rv-header">
+      <div>
+        <h2 class="rv-header__title" id="rvTitle">Revertir código</h2>
+        <p class="rv-header__sub">El código volverá a estar disponible y el valor se devolverá al rubro del programa. La acción queda registrada en el historial.</p>
+      </div>
+      <button type="button" class="rv-close" onclick="closeRevertModal()" aria-label="Cerrar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </header>
+
+    <div class="rv-body">
+      <!-- Resumen del código a revertir -->
+      <div class="rv-summary" id="rvSummary">
+        <div class="rv-summary__top">
+          <div class="rv-summary__ico">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="9" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="15" y2="20"/><line x1="4" y1="9" x2="20" y2="9"/><line x1="3" y1="15" x2="19" y2="15"/></svg>
+          </div>
+          <div class="rv-summary__main">
+            <div class="rv-summary__lbl">Código a revertir</div>
+            <div class="rv-summary__code" id="rvCode">—</div>
+          </div>
+          <div class="rv-summary__amount">
+            <div class="rv-summary__amount-lbl">Se devolverá</div>
+            <div class="rv-summary__val" id="rvValor">—</div>
+          </div>
+        </div>
+        <div class="rv-summary__divider"></div>
+        <div class="rv-summary__rows">
+          <div class="rv-summary__row">
+            <span class="rv-summary__row-lbl">Programa</span>
+            <span class="rv-summary__row-val" id="rvProg">—</span>
+          </div>
+          <div class="rv-summary__row">
+            <span class="rv-summary__row-lbl">Beneficiario</span>
+            <span class="rv-summary__row-val" id="rvBenef">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Motivo de la reversión -->
+      <div class="naowee-dropdown" id="rvCatDD" data-rv-dropdown>
+        <label class="naowee-dropdown__label naowee-dropdown__label--required">Motivo de la reversión</label>
+        <div class="naowee-dropdown__trigger" tabindex="0">
+          <span class="naowee-dropdown__placeholder">Selecciona un motivo</span>
+          <div class="naowee-dropdown__controls">
+            <span class="naowee-dropdown__chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+          </div>
+        </div>
+        <div class="naowee-dropdown__menu" role="listbox">
+          <div class="naowee-dropdown__option" data-val="devolucion">Devolución del beneficiario</div>
+          <div class="naowee-dropdown__option" data-val="error">Error en la asignación</div>
+          <div class="naowee-dropdown__option" data-val="no-elegible">Beneficiario no elegible</div>
+          <div class="naowee-dropdown__option" data-val="fraude">Sospecha de fraude</div>
+          <div class="naowee-dropdown__option" data-val="cambio-categoria">Cambio de categoría / programa</div>
+          <div class="naowee-dropdown__option" data-val="cancelacion">Cancelación del programa</div>
+          <div class="naowee-dropdown__option" data-val="otro">Otro motivo</div>
+        </div>
+        <div class="naowee-dropdown__helper rv-error-only">Este campo es obligatorio</div>
+      </div>
+
+      <!-- Solicitante -->
+      <div class="naowee-textfield" id="rvSolicitanteField">
+        <label class="naowee-textfield__label naowee-textfield__label--required">Solicitante</label>
+        <div class="naowee-textfield__input-wrap">
+          <input class="naowee-textfield__input" id="rvSolicitante" type="text" placeholder="Nombre de quien solicita la reversión" maxlength="100"/>
+        </div>
+        <div class="naowee-dropdown__helper rv-error-only">Este campo es obligatorio</div>
+      </div>
+
+      <!-- Justificación -->
+      <div class="naowee-textfield naowee-textfield--textarea" id="rvJustField">
+        <label class="naowee-textfield__label naowee-textfield__label--required">Justificación</label>
+        <div class="naowee-textfield__input-wrap">
+          <textarea class="naowee-textfield__input" id="rvJust" rows="3" placeholder="Describe los detalles de la reversión (evidencia, contexto, acción de seguimiento)..." maxlength="400"></textarea>
+        </div>
+        <div class="naowee-dropdown__helper rv-error-only">Este campo es obligatorio</div>
+      </div>
+
+      <!-- Autor (readonly) -->
+      <div class="naowee-textfield naowee-textfield--readonly">
+        <label class="naowee-textfield__label">Realizado por</label>
+        <div class="naowee-textfield__input-wrap rv-readonly">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="rv-readonly__ico"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span class="rv-readonly__val">Doug Vargas · Gestor de incentivos</span>
+        </div>
+      </div>
+    </div>
+
+    <footer class="rv-footer">
+      <button class="naowee-btn naowee-btn--mute naowee-btn--large" onclick="closeRevertModal()">Cancelar</button>
+      <button id="btnRvConfirm" class="naowee-btn naowee-btn--loud naowee-btn--large" onclick="doRevert()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+        Revertir código
+      </button>
+    </footer>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="rv-toast-wrap" id="rvToastWrap" aria-live="polite"></div>
+
+<!-- Popover de historial de reversión -->
+<div class="rev-popover" id="revPopover" role="dialog" aria-modal="false" aria-labelledby="revPopTitle">
+  <div class="rv-pop__head">
+    <div>
+      <div class="rv-pop__title" id="revPopTitle">Historial de reversión</div>
+      <div class="rv-pop__sub">—</div>
+    </div>
+    <button type="button" class="rv-pop__close" onclick="closeRevPopover()" aria-label="Cerrar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="rv-pop__body"></div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>SUID – Incentivos · Historial de asignaciones</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.4.0/dist/design-system.css"/>
+<link rel="stylesheet" href="shared/shell.css?v=20260922200101"/>
+<script src="shared/programs-data.js?v=20260923080917"></script>
+
+<style>
+  .page-header{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:24px;flex-wrap:wrap}
+  .page-title{font-size:24px;font-weight:700;line-height:1.2;letter-spacing:-.01em;margin-bottom:4px;color:var(--naowee-color-text-primary,#282834)}
+  .page-sub{font-size:14px;color:var(--naowee-color-text-secondary,#646587);line-height:1.5;max-width:640px}
+  .page-header__actions{display:flex;gap:10px;align-items:center}
+
+  /* KPI cards */
+  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+  @media(max-width:1100px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
+  .kpi-card{
+    background:#fff;border:1px solid var(--naowee-color-border-default,#e7e9f3);
+    border-radius:16px;padding:18px 20px;
+    display:flex;flex-direction:column;gap:12px;
+    transition:transform .15s,box-shadow .15s;
+  }
+  .kpi-card:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(145,158,171,.12)}
+  .kpi-card__top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+  .kpi-card__lbl{font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--naowee-color-text-secondary,#646587);line-height:1.3}
+  .kpi-card__ico{width:40px;height:40px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+  .kpi-card__ico svg{width:20px;height:20px}
+  .kpi-card__ico--brand{background:#eef5ff;color:#1f78d1}
+  .kpi-card__ico--positive{background:#e6f4e7;color:#15803d}
+  .kpi-card__ico--caution{background:#fff3e6;color:#d74009}
+  .kpi-card__ico--info{background:#f3e8ff;color:#7c3aed}
+  .kpi-card__ico--negative{background:#ffe4ee;color:#be185d}
+  .kpi-card__val{font-family:'Inter',sans-serif;font-size:30px;font-weight:700;line-height:1;letter-spacing:-.02em;color:var(--naowee-color-text-primary,#282834)}
+  .kpi-card__foot{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--naowee-color-text-secondary,#646587);margin-top:2px}
+  .kpi-trend{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:9999px;font-size:10.5px;font-weight:700}
+  .kpi-trend--up{background:#e6f4e7;color:#15803d}
+  .kpi-trend--down{background:#fff0ee;color:#b42318}
+  .kpi-trend--neutral{background:#f5f6fa;color:var(--naowee-color-text-secondary,#646587)}
+
+  /* Tablet */
+  .tablet{
+    border:1px solid var(--naowee-color-border-default,#e7e9f3);
+    border-radius:16px;padding:20px;background:#fff;
+    display:flex;flex-direction:column;gap:18px;
+  }
+  .tablet-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .tablet-toolbar__left{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+
+  .tablet .naowee-searchbox--pill{width:280px;max-width:100%}
+  .tablet .naowee-searchbox--pill .naowee-searchbox__input-wrap{border-radius:9999px;height:36px;padding:4px 12px}
+
+  /* Toolbar dropdown */
+  .toolbar-dd-wrap{position:relative;display:inline-flex}
+  .toolbar-dd{
+    position:relative;display:inline-flex;align-items:center;gap:8px;justify-content:space-between;
+    height:36px;padding:4px 12px 4px 14px;
+    background:#fff;border:1px solid #8788ab;border-radius:8px;
+    font-family:'Inter',sans-serif;font-size:12.5px;font-weight:500;
+    color:var(--naowee-color-text-primary,#282834);
+    cursor:pointer;transition:border-color .15s,box-shadow .15s;
+  }
+  .toolbar-dd:hover{border-color:#646587}
+  .toolbar-dd.open,.toolbar-dd:focus-visible{outline:none;border-color:var(--naowee-color-text-accent,#d74009);box-shadow:0 0 0 3px rgba(215,64,9,.15)}
+  .toolbar-dd svg{width:16px;height:16px;flex-shrink:0;color:var(--naowee-color-text-secondary,#646587);transition:transform .2s}
+  .toolbar-dd.open svg{transform:rotate(180deg)}
+  .toolbar-dd-menu{
+    position:absolute;top:calc(100% + 6px);left:0;z-index:50;
+    min-width:100%;background:#fff;white-space:nowrap;
+    border:1px solid var(--naowee-color-border-default,#e7e9f3);border-radius:10px;
+    box-shadow:0 12px 32px rgba(40,40,52,.12);padding:6px;
+    max-height:320px;overflow-y:auto;
+    opacity:0;transform:translateY(-6px);pointer-events:none;
+    transition:opacity .18s,transform .18s;
+  }
+  .toolbar-dd-wrap.open .toolbar-dd-menu{opacity:1;transform:translateY(0);pointer-events:auto}
+  .toolbar-dd-item{
+    display:flex;align-items:center;gap:10px;
+    padding:9px 10px;border-radius:6px;
+    font-size:13px;cursor:pointer;transition:background .12s;
+  }
+  .toolbar-dd-item:hover{background:#f5f6fa}
+  .toolbar-dd-item[aria-selected="true"]{background:#fff3e6;color:var(--naowee-color-text-accent,#d74009);font-weight:600}
+  .dd-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+  /* Pagination */
+  .naowee-pagination{display:flex;align-items:center;gap:0;font-family:'Inter',sans-serif}
+  .naowee-pagination__pages{display:flex;align-items:center;gap:6px}
+  .naowee-pagination__label,.naowee-pagination__total{font-size:12px;line-height:16px;color:var(--naowee-color-text-secondary,#646587);white-space:nowrap}
+  .naowee-pagination__input{
+    width:48px;height:32px;border:1px solid var(--naowee-color-border-default,#e7e9f3);
+    border-radius:8px;text-align:center;font:inherit;font-size:12px;font-weight:400;
+    color:var(--naowee-color-text-primary,#282834);outline:none;background:#fff;padding:4px 6px;
+  }
+  .naowee-pagination__input:focus{border-width:2px;border-color:var(--naowee-color-text-accent,#d74009);padding:3px 5px}
+  .naowee-pagination__total strong{color:var(--naowee-color-text-primary,#282834);font-weight:600}
+  .naowee-pagination__controls{display:flex;gap:6px;margin-left:8px}
+  .naowee-pagination__btn{
+    width:32px;height:32px;border:none;border-radius:8px;background:#fff3e6;cursor:pointer;
+    display:inline-flex;align-items:center;justify-content:center;
+    color:var(--naowee-color-text-accent,#d74009);transition:background .15s;flex-shrink:0;padding:0;
+  }
+  .naowee-pagination__btn:hover:not(:disabled){background:#ffdaa3}
+  .naowee-pagination__btn:disabled{opacity:.35;cursor:not-allowed;pointer-events:none}
+  .naowee-pagination__btn svg{width:16px;height:16px}
+
+  /* Table */
+  .asig-table{width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed}
+  .asig-table thead th{
+    font-family:'Inter',sans-serif;
+    font-size:11px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;
+    color:var(--naowee-color-text-secondary,#646587);
+    padding:12px 18px;text-align:left;background:#f5f6fa;border:none;
+  }
+  .asig-table thead th:first-child{border-top-left-radius:12px;border-bottom-left-radius:12px}
+  .asig-table thead th:last-child{border-top-right-radius:12px;border-bottom-right-radius:12px}
+  .asig-table tbody td{
+    padding:14px 18px;font-size:13px;vertical-align:middle;
+    border-bottom:1px solid var(--naowee-color-border-default,#e7e9f3);
+  }
+  .asig-table tbody tr{cursor:pointer;transition:background .12s}
+  .asig-table tbody tr:hover{background:#fafbfd}
+  .asig-table tbody tr:last-child td{border-bottom:none}
+  .asig-table code{font-family:'SF Mono',monospace;font-size:12px;color:var(--naowee-color-text-accent,#d74009)}
+
+  /* Column widths */
+  .asig-table th:nth-child(1),.asig-table td:nth-child(1){width:13%}
+  .asig-table th:nth-child(2),.asig-table td:nth-child(2){width:22%}
+  .asig-table th:nth-child(3),.asig-table td:nth-child(3){width:15%}
+  .asig-table th:nth-child(4),.asig-table td:nth-child(4){width:18%}
+  .asig-table th:nth-child(5),.asig-table td:nth-child(5){width:12%}
+  .asig-table th:nth-child(6),.asig-table td:nth-child(6){width:10%}
+  .asig-table th:nth-child(7),.asig-table td:nth-child(7){width:10%;text-align:right;padding-right:18px}
+
+  /* Cells */
+  .fecha-cell{font-size:12.5px;color:var(--naowee-color-text-primary,#282834)}
+  .fecha-cell__hour{font-size:11px;color:var(--naowee-color-text-secondary,#646587);margin-top:2px}
+
+  .benef-cell{display:flex;align-items:center;gap:10px;min-width:0}
+  .av-sm{
+    width:32px;height:32px;border-radius:50%;
+    display:inline-flex;align-items:center;justify-content:center;
+    font-size:11px;font-weight:700;flex-shrink:0;
+  }
+  .av-sm--purple{background:#ede5ff;color:#6d28d9}
+  .av-sm--orange{background:#fff3e6;color:#c2410c}
+  .av-sm--green{background:#e6f4e7;color:#15803d}
+  .av-sm--blue{background:#eef5ff;color:#1d4ed8}
+  .av-sm--pink{background:#ffe4ee;color:#be185d}
+  .av-sm--teal{background:#ccfbf1;color:#0f766e}
+  .benef-cell__body{min-width:0}
+  .benef-cell__name{font-weight:600;color:var(--naowee-color-text-primary,#282834);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .benef-cell__cc{font-size:11.5px;color:var(--naowee-color-text-secondary,#646587);margin-top:1px}
+
+  .prg-mini{display:flex;align-items:center;gap:10px;min-width:0}
+  .prg-mini__ico{
+    width:28px;height:28px;border-radius:8px;flex-shrink:0;
+    display:inline-flex;align-items:center;justify-content:center;
+  }
+  .prg-mini__ico svg{width:15px;height:15px}
+  .prg-mini__body{min-width:0}
+  .prg-mini__name{font-weight:600;color:var(--naowee-color-text-primary,#282834);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .prg-mini__id{font-family:'SF Mono',monospace;font-size:10.5px;color:#9c9ebf;margin-top:1px}
+
+  .op-cell{font-size:12.5px;color:var(--naowee-color-text-primary,#282834)}
+  .region-cell{font-size:12.5px;color:var(--naowee-color-text-primary,#282834)}
+
+  .tablet-foot{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:var(--naowee-color-text-secondary,#646587)}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <button class="burger-btn" onclick="document.getElementById('sidebar').classList.toggle('collapsed')" aria-label="Toggle sidebar">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="#282834" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+      <img src="shared/logos/ministerio.svg" alt="Ministerio del Deporte" class="sb-logo-img"/>
+      <div class="logo-sep"></div>
+      <img src="shared/logos/suid.png" alt="SUID" class="sb-logo-img"/>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">INCENTIVOS</div>
+      <div class="nav-row" onclick="fadeAndGo('incentivo-02-dashboard.html')">
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="11" rx="1.5"/><rect x="13" y="3" width="8" height="6" rx="1.5"/><rect x="3" y="16" width="8" height="5" rx="1.5"/><rect x="13" y="11" width="8" height="10" rx="1.5"/></svg></div>
+        <span class="lbl">Dashboard</span>
+      </div>
+      <div class="nav-row" onclick="fadeAndGo('incentivo-03-programas.html')">
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M6 7V5a1 1 0 011-1h10a1 1 0 011 1v2"/><line x1="3" y1="12" x2="21" y2="12"/></svg></div>
+        <span class="lbl">Programas</span>
+      </div>
+      <div class="nav-row" data-role="superadmin" onclick="fadeAndGo('incentivo-07-codigos.html')">
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 012-2h14a2 2 0 012 2v2a1.5 1.5 0 000 3v3a2 2 0 01-2 2H5a2 2 0 01-2-2v-3a1.5 1.5 0 000-3V8z"/><line x1="13" y1="6" x2="13" y2="9" stroke-dasharray="1.5 1.5"/><line x1="13" y1="11" x2="13" y2="13" stroke-dasharray="1.5 1.5"/><line x1="13" y1="15" x2="13" y2="18" stroke-dasharray="1.5 1.5"/></svg></div>
+        <span class="lbl">Códigos</span>
+      </div>
+      <div class="nav-row active">
+        <div class="active-bar"></div>
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d74009" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="1.5"/><circle cx="6" cy="12" r="1.5"/><circle cx="6" cy="18" r="1.5"/><line x1="6" y1="7.5" x2="6" y2="10.5"/><line x1="6" y1="13.5" x2="6" y2="16.5"/><line x1="11" y1="6" x2="20" y2="6"/><line x1="11" y1="12" x2="18" y2="12"/><line x1="11" y1="18" x2="16" y2="18"/></svg></div>
+        <span class="lbl">Historial</span>
+      </div>
+      <div class="nav-row" data-role="admin" onclick="fadeAndGo('incentivo-15-reporteria.html')">
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-5"/><circle cx="18" cy="9" r="1.5"/></svg></div>
+        <span class="lbl">Reportería</span>
+      </div>
+      <div class="nav-row" data-role="admin programa" onclick="fadeAndGo('incentivo-16-usuarios.html')">
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
+        <span class="lbl">Usuarios</span>
+      </div>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="nav-row" onclick="fadeAndGo('incentivo-01-login.html')">
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <span class="lbl">Cerrar sesión</span>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="top-header">
+      <div class="profile-switcher">
+        <div class="user-chip">
+          <div class="ava"><div class="ava-ring" style="background:#c4b5fd;color:#4c1d95">DV</div><div class="ava-dot"></div></div>
+          <div class="user-info"><span class="user-name">Doug Vargas</span><span class="user-role">Gestor de incentivos</span></div>
+          <button class="user-chip__chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>
+        </div>
+      </div>
+    </header>
+
+    <div class="page">
+
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Historial de asignaciones</h1>
+          <p class="page-sub">Registro completo de todas las entregas de incentivos. Filtra por programa, región o fecha para auditar, consolidar reportes o revertir asignaciones.</p>
+        </div>
+      </div>
+
+      <!-- KPI cards -->
+      <div class="kpi-grid">
+        <article class="kpi-card">
+          <div class="kpi-card__top">
+            <div class="kpi-card__lbl">Asignaciones totales</div>
+            <div class="kpi-card__ico kpi-card__ico--brand">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="1.5"/><circle cx="6" cy="12" r="1.5"/><circle cx="6" cy="18" r="1.5"/><line x1="6" y1="7.5" x2="6" y2="10.5"/><line x1="6" y1="13.5" x2="6" y2="16.5"/><line x1="11" y1="6" x2="20" y2="6"/><line x1="11" y1="12" x2="18" y2="12"/><line x1="11" y1="18" x2="16" y2="18"/></svg>
+            </div>
+          </div>
+          <div class="kpi-card__val" id="kpiTotal">—</div>
+          <div class="kpi-card__foot"><span>Desde el inicio de operación</span></div>
+        </article>
+
+        <article class="kpi-card">
+          <div class="kpi-card__top">
+            <div class="kpi-card__lbl">Hoy</div>
+            <div class="kpi-card__ico kpi-card__ico--positive">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+          </div>
+          <div class="kpi-card__val" id="kpiHoy">—</div>
+          <div class="kpi-card__foot">
+            <span class="kpi-trend kpi-trend--up">↑ 23%</span>
+            <span>vs. ayer</span>
+          </div>
+        </article>
+
+        <article class="kpi-card">
+          <div class="kpi-card__top">
+            <div class="kpi-card__lbl">Esta semana</div>
+            <div class="kpi-card__ico kpi-card__ico--info">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            </div>
+          </div>
+          <div class="kpi-card__val" id="kpiSemana">—</div>
+          <div class="kpi-card__foot">
+            <span class="kpi-trend kpi-trend--up">↑ 12%</span>
+            <span>vs. semana pasada</span>
+          </div>
+        </article>
+
+        <article class="kpi-card">
+          <div class="kpi-card__top">
+            <div class="kpi-card__lbl">Revertidas</div>
+            <div class="kpi-card__ico kpi-card__ico--negative">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15"/></svg>
+            </div>
+          </div>
+          <div class="kpi-card__val" id="kpiRev">—</div>
+          <div class="kpi-card__foot">
+            <span class="kpi-trend kpi-trend--neutral" id="kpiRevPct">—%</span>
+            <span>tasa de reversión</span>
+          </div>
+        </article>
+      </div>
+
+      <!-- Tablet -->
+      <section class="tablet">
+        <div class="tablet-toolbar">
+          <div class="tablet-toolbar__left">
+            <div class="naowee-searchbox naowee-searchbox--small naowee-searchbox--pill">
+              <div class="naowee-searchbox__input-wrap">
+                <span class="naowee-searchbox__icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                </span>
+                <input type="text" class="naowee-searchbox__input" placeholder="Buscar deportista, código o operador" id="searchInput"/>
+                <button type="button" class="naowee-searchbox__clear" onclick="clearSearch('searchInput')" aria-label="Limpiar">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="toolbar-dd-wrap" id="ddProgWrap">
+              <button type="button" class="toolbar-dd" onclick="toggleDD('ddProgWrap')">
+                <span id="ddProgLabel">Programa: Todos</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="toolbar-dd-menu" role="listbox" id="ddProgMenu">
+                <div class="toolbar-dd-item" role="option" aria-selected="true" data-val="all" onclick="setProg('all','Programa: Todos')">Todos los programas</div>
+              </div>
+            </div>
+
+            <div class="toolbar-dd-wrap" id="ddRegionWrap">
+              <button type="button" class="toolbar-dd" onclick="toggleDD('ddRegionWrap')">
+                <span id="ddRegionLabel">Región: Todas</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="toolbar-dd-menu" role="listbox">
+                <div class="toolbar-dd-item" role="option" aria-selected="true" data-val="all" onclick="setRegion('all','Región: Todas')">Todas las regiones</div>
+                <div class="toolbar-dd-item" role="option" data-val="Atlántico" onclick="setRegion('Atlántico','Región: Atlántico')">Atlántico</div>
+                <div class="toolbar-dd-item" role="option" data-val="Cundinamarca" onclick="setRegion('Cundinamarca','Región: Cundinamarca')">Cundinamarca</div>
+                <div class="toolbar-dd-item" role="option" data-val="Valle" onclick="setRegion('Valle','Región: Valle')">Valle del Cauca</div>
+                <div class="toolbar-dd-item" role="option" data-val="Antioquia" onclick="setRegion('Antioquia','Región: Antioquia')">Antioquia</div>
+                <div class="toolbar-dd-item" role="option" data-val="Cauca" onclick="setRegion('Cauca','Región: Cauca')">Cauca</div>
+              </div>
+            </div>
+
+            <div class="toolbar-dd-wrap" id="ddEstadoWrap">
+              <button type="button" class="toolbar-dd" onclick="toggleDD('ddEstadoWrap')">
+                <span id="ddEstadoLabel">Estado: Todos</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="toolbar-dd-menu" role="listbox">
+                <div class="toolbar-dd-item" role="option" aria-selected="true" data-val="all" onclick="setEstado('all','Estado: Todos')">Todos</div>
+                <div class="toolbar-dd-item" role="option" data-val="asig" onclick="setEstado('asig','Asignados')"><span class="dd-dot" style="background:#15803d"></span>Asignados</div>
+                <div class="toolbar-dd-item" role="option" data-val="rev" onclick="setEstado('rev','Revertidos')"><span class="dd-dot" style="background:#9e0015"></span>Revertidos</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="naowee-pagination naowee-pagination--small">
+            <div class="naowee-pagination__pages">
+              <span class="naowee-pagination__label">Página</span>
+              <input type="text" class="naowee-pagination__input" id="pagInput" value="1" inputmode="numeric"/>
+              <span class="naowee-pagination__total">de <strong id="pagTotal">1</strong></span>
+            </div>
+            <div class="naowee-pagination__controls">
+              <button type="button" class="naowee-pagination__btn" id="pagPrev" onclick="changePage(-1)" aria-label="Anterior">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+              </button>
+              <button type="button" class="naowee-pagination__btn" id="pagNext" onclick="changePage(1)" aria-label="Siguiente">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <table class="asig-table">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Deportista</th>
+              <th>Código</th>
+              <th>Programa</th>
+              <th>Operador</th>
+              <th>Región</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="asigBody"></tbody>
+        </table>
+
+        <div class="tablet-foot">
+          <div id="rowCountFoot">—</div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══ Build all asignaciones from PROGRAMS_DATA ═══ */
+const PEOPLE = ['Ana García','Pedro Martínez','Andrés García','María C. Herrera','Laura Meza','Camila Ríos','Santiago López','Valentina Pérez','Juan Rodríguez','Diana Torres','Carlos Guzmán','Natalia Ruiz','Esteban Mora','Isabella Gil','Nicolás Bernal','Jorge Ortiz','Alejandra Vargas','Felipe Cárdenas','Mariana Soto','Tomás Restrepo'];
+const OPERATORS = ['Doug Vargas','Laura Meza','Carla Suárez','Andrés Polo'];
+const REGIONS = ['Atlántico','Cundinamarca','Valle','Antioquia','Santander','Cauca','Bogotá','Nariño'];
+const AV_COLORS = ['purple','orange','green','blue','pink','teal'];
+const MONTHS = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+
+function buildAsignaciones(){
+  const all = [];
+  let globalIdx = 0;
+  window.PROGRAMS_DATA.forEach(p => {
+    if(p.codes.asig === 0) return;
+    const totalAsig = p.codes.asig + p.codes.rev;
+    for(let i = 1; i <= totalAsig; i++){
+      globalIdx++;
+      const code = `${p.id.replace('PRG-','')}-${String(i).padStart(5, '0')}`;
+      const estado = i > p.codes.asig ? 'rev' : 'asig';
+      const benefIdx = (globalIdx * 7) % PEOPLE.length;
+      const person = PEOPLE[benefIdx];
+      const initials = person.split(' ').map(s => s[0]).slice(0, 2).join('');
+      const cc = `CC ${(1000000 + globalIdx * 131).toLocaleString('es-CO').replace(/,/g, '.')}`;
+      const op = OPERATORS[globalIdx % OPERATORS.length];
+      const region = p.coverage === 'Nacional' ? REGIONS[globalIdx % REGIONS.length] : p.coverage;
+      // Derive a realistic date within program's range
+      const monthIdx = (globalIdx * 3) % 12;
+      const day = 1 + ((globalIdx * 7) % 27);
+      const hour = String(8 + (globalIdx * 3) % 11).padStart(2, '0');
+      const min = String((globalIdx * 13) % 60).padStart(2, '0');
+      const year = p.id.startsWith('PRG-2026') ? 2026 : 2025;
+      const fecha = `${String(day).padStart(2,'0')} ${MONTHS[monthIdx]} ${year}`;
+      const hora = `${hour}:${min}`;
+      all.push({
+        code, prg: p, estado,
+        person, cc, initials, avClass: AV_COLORS[globalIdx % AV_COLORS.length],
+        op, region, fecha, hora,
+        sortKey: year * 10000 + monthIdx * 100 + day
+      });
+    }
+  });
+  all.sort((a, b) => b.sortKey - a.sortKey);
+  return all;
+}
+
+const ALL = buildAsignaciones();
+const state = { prog: 'all', region: 'all', estado: 'all', search: '', page: 1, pageSize: 10 };
+
+/* ══ KPI ══ */
+function updateKPIs(){
+  const total = ALL.length;
+  const rev = ALL.filter(a => a.estado === 'rev').length;
+  // Simulated "today" count: subset of 2026 most recent
+  const hoy = Math.min(47, ALL.filter(a => a.fecha.includes('22 abr 2026')).length || 47);
+  const semana = Math.min(186, ALL.filter(a => a.fecha.includes('abr 2026')).length || 186);
+  document.getElementById('kpiTotal').textContent = total.toLocaleString('es-CO');
+  document.getElementById('kpiHoy').textContent = hoy.toLocaleString('es-CO');
+  document.getElementById('kpiSemana').textContent = semana.toLocaleString('es-CO');
+  document.getElementById('kpiRev').textContent = rev.toLocaleString('es-CO');
+  document.getElementById('kpiRevPct').textContent = `${((rev/total)*100).toFixed(2)}%`;
+}
+
+/* ══ Populate programa DD ══ */
+function populateProgDD(){
+  const menu = document.getElementById('ddProgMenu');
+  const opts = window.PROGRAMS_DATA.filter(p => p.codes.asig > 0).map(p => {
+    const short = p.name.length > 24 ? p.name.slice(0,22)+'…' : p.name;
+    return `<div class="toolbar-dd-item" role="option" data-val="${p.id}" onclick="setProg('${p.id}','Programa: ${short}')"><span class="dd-dot" style="background:${p.iconColor}"></span>${p.name}</div>`;
+  });
+  menu.insertAdjacentHTML('beforeend', opts.join(''));
+}
+
+/* ══ Toolbar dropdowns ══ */
+function toggleDD(wrapId){
+  const wrap = document.getElementById(wrapId);
+  if(!wrap) return;
+  const wasOpen = wrap.classList.contains('open');
+  document.querySelectorAll('.toolbar-dd-wrap.open').forEach(w => w.classList.remove('open'));
+  document.querySelectorAll('.toolbar-dd.open').forEach(b => b.classList.remove('open'));
+  if(!wasOpen){
+    wrap.classList.add('open');
+    wrap.querySelector('.toolbar-dd').classList.add('open');
+  }
+}
+document.addEventListener('click', e => {
+  if(!e.target.closest('.toolbar-dd-wrap')){
+    document.querySelectorAll('.toolbar-dd-wrap.open').forEach(w => w.classList.remove('open'));
+    document.querySelectorAll('.toolbar-dd.open').forEach(b => b.classList.remove('open'));
+  }
+});
+function setProg(val, label){
+  state.prog = val; state.page = 1;
+  document.getElementById('ddProgLabel').textContent = label;
+  document.querySelectorAll('#ddProgWrap .toolbar-dd-item').forEach(it => it.setAttribute('aria-selected', it.dataset.val === val ? 'true' : 'false'));
+  toggleDD('ddProgWrap'); render();
+}
+function setRegion(val, label){
+  state.region = val; state.page = 1;
+  document.getElementById('ddRegionLabel').textContent = label;
+  document.querySelectorAll('#ddRegionWrap .toolbar-dd-item').forEach(it => it.setAttribute('aria-selected', it.dataset.val === val ? 'true' : 'false'));
+  toggleDD('ddRegionWrap'); render();
+}
+function setEstado(val, label){
+  state.estado = val; state.page = 1;
+  document.getElementById('ddEstadoLabel').textContent = label;
+  document.querySelectorAll('#ddEstadoWrap .toolbar-dd-item').forEach(it => it.setAttribute('aria-selected', it.dataset.val === val ? 'true' : 'false'));
+  toggleDD('ddEstadoWrap'); render();
+}
+function clearSearch(id){
+  const inp = document.getElementById(id);
+  if(!inp) return;
+  inp.value = '';
+  inp.dispatchEvent(new Event('input', { bubbles: true }));
+  inp.focus();
+}
+
+/* ══ Filter + render ══ */
+function filtered(){
+  return ALL.filter(a => {
+    if(state.estado !== 'all' && a.estado !== state.estado) return false;
+    if(state.prog !== 'all' && a.prg.id !== state.prog) return false;
+    if(state.region !== 'all' && a.region !== state.region) return false;
+    if(state.search){
+      const q = state.search.toLowerCase();
+      const hay = `${a.person} ${a.cc} ${a.code} ${a.op}`.toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+const badges = {
+  asig: '<span class="naowee-badge naowee-badge--positive naowee-badge--quiet naowee-badge--small">Asignado</span>',
+  rev: '<span class="naowee-badge naowee-badge--negative naowee-badge--quiet naowee-badge--small">Revertido</span>'
+};
+const CAT_ICON = '<path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>';
+
+function render(){
+  const list = filtered();
+  const total = list.length;
+  const totalPages = Math.max(1, Math.ceil(total / state.pageSize));
+  if(state.page > totalPages) state.page = totalPages;
+  const start = (state.page - 1) * state.pageSize;
+  const end = Math.min(start + state.pageSize, total);
+  const slice = list.slice(start, end);
+
+  const body = document.getElementById('asigBody');
+  if(!slice.length){
+    body.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:48px;color:#9c9ebf">Sin asignaciones con estos filtros.</td></tr>`;
+  } else {
+    body.innerHTML = slice.map(a => `
+      <tr onclick="fadeAndGo('incentivo-05-programa-detalle.html?id=${a.prg.id}')">
+        <td>
+          <div class="fecha-cell">${a.fecha}</div>
+          <div class="fecha-cell__hour">${a.hora}</div>
+        </td>
+        <td>
+          <div class="benef-cell">
+            <div class="av-sm av-sm--${a.avClass}">${a.initials}</div>
+            <div class="benef-cell__body">
+              <div class="benef-cell__name">${a.person}</div>
+              <div class="benef-cell__cc">${a.cc}</div>
+            </div>
+          </div>
+        </td>
+        <td><code>${a.code}</code></td>
+        <td>
+          <div class="prg-mini">
+            <div class="prg-mini__ico" style="background:${a.prg.iconBg};color:${a.prg.iconColor}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${CAT_ICON}</svg>
+            </div>
+            <div class="prg-mini__body">
+              <div class="prg-mini__name">${a.prg.name}</div>
+              <div class="prg-mini__id">${a.prg.id}</div>
+            </div>
+          </div>
+        </td>
+        <td><span class="op-cell">${a.op}</span></td>
+        <td><span class="region-cell">${a.region}</span></td>
+        <td style="text-align:right">${badges[a.estado]}</td>
+      </tr>
+    `).join('');
+  }
+
+  document.getElementById('rowCountFoot').textContent = total === 0 ? 'Sin resultados' : `Mostrando ${start + 1}–${end} de ${total.toLocaleString('es-CO')} asignaciones`;
+  document.getElementById('pagInput').value = state.page;
+  document.getElementById('pagTotal').textContent = totalPages;
+  document.getElementById('pagPrev').disabled = state.page <= 1;
+  document.getElementById('pagNext').disabled = state.page >= totalPages;
+}
+
+function changePage(delta){
+  const total = filtered().length;
+  const totalPages = Math.max(1, Math.ceil(total / state.pageSize));
+  state.page = Math.max(1, Math.min(totalPages, state.page + delta));
+  render();
+}
+
+document.addEventListener('input', e => {
+  if(e.target.id === 'searchInput'){
+    state.search = e.target.value.trim(); state.page = 1; render();
+  }
+  if(e.target.id === 'pagInput'){
+    const v = parseInt(e.target.value, 10);
+    if(!isNaN(v)){
+      const total = filtered().length;
+      const totalPages = Math.max(1, Math.ceil(total / state.pageSize));
+      state.page = Math.max(1, Math.min(totalPages, v));
+      render();
+    }
+  }
+});
+
+updateKPIs();
+populateProgDD();
+render();
+
+function fadeAndGo(url){window.location.href=url}
+</script>
+<script src="shared/profile-switcher.js?v=20260923080917" defer></script>
+
+
+<script src="shared/footer-scroll.js" defer></script>
+<script src="shared/tour.js?v=20260923080917" defer></script>
+
+<!-- Footer flotante Naowee -->
+<div class="naowee-floating-footer" role="contentinfo" aria-label="Pie de página Naowee">
+  <img src="shared/logos/naowee.svg" alt="Naowee" class="naowee-floating-footer__logo"/>
+  <div class="naowee-floating-footer__sep"></div>
+  <span class="naowee-floating-footer__text">Todos los derechos reservados <strong>&copy; 2026</strong></span>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,422 @@
+/* ═══════════════════════════════════════════════════════════════
+   NAOWEE INCENTIVOS — Shell (sidebar + header + layout)
+   Paridad con escenarios-ux-ui-demo / digitacion.
+   Tokens globales vienen del DS CDN (v1.4.0).
+   Este archivo aporta layout + tokens locales específicos del proyecto.
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Local tokens (puente al DS v1.4.0) ── */
+  --naranja:#FF7500; --azul:#002B5B;
+  --text-primary:#282834; --text-secondary:#646587;
+  --accent:#d74009;
+  --green:#1f8923; --green-bg:#e6f4e7; --green-border:#b7dfb9;
+  --surface:#ffffff; --bg:#ffffff;
+  --border:#e7e9f3; --border-dark:#d0d4e6;
+  --blue-info:#1f78d1; --blue-bg:#eef5ff;
+  --orange-bg:#fff3e6; --orange-border:#ffbf75;
+  --red-bg:#fff0ee; --red-border:#ffc4bb;
+  --purple:#7c3aed;
+  --sidebar-w:274px; --header-h:88px;
+  --radius-sm:6px; --radius-md:8px; --radius-lg:12px; --radius-xl:20px; --radius-full:9999px;
+  --font:'Inter',sans-serif;
+
+  /* ── Sombras neutrales ── */
+  --shadow-sm:0 1px 4px rgba(0,0,0,.08);
+  --shadow-md:0 4px 16px rgba(0,0,0,.12);
+  --shadow-card:0 0 2px rgba(145,158,171,.2),0 12px 24px -4px rgba(145,158,171,.12);
+
+  /* ════════════════════════════════════════════════════════════
+     ELEVATION LOUD (naranja) — para CTAs primarios
+     Propuesta para migrar al DS: naowee-design-system
+     ════════════════════════════════════════════════════════════ */
+  --naowee-shadow-loud-xs: 0 2px 6px rgba(215,64,9,.14);
+  --naowee-shadow-loud-sm: 0 4px 12px rgba(215,64,9,.18);
+  --naowee-shadow-loud-md: 0 6px 16px rgba(215,64,9,.22);
+  --naowee-shadow-loud-lg: 0 10px 28px rgba(215,64,9,.32);
+  --naowee-shadow-loud-xl: 0 16px 40px rgba(215,64,9,.38);
+
+  /* También versión para hover de variantes naranja alternas */
+  --naowee-shadow-brand-md: 0 6px 16px rgba(255,117,0,.24);
+  --naowee-shadow-brand-lg: 0 12px 32px rgba(255,117,0,.30);
+}
+
+/* Bloque unificado de view transitions abajo del archivo (líneas ~295+) */
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:var(--naowee-font-family, var(--font));
+  background:var(--naowee-color-background-default, var(--bg));
+  color:var(--naowee-color-text-primary, var(--text-primary));
+  font-size:14px;
+}
+a{color:inherit;text-decoration:none}
+
+/* ═══════════════════════════════════════════════════════════════
+   Override DS: naowee-btn--loud hover
+   Propuesta para migrar al DS: el hover no cambia el fill,
+   solo aplica la elevation naranja (consistencia y menos "flash").
+   ═══════════════════════════════════════════════════════════════ */
+.naowee-btn--loud:hover,
+.naowee-btn--loud:focus-visible{
+  background: var(--naowee-color-interactive-fill-loud-idle);
+  box-shadow: var(--naowee-shadow-loud-md);
+}
+.naowee-btn--loud.naowee-btn--large:hover,
+.naowee-btn--loud.naowee-btn--large:focus-visible{
+  box-shadow: var(--naowee-shadow-loud-lg);
+}
+.naowee-btn--loud:active{
+  background: var(--naowee-color-interactive-fill-loud-idle);
+  box-shadow: var(--naowee-shadow-loud-xs);
+}
+
+/* SHELL */
+.shell{display:flex;height:100vh;overflow:hidden}
+
+/* ═══ SIDEBAR con logos oficiales ═══ */
+.sidebar{
+  width:var(--sidebar-w);min-width:var(--sidebar-w);
+  background:var(--surface);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;height:100vh;overflow-y:auto;
+  /* Apple-style smooth easing — más profesional que el cubic-bezier estándar */
+  transition:width .36s cubic-bezier(.32,.72,0,1),min-width .36s cubic-bezier(.32,.72,0,1);
+}
+
+.sidebar-logo{
+  height:var(--header-h);display:flex;align-items:center;gap:14px;
+  padding:0 20px;border-bottom:1px solid var(--border);flex-shrink:0;
+}
+/* Centra los logos (ministerio + sep + suid) en el espacio entre la
+   hamburguesa y el borde derecho del header del sidebar */
+.sidebar-logo .sb-logo-img:first-of-type{margin-left:auto}
+.sidebar-logo .sb-logo-img:last-of-type{margin-right:auto}
+.burger-btn{
+  background:none;border:none;cursor:pointer;padding:0;
+  display:flex;align-items:center;justify-content:center;
+  width:24px;height:24px;flex-shrink:0;
+  border-radius:var(--radius-sm);transition:background .15s,transform .2s;
+}
+.burger-btn:hover{background:rgba(0,0,0,.06)}
+.burger-btn:active{transform:scale(.9)}
+.burger-btn svg{transition:transform .3s cubic-bezier(.4,0,.2,1)}
+.sidebar.collapsed .burger-btn svg{transform:rotate(180deg)}
+
+.sb-logo-img{height:46px;width:auto;display:block;flex-shrink:0}
+.logo-sep{width:1px;height:36px;background:var(--border);flex-shrink:0}
+
+/* Fallback por si alguna pantalla vieja usa .naowee-logo */
+.naowee-logo{height:33px;flex-shrink:0}
+
+.sidebar-nav{flex:1;padding:20px 0 10px;display:flex;flex-direction:column;gap:6px}
+.nav-section{
+  font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;
+  color:#b5b9d4;padding:0 28px;line-height:16px;margin:10px 0 6px;
+}
+.nav-section:first-child{margin-top:0}
+.nav-row{
+  display:flex;align-items:center;gap:12px;height:44px;
+  padding:0 20px 0 0;border-radius:var(--radius-sm);cursor:pointer;
+  margin:0 10px;  /* respiro lateral: el hover/active no toca los bordes del sidebar */
+  transition:background .12s,padding .25s cubic-bezier(.4,0,.2,1),justify-content .25s,margin .28s cubic-bezier(.32,.72,0,1);
+  position:relative;
+}
+.nav-row:hover{background:#f5f6fa}
+.nav-row .icon{
+  width:24px;height:24px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  margin-left:28px;
+  transition:margin-left .25s cubic-bezier(.4,0,.2,1);
+}
+.nav-row .lbl{
+  flex:1;font-size:14px;font-weight:600;color:var(--text-primary);
+  white-space:nowrap;overflow:hidden;
+  max-width:200px;opacity:1;
+  /* Entrada al expandir: ancho primero, opacity con delay */
+  transition:opacity .2s ease .18s, max-width .36s cubic-bezier(.32,.72,0,1) .04s;
+}
+.nav-row .nav-arrow{
+  width:22px;height:22px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  opacity:.7;
+  transition:opacity .14s ease;
+}
+
+/* ═══ Indicador activo: barra naranja con animación de entrada ═══
+   Aparece al cargar la página (cambio de "sesión del menú") con un
+   slide+scale sutil que lo hace sentir intencional, no un pop. */
+.active-bar{
+  /* left negativo: la barra sobresale del row y queda pegada al borde
+     del sidebar, manteniendo el respiro lateral del hover */
+  position:absolute;left:-6px;top:8px;width:4px;height:28px;
+  background:var(--accent);border-radius:25px;
+  transform-origin:center;
+  animation:activeBarIn .42s cubic-bezier(.16,1,.3,1) both;
+}
+@keyframes activeBarIn{
+  0%   {opacity:0;transform:translateX(-8px) scaleY(.2)}
+  55%  {opacity:1}
+  100% {opacity:1;transform:translateX(0) scaleY(1)}
+}
+.nav-row.active{background:transparent}
+.nav-row.active:hover{background:transparent}
+.nav-row.active .lbl{color:var(--accent);transition:color .25s ease,opacity .14s ease .12s, max-width .26s cubic-bezier(.4,0,.2,1) .04s}
+.nav-row.active .icon svg path,
+.nav-row.active .icon svg rect,
+.nav-row.active .icon svg circle,
+.nav-row.active .icon svg line{stroke:var(--accent);transition:stroke .25s ease}
+
+.sidebar-bottom{padding:8px 0;border-top:1px solid var(--border)}
+
+/* ═══ Collapsed: fade sutil + hover/active como cuadrado del icono ═══
+   En vez de display:none (corte abrupto) usamos max-width:0 + opacity:0
+   para que los textos se desvanezcan suavemente antes/durante el
+   shrink del sidebar. */
+.sidebar.collapsed{width:72px;min-width:72px;overflow:hidden}
+.sidebar.collapsed .sb-logo-img,
+.sidebar.collapsed .logo-sep,
+.sidebar.collapsed .naowee-logo,
+.sidebar.collapsed .nav-section{display:none}
+.sidebar.collapsed .nav-row .lbl,
+.sidebar.collapsed .nav-row .nav-arrow{
+  max-width:0;opacity:0;pointer-events:none;margin-left:0;margin-right:0;
+  /* Salida: fade primero, luego shrink */
+  transition:opacity .14s ease, max-width .3s cubic-bezier(.32,.72,0,1) .04s;
+}
+.sidebar.collapsed .sidebar-logo{justify-content:center;padding:0}
+.sidebar.collapsed .nav-row{justify-content:center;padding:0;gap:0;background:transparent}
+.sidebar.collapsed .nav-row:hover{background:transparent}
+.sidebar.collapsed .nav-row.active:hover{background:transparent}
+.sidebar.collapsed .nav-row .icon{margin-left:0}
+
+/* Hover y activo: cuadrado de 40x40 centrado en el icono.
+   Implementado vía ::before para no alterar el flex del .icon. */
+.sidebar.collapsed .nav-row::before{
+  content:'';position:absolute;left:50%;top:50%;
+  width:40px;height:40px;border-radius:8px;
+  transform:translate(-50%,-50%);
+  background:transparent;pointer-events:none;
+  transition:background .2s cubic-bezier(.32,.72,0,1);
+  z-index:0;
+}
+.sidebar.collapsed .nav-row:hover::before{background:#f5f6fa}
+.sidebar.collapsed .nav-row.active::before{background:#fff3e6}
+.sidebar.collapsed .nav-row.active:hover::before{background:#ffe4cf}
+.sidebar.collapsed .nav-row .icon{position:relative;z-index:1}
+
+/* La barra naranja vertical no aplica en colapsado: el cuadrado accent
+   ya cumple la función de indicador activo. */
+.sidebar.collapsed .active-bar{display:none}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* ═══ TOP HEADER ═══ */
+.top-header{
+  height:var(--header-h);background:var(--surface);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:flex-end;gap:16px;padding:0 24px;flex-shrink:0;
+  /* Crea stacking context por encima de .page para que el dropdown del perfil
+     no quede debajo de botones/contenido de la página */
+  position:relative;z-index:20;
+}
+
+/* ═══ Profile switcher ═══ */
+.profile-switcher{position:relative}
+.user-chip{
+  display:flex;align-items:center;gap:10px;
+  border:1px solid var(--border);border-radius:var(--radius-full);
+  padding:6px 8px 6px 6px;cursor:pointer;background:#fff;
+  transition:border-color .15s,box-shadow .15s;
+}
+.user-chip:hover{border-color:var(--border-dark)}
+.ava{position:relative;flex-shrink:0}
+.ava-ring{
+  width:34px;height:34px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;
+}
+.ava-dot{
+  position:absolute;bottom:-1px;right:-1px;width:12px;height:12px;
+  background:var(--green);border:2px solid #fff;border-radius:50%;
+}
+.user-info{display:flex;flex-direction:column;gap:1px;min-width:0}
+.user-name{
+  font-size:13px;font-weight:700;color:var(--text-primary);
+  max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.user-role{
+  font-size:11px;color:var(--text-secondary);
+  max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.user-chip__chevron{
+  display:flex;align-items:center;justify-content:center;
+  width:24px;height:24px;border-radius:6px;
+  background:transparent;border:none;cursor:pointer;
+  color:var(--text-secondary);flex-shrink:0;margin-left:4px;
+  transition:background .15s,color .15s;
+}
+.user-chip__chevron:hover{background:#FFEDC7;color:var(--accent)}
+.user-chip__chevron svg{width:14px;height:14px;transition:transform .2s ease}
+.profile-switcher.open .user-chip__chevron svg{transform:rotate(180deg)}
+
+.profile-dd{
+  position:absolute;top:calc(100% + 8px);right:0;z-index:100;
+  width:240px;background:#fff;
+  border:1px solid var(--border);border-radius:12px;
+  box-shadow:0 8px 24px rgba(40,40,52,.12);
+  opacity:0;transform:translateY(-6px);pointer-events:none;
+  transition:opacity .2s,transform .2s;padding:6px;
+}
+.profile-switcher.open .profile-dd{opacity:1;transform:translateY(0);pointer-events:auto}
+.profile-dd__label{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#b5b9d4;padding:8px 10px 6px}
+.profile-dd__item{
+  display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;
+  font-size:13px;font-weight:500;color:var(--text-primary);
+  transition:background .12s;border-radius:8px;
+}
+.profile-dd__item:hover{background:#f5f6fa}
+.profile-dd__item.active{background:#FFEDC7;color:var(--accent);font-weight:700}
+.profile-dd__item .dd-check{width:16px;height:16px;flex-shrink:0;opacity:0;margin-left:auto}
+.profile-dd__item.active .dd-check{opacity:1;color:var(--accent)}
+.profile-dd__item .role-meta{display:flex;flex-direction:column;gap:2px;min-width:0}
+.profile-dd__item .role-meta small{font-size:11px;color:var(--text-secondary);font-weight:500}
+
+/* PAGE */
+.page{flex:1;overflow-y:auto;overflow-x:hidden;padding:28px 32px 72px}
+
+/* ═══ FOOTER FLOTANTE NAOWEE (paridad con escenarios/digitacion) ═══
+   Usa el componente .naowee-floating-footer del DS si está disponible,
+   con fallback local por si falla el CDN. */
+/* ═══ Metric / summary cards — diseño unificado ═══
+   Aplica a .kpi-card y .sum-card en todas las páginas.
+   Estado idle = elevation suave, sin borde. NO hover (estado fijo).
+   Anula los hovers locales que cada página declaraba con transform/shadow. */
+.kpi-card,
+.sum-card{
+  border:none !important;
+  box-shadow:
+    0 1px 3px rgba(145,158,171,.08),
+    0 6px 16px rgba(145,158,171,.10) !important;
+  transform:none !important;
+  transition:none !important;
+}
+.kpi-card:hover,
+.sum-card:hover{
+  transform:none !important;
+  box-shadow:
+    0 1px 3px rgba(145,158,171,.08),
+    0 6px 16px rgba(145,158,171,.10) !important;
+}
+
+.naowee-floating-footer{
+  position:fixed;bottom:14px;right:20px;z-index:50;
+  display:inline-flex;align-items:center;gap:10px;
+  padding:8px 14px;background:#fff;
+  border:1px solid var(--border);border-radius:9999px;
+  box-shadow:0 4px 12px rgba(40,40,52,.06);
+  font-size:11.5px;color:var(--text-secondary);
+  pointer-events:auto;
+  transition:opacity .25s ease, transform .25s ease;
+}
+.naowee-floating-footer.is-hidden{
+  opacity:0;transform:translateY(20px);pointer-events:none;
+}
+.naowee-floating-footer__logo{height:18px;width:auto;display:block}
+.naowee-floating-footer__sep{
+  width:1px;height:14px;background:var(--border);flex-shrink:0;
+}
+.naowee-floating-footer__text{font-weight:500;line-height:1}
+.naowee-floating-footer__text strong{color:var(--text-primary);font-weight:700}
+.naowee-floating-footer__ver{
+  font-weight:700;line-height:1;white-space:nowrap;
+  color:var(--accent);text-decoration:none;
+}
+.naowee-floating-footer__ver:hover,
+.naowee-floating-footer__ver:focus-visible{text-decoration:underline;outline:none}
+.page-title{font-size:24px;font-weight:700;color:var(--text-primary);margin-bottom:4px}
+.page-sub{font-size:13px;color:var(--text-secondary);margin-bottom:24px}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .sidebar{width:72px;min-width:72px;overflow:hidden}
+  .sidebar .sb-logo-img,
+  .sidebar .logo-sep,
+  .sidebar .naowee-logo,
+  .sidebar .lbl,
+  .sidebar .nav-arrow,
+  .sidebar .nav-section{display:none}
+  .sidebar .sidebar-logo{justify-content:center;padding:0}
+  .sidebar .nav-row{justify-content:center;padding:0}
+  .sidebar .nav-row .icon{margin-left:0}
+  .user-info{display:none}
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CROSS-DOCUMENT VIEW TRANSITIONS (MPA) — bloque unificado
+   Sidebar / top-header / logo / floating-footer → quedan fijos.
+   .active-bar → se desliza suave entre items del menú.
+   Todo lo demás (contenido) → fade in/out SIN slide (puro opacity).
+   Soporte: Chrome/Edge 126+, Safari 18+. Sin soporte → navegación
+   normal sin transición.
+   ══════════════════════════════════════════════════════════════ */
+
+@view-transition { navigation: auto; }
+
+/* Elementos persistentes entre páginas (morph, no fade) */
+.sidebar                 { view-transition-name: shell-sidebar; }
+.sidebar-logo            { view-transition-name: shell-sidebar-logo; }
+.top-header              { view-transition-name: shell-top-header; }
+.naowee-floating-footer  { view-transition-name: shell-footer; }
+
+/* Indicador de menú activo — el que se desliza smooth */
+.active-bar { view-transition-name: shell-nav-indicator; }
+
+/* Logo y footer: swap instantáneo (idénticos entre páginas) */
+::view-transition-old(shell-sidebar-logo),
+::view-transition-new(shell-sidebar-logo),
+::view-transition-old(shell-top-header),
+::view-transition-new(shell-top-header),
+::view-transition-old(shell-footer),
+::view-transition-new(shell-footer){
+  animation: none;
+}
+
+/* Sidebar: crossfade MUY corto (120ms) → cubre el cambio de color de los
+   iconos activos rápidamente. El active-bar sigue slidando encima por más
+   tiempo y queda como el foco visual principal. */
+::view-transition-old(shell-sidebar){
+  animation: 120ms ease-out both shell-fade-out;
+}
+::view-transition-new(shell-sidebar){
+  animation: 120ms ease-out both shell-fade-in;
+}
+
+/* Barra naranja del menú: SOLO slide (sin fade in/out del old/new).
+   El slide se ve continuo desde el primer frame hasta el último.
+   z-index:5 asegura que la barra queda encima del crossfade del sidebar. */
+::view-transition-old(shell-nav-indicator),
+::view-transition-new(shell-nav-indicator){
+  animation: none;
+}
+::view-transition-group(shell-nav-indicator){
+  animation-duration: 360ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 5;
+}
+
+/* Resto del contenido (incluye .page, .page-header): puro fade, sin slide.
+   El new arranca cuando el old ya terminó → sin superposición de contenido. */
+::view-transition-old(root){
+  animation: 150ms cubic-bezier(0.4, 0, 0.2, 1) both shell-fade-out;
+}
+::view-transition-new(root){
+  animation: 210ms 150ms cubic-bezier(0.4, 0, 0.2, 1) both shell-fade-in;
+}
+@keyframes shell-fade-out { to   { opacity: 0 } }
+@keyframes shell-fade-in  { from { opacity: 0 } }
+
+/* Reduced motion → sin animación */
+@media (prefers-reduced-motion: reduce){
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*){ animation-duration: 1ms !important; }
+}
+
