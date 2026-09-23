@@ -597,7 +597,7 @@ function fadeAndGo(url){window.location.href=url}
 <script src="shared/programs-data.js?v=20260922191536"></script>
 <script src="shared/programa-wizard.js?v=20260922192454" defer></script>
 
-<script src="shared/profile-switcher.js?v=role-7" defer></script>
+<script src="shared/profile-switcher.js?v=20260922193617" defer></script>
 <script>
 /* ═══ Dashboard según rol ═══
    - superadmin / admin: agregados sobre todos los programas.
@@ -646,13 +646,12 @@ window.onRoleApplied = function(role){
   const prgTitle = document.getElementById('prgMiniTitle');
   const prgSub   = document.getElementById('prgMiniSub');
   if(allowed){
-    const p = programs[0];
-    const pName = p ? p.name : allowed[0];
-    const scope = r.scopeLabel || (p && p.event) || '';
-    const label = scope && scope !== pName ? `${scope} · ${pName}` : pName;
-    if(sub) sub.innerHTML = `Programa asignado: <strong>${label}</strong> (${allowed[0]}). Inventario, ejecución y asignaciones de este programa.`;
-    if(prgTitle) prgTitle.textContent = 'Mi programa';
-    if(prgSub) prgSub.textContent = `${scope} · ${allowed[0]}`;
+    const names = programs.map(p => p.name);
+    if(sub) sub.innerHTML = names.length === 1
+      ? `Programa a tu cargo: <strong>${names[0]}</strong> (${allowed[0]}). Inventario, ejecución y asignaciones de este programa.`
+      : `Programas a tu cargo: <strong>${names.length}</strong> (${names.join(', ')}). Inventario, ejecución y asignaciones de esos programas.`;
+    if(prgTitle) prgTitle.textContent = names.length === 1 ? 'Mi programa' : 'Mis programas';
+    if(prgSub) prgSub.textContent = `${names.length} programa${names.length === 1 ? '' : 's'} a cargo`;
   } else {
     if(sub) sub.textContent = role === 'superadmin'
       ? 'Acceso global al módulo: inventario, ejecución y asignaciones de todos los programas.'

@@ -11,6 +11,8 @@
 <link rel="stylesheet" href="shared/programa-wizard.css?v=20260922192454"/>
 
 <style>
+  /* Los componentes fijan display; el atributo hidden debe ganar siempre. */
+  [hidden]{display:none !important}
   /* SOLO DEMO · botón Reiniciar demo */
   .demo-reset{
     display:inline-flex;align-items:center;gap:6px;cursor:pointer;
@@ -259,7 +261,7 @@
     </div>
     <nav class="sidebar-nav">
       <div class="nav-section">INCENTIVOS</div>
-      <div class="nav-row" data-role="admin" onclick="fadeAndGo('incentivo-02-dashboard.html')">
+      <div class="nav-row" data-role="admin programa" onclick="fadeAndGo('incentivo-02-dashboard.html')">
         <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="11" rx="1.5"/><rect x="13" y="3" width="8" height="6" rx="1.5"/><rect x="3" y="16" width="8" height="5" rx="1.5"/><rect x="13" y="11" width="8" height="10" rx="1.5"/></svg></div>
         <span class="lbl">Dashboard</span>
       </div>
@@ -326,7 +328,7 @@
            rol activo es 'programa'. Se llena dinámicamente con
            hydrateProgramHero() en init.
            ═════════════════════════════════════════════════════════════ -->
-      <section class="prog-hero" data-role="programa" id="progHero" hidden>
+      <section class="prog-hero" data-role="legacy" id="progHero" hidden>
         <header class="prog-hero__head">
           <div class="prog-hero__ico" id="progHeroIco" style="background:#fff3e6;color:#d74009"></div>
           <div class="prog-hero__main">
@@ -374,7 +376,7 @@
       <!-- Tablet: toolbar + table + pagination — sólo para admin (gestor
            de incentivos). Para gestor de programa se reemplaza por el
            prog-hero arriba. -->
-      <section class="tablet" data-role="admin">
+      <section class="tablet" data-role="admin programa">
         <div class="tablet-toolbar">
           <div class="tablet-toolbar__left">
             <div class="naowee-searchbox naowee-searchbox--small naowee-searchbox--pill">
@@ -571,11 +573,13 @@ function applyRoleHeader(){
   const sub   = document.getElementById('pageSub');
   const navLbl = document.getElementById('navProgramasLbl');
   const hero   = document.getElementById('progHero');
+  const gestorDD = document.getElementById('ddGestorWrap');
+  if(gestorDD) gestorDD.hidden = role === 'programa'; // es él mismo
+  if(hero) hero.hidden = true; // la tarjeta única se reemplazó por la lista
   if(role === 'programa'){
-    if(title) title.textContent = 'Mi programa';
-    if(sub)   sub.textContent   = 'Programa que tienes asignado. Aquí gestionas su inventario, condiciones y asignaciones.';
-    if(navLbl) navLbl.textContent = 'Mi programa';
-    if(hero){ hero.hidden = false; hydrateProgramHero(); }
+    if(title) title.textContent = 'Mis programas';
+    if(sub)   sub.textContent   = 'Los programas donde eres gestor de programa. Desde cada uno gestionas su equipo, incentivos, condiciones y códigos.';
+    if(navLbl) navLbl.textContent = 'Mis programas';
   } else {
     if(title) title.textContent = 'Programas de incentivos';
     if(sub)   sub.textContent   = 'Administra todos los programas parametrizados. Cada programa tiene su propio rubro, condiciones de elegibilidad e inventario de códigos.';
@@ -788,7 +792,7 @@ setTimeout(() => { applyRoleHeader(); renderTeamFilters(); renderRows(); }, 0);
 function fadeAndGo(url){window.location.href=url}
 </script>
 <script src="shared/programa-wizard.js?v=20260922192454" defer></script>
-<script src="shared/profile-switcher.js?v=role-7" defer></script>
+<script src="shared/profile-switcher.js?v=20260922193617" defer></script>
 
 <script src="shared/footer-scroll.js" defer></script>
 <script src="shared/tour.js" defer></script>

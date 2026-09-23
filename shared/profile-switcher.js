@@ -25,11 +25,11 @@
     admin:    { name:'Doug Vargas',     label:'Gestor de incentivos', initials:'DV', bg:'#c4b5fd', fg:'#4c1d95', meta:'Parametriza y audita' },
     operador: { name:'Doug Vargas',     label:'Operador',             initials:'DV', bg:'#ffdfb5', fg:'#92400e', meta:'Asigna incentivos en campo' },
     gestor:   { name:'Doug Vargas',     label:'Gestor',               initials:'DV', bg:'#ffdfb5', fg:'#92400e', meta:'Asigna y revierte incentivos' },
-    // Gestor de programa: sólo ve el(los) programa(s) que tiene asignado(s).
-    // Persona ficticia distinta de Doug para diferenciar visualmente la vista.
-    programa: { name:'Camila Restrepo', label:'Gestor de programa',   initials:'CR', bg:'#bfdbfe', fg:'#1e3a8a', meta:'Solo su programa · Juegos Intercolegiados 2026',
-                assignedPrograms: ['PRG-2026-010'],
-                scopeLabel: 'Juegos Intercolegiados 2026' }
+    // Gestor de programa: ve los programas donde figura como gestor en el
+    // equipo del programa (team.gestorKey). Elkin Ávila gestiona varios en
+    // los datos de ejemplo.
+    programa: { name:'Elkin Ávila',     label:'Gestor de programa',   initials:'EA', bg:'#bfdbfe', fg:'#1e3a8a', meta:'Solo los programas que gestiona',
+                gestorKey: 'elkin.avila' }
   };
 
   // Qué roles muestra el dropdown por default cuando se auto-inyecta.
@@ -54,16 +54,18 @@
       ring.style.color = r.fg;
     });
     // Actualiza la etiqueta del rol en el chip
+    const assigned = getRoleAssignments(role);
+    const scopeLabel = r.scopeLabel || (assigned ? `${assigned.length} programa${assigned.length === 1 ? '' : 's'} a cargo` : '');
     document.querySelectorAll('.user-chip .user-role').forEach(lbl => {
       lbl.textContent = r.label;
-      lbl.title = r.scopeLabel ? `${r.label} · ${r.scopeLabel}` : r.label;
+      lbl.title = scopeLabel ? `${r.label} · ${scopeLabel}` : r.label;
     });
     // Alcance del rol (ej: programa asignado) como 3a línea del chip.
     document.querySelectorAll('.user-chip .user-info').forEach(info => {
       let sc = info.querySelector('.user-scope');
-      if(r.scopeLabel){
+      if(scopeLabel){
         if(!sc){ sc = document.createElement('span'); sc.className = 'user-scope'; info.appendChild(sc); }
-        sc.textContent = r.scopeLabel;
+        sc.textContent = scopeLabel;
       } else if(sc){ sc.remove(); }
     });
     // Actualiza el nombre del usuario (varía entre Doug y Camila según rol)
@@ -119,25 +121,27 @@
     const onOperadorPage = OPERATOR_PAGES.test(path);
     const onAdminPage    = ADMIN_PAGES.test(path);
     const onProgramaPage = PROGRAMA_PAGES.test(path);
-
-    if(role === 'operador' && !onOperadorPage){
-      setTimeout(() => { window.location.href = OPERATOR_HOME; }, 180);
-    } else if(role === 'programa' && !onProgramaPage){
-      // Gestor de programa: redirijo a su lista filtrada (PRG asignado).
-      setTimeout(() => { window.location.href = PROGRAMA_HOME; }, 180);
-    } else if((role === 'superadmin' || role === 'admin' || role === 'gestor') && !onAdminPage){
-      // Gestor de incentivos (admin) vive en el dashboard; si estoy en
-      // pages del operador, redirijo.
-      setTimeout(() => { window.location.href = ADMIN_HOME; }, 180);
-    }
+    /* Cambiar de rol siempre refresca la vista: si la página actual le sirve
+       al rol nuevo se recarga (cada página pinta según el rol al cargar);
+       si no, se va al inicio de ese rol. */
+    let target = null;
+    if(role === 'operador' && !onOperadorPage) target = OPERATOR_HOME;
+    else if(role === 'programa' && !onProgramaPage) target = PROGRAMA_HOME;
+    else if((role === 'superadmin' || role === 'admin' || role === 'gestor') && !onAdminPage) target = ADMIN_HOME;
+    setTimeout(() => { if(target) window.location.href = target; else window.location.reload(); }, 180);
   }
 
   /* Helper: devuelve los IDs de programas asignados al rol actual.
      Retorna null si el rol no tiene restricciones (ve todo). Las páginas
      que renderizan listas pueden filtrar contra este array. */
-  function getRoleAssignments(){
-    const r = ROLES[currentRole()];
-    return (r && Array.isArray(r.assignedPrograms)) ? r.assignedPrograms.slice() : null;
+  function getRoleAssignments(roleKey){
+    const r = ROLES[roleKey || currentRole()];
+    if(!r) return null;
+    if(r.gestorKey){
+      const data = window.PROGRAMS_DATA || [];
+      return data.filter(p => p.team && p.team.gestorKey === r.gestorKey).map(p => p.id);
+    }
+    return Array.isArray(r.assignedPrograms) ? r.assignedPrograms.slice() : null;
   }
 
   function toggleProfileDD(ev){
