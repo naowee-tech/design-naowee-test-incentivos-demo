@@ -8,9 +8,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.4.0/dist/design-system.css"/>
 <link rel="stylesheet" href="shared/shell.css?v=20260922200101"/>
-<script src="shared/programs-data.js?v=20260922202606"></script>
-<script src="shared/operador-entregas.js?v=20260922202606"></script>
-<script src="shared/operador-programa.js?v=20260922202606"></script>
+<script src="shared/programs-data.js?v=20260922203322"></script>
+<script src="shared/operador-entregas.js?v=20260922203322"></script>
+<script src="shared/operador-programa.js?v=20260922203322"></script>
 
 <style>
   .page-header{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:24px;flex-wrap:wrap}
@@ -53,7 +53,10 @@
   }
 
   /* KPI cards */
-  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+  .kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
+  .kpi-card[role="button"]{cursor:pointer;transition:border-color .15s,box-shadow .15s}
+  .kpi-card[role="button"]:hover{border-color:#f5b98a}
+  .kpi-card.is-active{border-color:var(--naowee-color-text-accent,#d74009);box-shadow:0 0 0 1px var(--naowee-color-text-accent,#d74009)}
   @media(max-width:1100px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
   .kpi-card{
     background:#fff;border:1px solid var(--naowee-color-border-default,#e7e9f3);
@@ -248,6 +251,13 @@
   .tablet-foot{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:var(--naowee-color-text-secondary,#646587)}
   .closed-tag{display:inline-flex;align-items:center;font-size:11.5px;font-weight:600;color:#646587;background:#f1f1f6;border-radius:999px;padding:3px 9px;white-space:nowrap}
   .dd-sub{font-size:11px;color:#9c9ebf;margin-left:6px}
+  .row-actions{align-items:center;flex-wrap:nowrap}
+  .row-chev{color:#9c9ebf;display:inline-flex;margin-left:4px}
+  .asig-table tbody tr{cursor:pointer}
+  .asig-table tbody tr:hover .row-chev{color:var(--naowee-color-text-accent,#d74009)}
+  .code-hit{display:inline-block;margin-top:4px;font-family:'SF Mono',ui-monospace,monospace;font-size:11px;font-weight:600;background:#fff3e6;color:#b45309;border-radius:6px;padding:2px 7px}
+  .dl-item dd.mono{font-family:'SF Mono',ui-monospace,monospace}
+  .tablet-toolbar .naowee-searchbox{min-width:320px}
 </style>
 </head>
 <body>
@@ -300,30 +310,24 @@
       <div class="page-header">
         <div>
           <h1 class="page-title">Mis asignaciones</h1>
-          <p class="page-sub">Incentivos que has entregado en campo. Desde aquí puedes ver el detalle, subir evidencias pendientes, consultar un código o revertir una asignación (queda en el historial).</p>
-        </div>
-        <div class="page-header__actions">
-          <button id="btnConsultCode" class="naowee-btn naowee-btn--quiet naowee-btn--large" onclick="openModal('codeModal');setTimeout(()=>document.getElementById('codeQuery').focus(),50)">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="9" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="15" y2="20"/><line x1="4" y1="9" x2="20" y2="9"/><line x1="3" y1="15" x2="19" y2="15"/></svg>
-            Consultar código
-          </button>
+          <p class="page-sub">Tus entregas en campo. Sube las evidencias pendientes o revierte una entrega errada.</p>
         </div>
       </div>
 
       <!-- KPI cards -->
       <div class="kpi-grid">
-        <article class="kpi-card">
+        <article class="kpi-card" role="button" tabindex="0">
           <div class="kpi-card__top">
             <div class="kpi-card__lbl">Incentivos entregados</div>
             <div class="kpi-card__ico kpi-card__ico--brand">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             </div>
           </div>
-          <div class="kpi-card__val" id="kpiTotal">—</div>
+          <div class="kpi-card__val" id="kpiTotal" data-kpi="all">—</div>
           <div class="kpi-card__foot"><span>Acumulado en mi gestión</span></div>
         </article>
 
-        <article class="kpi-card">
+        <article class="kpi-card" role="button" tabindex="0">
           <div class="kpi-card__top">
             <div class="kpi-card__lbl">Evidencia pendiente</div>
             <div class="kpi-card__ico kpi-card__ico--caution">
@@ -335,18 +339,8 @@
           <div class="kpi-card__foot"><span>Entregas sin foto de evidencia</span></div>
         </article>
 
-        <article class="kpi-card">
-          <div class="kpi-card__top">
-            <div class="kpi-card__lbl">Beneficiarios únicos</div>
-            <div class="kpi-card__ico kpi-card__ico--info">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            </div>
-          </div>
-          <div class="kpi-card__val" id="kpiUnicos">—</div>
-          <div class="kpi-card__foot"><span>Personas distintas alcanzadas</span></div>
-        </article>
 
-        <article class="kpi-card">
+        <article class="kpi-card" role="button" tabindex="0">
           <div class="kpi-card__top">
             <div class="kpi-card__lbl">Revertidas</div>
             <div class="kpi-card__ico kpi-card__ico--negative">
@@ -354,10 +348,7 @@
             </div>
           </div>
           <div class="kpi-card__val" id="kpiRev">—</div>
-          <div class="kpi-card__foot">
-            <span class="kpi-trend kpi-trend--neutral" id="kpiRevPct">—%</span>
-            <span>tasa personal</span>
-          </div>
+          <div class="kpi-card__foot"><span>Entregas deshechas por error</span></div>
         </article>
       </div>
 
@@ -370,7 +361,7 @@
                 <span class="naowee-searchbox__icon">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                 </span>
-                <input type="text" class="naowee-searchbox__input" placeholder="Buscar beneficiario, documento o incentivo" id="searchInput"/>
+                <input type="text" class="naowee-searchbox__input" placeholder="Buscar beneficiario, documento, incentivo o código" id="searchInput"/>
                 <button type="button" class="naowee-searchbox__clear" onclick="clearSearch('searchInput')" aria-label="Limpiar">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
@@ -431,7 +422,7 @@
               <th>Beneficiario</th>
               <th>Incentivo</th>
               <th>Estado</th>
-              <th>Acciones</th>
+              <th aria-label="Acciones"></th>
             </tr>
           </thead>
           <tbody id="asigBody"></tbody>
@@ -494,28 +485,6 @@
   </div>
 </div>
 
-<!-- ═══ Modal: consultar código ═══ -->
-<div class="naowee-modal-overlay" id="codeModal" aria-hidden="true">
-  <div class="naowee-modal" role="dialog" aria-modal="true" aria-labelledby="cdTitle">
-    <div class="naowee-modal__header">
-      <div class="naowee-modal__title-group">
-        <h2 class="naowee-modal__title" id="cdTitle">Consultar código</h2>
-        <p class="naowee-modal__subtitle">Verifica si un código del Bono Deportivo está disponible o ya fue asignado.</p>
-      </div>
-      <button class="naowee-modal__dismiss" aria-label="Cerrar" onclick="closeModal('codeModal')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-    </div>
-    <div class="naowee-modal__body">
-      <div class="naowee-textfield">
-        <label class="naowee-textfield__label" for="codeQuery">Código</label>
-        <div class="naowee-textfield__input-wrap"><input class="naowee-textfield__input" id="codeQuery" type="text" placeholder="Ej. 2026BD-00043" oninput="consultCode()" onkeydown="if(event.key==='Enter')consultCode()"/></div>
-      </div>
-      <div class="code-result" id="codeResult"></div>
-    </div>
-    <div class="naowee-modal__footer naowee-modal__footer--end">
-      <button class="naowee-btn naowee-btn--mute naowee-btn--medium" onclick="closeModal('codeModal')">Cerrar</button>
-    </div>
-  </div>
-</div>
 
 <script>
 /* ═══════════════════════════════════════════════════════════════
@@ -589,9 +558,8 @@ function updateKPIs(){
   const rev = base.length - act.length;
   document.getElementById('kpiTotal').textContent = act.length.toLocaleString('es-CO');
   document.getElementById('kpiPend').textContent = act.filter(a => !a.evidence).length.toLocaleString('es-CO');
-  document.getElementById('kpiUnicos').textContent = new Set(act.map(a => a.doc)).size.toLocaleString('es-CO');
   document.getElementById('kpiRev').textContent = rev.toLocaleString('es-CO');
-  document.getElementById('kpiRevPct').textContent = base.length ? `${((rev/base.length)*100).toFixed(1)}%` : '0%';
+  syncKpiActive();
 }
 
 /* ═════ Dropdowns toolbar ═════ */
@@ -609,11 +577,32 @@ document.addEventListener('click', e => {
     document.querySelectorAll('.toolbar-dd.open').forEach(b => b.classList.remove('open'));
   }
 });
+/* Las tarjetas filtran la tabla y quedan sincronizadas con el filtro de estado. */
+const ESTADO_LBL = { all:'Estado: Todos', asig:'Entregados', pend:'Evidencia pendiente', rev:'Revertidos' };
+function applyEstado(val){
+  state.estado = val; state.page = 1;
+  document.getElementById('ddEstadoLabel').textContent = ESTADO_LBL[val];
+  document.querySelectorAll('#ddEstadoWrap .toolbar-dd-item').forEach(it => it.setAttribute('aria-selected', it.dataset.val === val ? 'true' : 'false'));
+  syncKpiActive(); render();
+}
+function syncKpiActive(){
+  const map = { kpiTotal:'all', kpiPend:'pend', kpiRev:'rev' };
+  Object.entries(map).forEach(([id, v]) => { const c = document.getElementById(id)?.closest('.kpi-card'); if(c) c.classList.toggle('is-active', v !== 'all' && state.estado === v); });
+}
+(function wireKpis(){
+  const map = { kpiTotal:'all', kpiPend:'pend', kpiRev:'rev' };
+  Object.entries(map).forEach(([id, v]) => {
+    const c = document.getElementById(id)?.closest('.kpi-card'); if(!c) return;
+    const go = () => applyEstado(state.estado === v ? 'all' : v);
+    c.addEventListener('click', go);
+    c.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); go(); } });
+  });
+})();
 function setEstado(val, label){
   state.estado = val; state.page = 1;
   document.getElementById('ddEstadoLabel').textContent = label;
   document.querySelectorAll('#ddEstadoWrap .toolbar-dd-item').forEach(it => it.setAttribute('aria-selected', it.dataset.val === val ? 'true' : 'false'));
-  toggleDD('ddEstadoWrap'); render();
+  toggleDD('ddEstadoWrap'); syncKpiActive(); render();
 }
 function setPeriod(val, el){
   state.period = val; state.page = 1;
@@ -652,7 +641,7 @@ function filtered(){
     if(!inPeriod(a)) return false;
     if(state.search){
       const q = state.search.toLowerCase();
-      if(!`${a.name} ${a.doc} ${a.incName} ${a.prgName}`.toLowerCase().includes(q)) return false;
+      if(!`${a.name} ${a.doc} ${a.incName} ${a.prgName} ${a.code || ''}`.toLowerCase().includes(q)) return false;
     }
     return true;
   });
@@ -666,13 +655,18 @@ const BADGE = {
 const IC_UP = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>';
 const IC_REV = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>';
 
+/* Una sola acción visible: subir la evidencia que falta. El resto (detalle, revertir)
+   está en el detalle, que se abre con clic en la fila. */
+const IC_CHEV = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
 function rowActions(a){
-  const btns = [];
-  if(a.prgClosed) return `<div class="row-actions"><span class="closed-tag" title="El programa está cerrado: sus entregas son solo de consulta">Solo consulta</span><button type="button" class="naowee-btn naowee-btn--link naowee-btn--small" onclick="event.stopPropagation();openDetail('${a.id}')">Ver detalle</button></div>`;
-  if(a.view === 'pend') btns.push(`<button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--small" onclick="event.stopPropagation();goUploadEvidence('${a.id}')">${IC_UP} Subir evidencia</button>`);
-  if(a.estado !== 'rev') btns.push(`<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small" onclick="event.stopPropagation();openRevert('${a.id}')">${IC_REV} Revertir</button>`);
-  btns.push(`<button type="button" class="naowee-btn naowee-btn--link naowee-btn--small" onclick="event.stopPropagation();openDetail('${a.id}')">Ver detalle</button>`);
-  return `<div class="row-actions">${btns.join('')}</div>`;
+  const up = (!a.prgClosed && a.view === 'pend') ? `<button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--small" onclick="event.stopPropagation();goUploadEvidence('${a.id}')">${IC_UP} Subir evidencia</button>` : '';
+  const closed = a.prgClosed ? '<span class="closed-tag" title="El programa está cerrado: sus entregas son solo de consulta">Solo consulta</span>' : '';
+  return `<div class="row-actions">${up}${closed}<span class="row-chev" aria-hidden="true">${IC_CHEV}</span></div>`;
+}
+/* Buscar por código: la tabla no muestra códigos; si la búsqueda coincide con uno, se ve en esa fila. */
+function codeHit(a){
+  const q = (state.search || '').toLowerCase();
+  return q.length >= 3 && a.code && a.code.toLowerCase().includes(q);
 }
 
 function render(){
@@ -703,7 +697,7 @@ function render(){
         <td>
           <div class="prg-mini">
             <div class="prg-mini__ico" style="background:${inc.bg};color:${inc.fg}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${inc.path}</svg></div>
-            <div class="prg-mini__body"><div class="prg-mini__name">${a.incName}</div><div class="prg-mini__id">${a.prgName}${a.prgClosed ? ' · cerrado' : ''}</div></div>
+            <div class="prg-mini__body"><div class="prg-mini__name">${a.incName}</div><div class="prg-mini__id">${a.prgName}${a.prgClosed ? ' · cerrado' : ''}</div>${codeHit(a) ? `<span class="code-hit">Código ${a.code}</span>` : ''}</div>
           </div>
         </td>
         <td>${BADGE[a.view]}${a.view === 'rev' && a.motivo ? `<div class="estado-sub" title="${a.motivo}">${a.motivo}</div>` : ''}</td>
@@ -752,6 +746,7 @@ function openDetail(id){
       <div class="dl-item"><dt>Programa</dt><dd>${a.prgName}${a.prgClosed ? ' <span class="closed-tag">Cerrado · solo consulta</span>' : ''}</dd></div>
       <div class="dl-item"><dt>Estado</dt><dd>${BADGE[a.view]}</dd></div>
       <div class="dl-item"><dt>Departamento</dt><dd>${a.zone || '—'}</dd></div>
+      ${a.code ? `<div class="dl-item"><dt>Código</dt><dd class="mono">${a.code}</dd></div>` : ''}
       ${a.obs || a.evidenceObs ? `<div class="dl-item dl-item--full"><dt>Observaciones</dt><dd>${a.obs || a.evidenceObs}</dd></div>` : ''}
     </dl>
     <p class="tl-title">Historial</p>
@@ -814,37 +809,9 @@ function doRevert(){
   sessionStorage.setItem('revert-complete', JSON.stringify({
     from: 'mis-asignaciones', name: a.name, initials: a.initials, doc: a.doc, docType: a.docType,
     prog: a.incName, date: `${a.fecha} · ${a.hora}`, motivo: `${revertMotivo} — ${detalle}`, region: a.zone,
-    revertedBy: `${CURRENT_OPERATOR} · Operador`, hasCode: a.incId === 'bono-dep'
+    revertedBy: `${CURRENT_OPERATOR} · Operador`, hasCode: !!a.code
   }));
   window.location.href = 'incentivo-13-revertir.html?from=mis-asignaciones';
-}
-
-/* ═════ Consultar código (00:29:22 – 00:30:59): ¿está disponible o asignado? ═════
-   Mismo inventario que el selector del paso 2 (incentivo-10). */
-const HOLDERS = ['Juan S. Rodríguez','Laura V. Mejía','Tomás Restrepo','Mariana Soto','Isabella Gil','Esteban Mora'];
-const CODES = (function(){
-  const arr = [], M = ['jul','ago','sep'];
-  for(let i=0;i<60;i++){
-    const taken = i % 5 === 1;
-    arr.push({ code:`2026BD-${String(42+i).padStart(5,'0')}`, estado: taken ? 'asig' : 'disp', holder: taken ? HOLDERS[i % HOLDERS.length] : null, holderDate: taken ? `${String(((i*3)%20)+1).padStart(2,'0')} sep 2026` : null });
-  }
-  Object.values(ledgerAll()).forEach(r => {
-    const c = r.code && arr.find(x => x.code === r.code); if(!c) return;
-    if(r.estado === 'rev'){ c.estado = 'disp'; c.holder = null; } else { c.estado = 'asig'; c.holder = r.name; c.holderDate = r.fecha; }
-  });
-  return arr;
-})();
-function consultCode(){
-  const q = document.getElementById('codeQuery').value.trim().toUpperCase();
-  const box = document.getElementById('codeResult');
-  if(!q){ box.innerHTML = ''; return; }
-  const c = CODES.find(x => x.code === q);
-  const ico = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>';
-  let cls, txt;
-  if(!c){ cls='negative'; txt=`El código <strong>${q}</strong> no existe en el inventario del Bono Deportivo.`; }
-  else if(c.estado === 'disp'){ cls='positive'; txt=`El código <strong>${c.code}</strong> está <strong>disponible</strong> para asignar.`; }
-  else { cls='caution'; txt=`El código <strong>${c.code}</strong> ya está <strong>asignado</strong> a ${c.holder} (${c.holderDate}).`; }
-  box.innerHTML = `<div class="naowee-message naowee-message--${cls}"><div class="naowee-message__header"><div class="naowee-message__icon">${ico}</div><div class="naowee-message__text">${txt}</div></div></div>`;
 }
 
 loadAll();
@@ -860,10 +827,10 @@ requestAnimationFrame(() => {
 function fadeAndGo(url){ window.location.href = url; }
 </script>
 
-<script src="shared/profile-switcher.js?v=20260922202606" defer></script>
+<script src="shared/profile-switcher.js?v=20260922203322" defer></script>
 
 <script src="shared/footer-scroll.js" defer></script>
-<script src="shared/tour.js?v=20260922202606" defer></script>
+<script src="shared/tour.js?v=20260922203322" defer></script>
 
 <!-- Footer flotante Naowee -->
 <div class="naowee-floating-footer" role="contentinfo" aria-label="Pie de página Naowee">

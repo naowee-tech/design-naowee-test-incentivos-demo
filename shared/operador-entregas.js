@@ -39,6 +39,9 @@ function buildStatic(){
       revertedBy: i % 11 === 5 ? 'Juan Rodríguez · Operador' : null, revertedAt: i % 11 === 5 ? `${String(day).padStart(2,'0')} ${MES[month]} ${year}` : null,
       zone: ZONES[i % ZONES.length] });
   }
+  /* Los bonos llevan código; cada bono tiene su prefijo. */
+  const PREFIX = { 'bono-dep':'2026BD', 'bono-transp':'2026TR', 'bono-alim':'2026AL', 'bono-indig':'2025OI' };
+  out.forEach((r, i) => { if(!r.code && PREFIX[r.incId]) r.code = `${PREFIX[r.incId]}-${String(300 + i * 7).padStart(5,'0')}`; });
   return out.map(r => {
     const [y,m,dd,h,mi] = r.d;
     const dt = new Date(y, m, dd, h, mi);
