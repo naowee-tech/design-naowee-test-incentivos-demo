@@ -10,7 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.4.0/dist/design-system.css"/>
-<link rel="stylesheet" href="shared/shell.css"/>
+<link rel="stylesheet" href="shared/shell.css?v=20260922200101"/>
 
 <style>
   .success-wrap{max-width:720px;margin:28px auto;padding:0 20px;animation:fadeInUp .4s cubic-bezier(.4,0,.2,1)}
@@ -156,7 +156,7 @@
       <div class="profile-switcher">
         <div class="user-chip">
           <div class="ava"><div class="ava-ring" style="background:#c4b5fd;color:#4c1d95">DV</div><div class="ava-dot"></div></div>
-          <div class="user-info"><span class="user-name">Doug Vargas</span><span class="user-role">Gestor de incentivos</span></div>
+          <div class="user-info"><span class="user-name">Juan Rodríguez</span><span class="user-role">Gestor de incentivos</span></div>
           <button class="user-chip__chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>
         </div>
       </div>
@@ -219,7 +219,7 @@
             </div>
             <div class="detail">
               <dt id="rByLbl">Gestor que revertió</dt>
-              <dd id="rBy">Doug Vargas</dd>
+              <dd id="rBy">Juan Rodríguez</dd>
             </div>
             <div class="detail">
               <dt>Fecha y hora</dt>
@@ -325,7 +325,7 @@ try{
   document.getElementById('bannerSub').textContent = 'Transición registrada con fecha, hora, motivo y datos del operador.';
   document.getElementById('rValueRow').remove();
   document.getElementById('rByLbl').textContent = 'Revertido por';
-  document.getElementById('rBy').textContent = s.revertedBy || 'Doug Vargas · Operador';
+  document.getElementById('rBy').textContent = s.revertedBy || 'Juan Rodríguez · Operador';
   const footer = document.querySelector('.receipt__footer');
   if(footer) footer.innerHTML = `<span>Incentivo: <strong>${s.prog || '—'}</strong></span><span>Departamento: <strong>${s.region || '—'}</strong></span>`;
   document.getElementById('nextSteps').innerHTML = `
@@ -340,7 +340,7 @@ try{
 
 function fadeAndGo(url){window.location.href=url}
 </script>
-<script src="shared/profile-switcher.js?v=20260922193617" defer></script>
+<script src="shared/profile-switcher.js?v=20260922200101" defer></script>
 
 <script src="shared/footer-scroll.js" defer></script>
 <script src="shared/tour.js" defer></script>

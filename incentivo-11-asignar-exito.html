@@ -10,7 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.4.0/dist/design-system.css"/>
-<link rel="stylesheet" href="shared/shell.css"/>
+<link rel="stylesheet" href="shared/shell.css?v=20260922200101"/>
 
 <style>
   .success-wrap{
@@ -190,8 +190,8 @@
     <header class="top-header">
       <div class="profile-switcher" id="profileSwitcher">
         <div class="user-chip" onclick="toggleProfileDD(event)">
-          <div class="ava"><div class="ava-ring" style="background:#ffdfb5;color:#92400e">DV</div><div class="ava-dot"></div></div>
-          <div class="user-info"><span class="user-name">Doug Vargas</span><span class="user-role">Operador</span></div>
+          <div class="ava"><div class="ava-ring" style="background:#ffdfb5;color:#92400e">JR</div><div class="ava-dot"></div></div>
+          <div class="user-info"><span class="user-name">Juan Rodríguez</span><span class="user-role">Operador</span></div>
           <button class="user-chip__chevron" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>
         </div>
       </div>
@@ -265,7 +265,7 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
               </span>
               <span class="kv-row__lbl">Operador</span>
-              <span class="kv-row__val">Doug Vargas</span>
+              <span class="kv-row__val">Juan Rodríguez</span>
             </div>
             <div class="kv-row">
               <span class="kv-row__ico">
@@ -358,6 +358,7 @@ try{
       : `${s.grado ? ' · Grado ' + s.grado : ''}${s.deporte ? ' · ' + s.deporte : ''}`;
   }
   if(s.incentive) document.getElementById('receiptInc').textContent = s.incentive;
+  if(s.programName) document.getElementById('receiptProgram').textContent = s.programName;
   /* Código retirado del comprobante por seguridad (feedback Danna): el código redimible no se muestra en resúmenes. */
   /* receiptValue retirado (feedback Danna): valor oculto en la vista del operador. */
   /* Evidencia pendiente (validar → entregar → evidencia después, reunión 22-09 00:27:10). */
@@ -424,7 +425,7 @@ document.addEventListener('click', (e) => { const sw = document.getElementById('
 
 </script>
 
-<script src="shared/profile-switcher.js?v=20260922193617" defer></script>
+<script src="shared/profile-switcher.js?v=20260922200101" defer></script>
 
 <script src="shared/footer-scroll.js" defer></script>
 <script src="shared/tour.js" defer></script>

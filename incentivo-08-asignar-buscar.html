@@ -7,7 +7,7 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.4.0/dist/design-system.css"/>
-<link rel="stylesheet" href="shared/shell.css"/>
+<link rel="stylesheet" href="shared/shell.css?v=20260922200101"/>
 
 <style>
   .page-header{
@@ -97,6 +97,9 @@
 
   /* Quick demo chips */
   .quick-row{display:flex;align-items:center;gap:8px;margin-top:18px;flex-wrap:wrap}
+  .quick-row.is-other-prg .quick-chip:not([data-type="all"]){display:none !important}
+  .quick-note{font-size:12px;color:var(--naowee-color-text-secondary,#646587)}
+  [hidden]{display:none !important}
   .quick-label{font-size:11.5px;color:var(--naowee-color-text-secondary,#646587);font-weight:600}
   .quick-chip{
     font-size:11.5px;font-weight:600;color:var(--naowee-color-text-primary,#282834);
@@ -539,8 +542,8 @@
     <header class="top-header">
       <div class="profile-switcher" id="profileSwitcher">
         <div class="user-chip" onclick="toggleProfileDD(event)">
-          <div class="ava"><div class="ava-ring" id="avaRing" style="background:#ffdfb5;color:#92400e">DV</div><div class="ava-dot"></div></div>
-          <div class="user-info"><span class="user-name">Doug Vargas</span><span class="user-role" id="userRoleLabel">Operador</span></div>
+          <div class="ava"><div class="ava-ring" id="avaRing" style="background:#ffdfb5;color:#92400e">JR</div><div class="ava-dot"></div></div>
+          <div class="user-info"><span class="user-name">Juan Rodríguez</span><span class="user-role" id="userRoleLabel">Operador</span></div>
           <button class="user-chip__chevron" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>
         </div>
       </div>
@@ -551,9 +554,13 @@
       <div class="page-header">
         <div class="page-header__title-group">
           <h1 class="page-title">Asignar incentivo</h1>
-          <p class="page-sub">Busca al beneficiario entre los ganadores/elegibles de los programas activos, selecciona el incentivo a entregar y registra la evidencia (ahora o después).</p>
+          <p class="page-sub">Busca al beneficiario entre los ganadores/elegibles del programa, selecciona el incentivo a entregar y registra la evidencia (ahora o después).</p>
         </div>
       </div>
+
+      <!-- Programa de trabajo del operador: la búsqueda, los incentivos y los
+           códigos son del programa elegido (shared/operador-programa.js). -->
+      <div id="opPrgBar"></div>
 
       <!-- Stepper sticky con progressive collapse estilo digitación.
            El .stepper ES el sticky element directamente (patrón .sport-section) -->
@@ -656,7 +663,7 @@
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
           </div>
           <h4>Ingresa un documento para empezar</h4>
-          <p>La búsqueda se hace <strong>solo entre los ganadores/elegibles</strong> de los programas activos (documento para personas, código DANE para instituciones). Usa los ejemplos de demo para ver los casos posibles.</p>
+          <p id="emptyHint">La búsqueda se hace <strong>solo entre los ganadores/elegibles</strong> del programa (documento para personas, código DANE para instituciones). Usa los ejemplos de demo para ver los casos posibles.</p>
         </div>
       </div>
 
@@ -664,6 +671,8 @@
   </div>
 </div>
 
+<script src="shared/programs-data.js?v=20260922200101"></script>
+<script src="shared/operador-programa.js?v=20260922200101"></script>
 <script>
 /* ═════ Catálogo de incentivos reales · Juegos Intercolegiados 2026 (xlsx requisitos) ═════
    El operador NO ve valores monetarios (feedback Danna). Solo el Bono Deportivo maneja
@@ -727,7 +736,7 @@ const SAMPLE = {
     programs:[
       /* recId enlaza con la fila R-0001 de Mis asignaciones (14): subir la evidencia o revertir allí se refleja aquí. */
       prog('bono-dep', 'Deportista campeón · en individuales, 1 incentivo por deportista',
-        { assigned:{ recId:'R-0001', operator:'Doug Vargas', operatorRole:'Operador', date:'15 sep 2026', time:'16:05', evidencePending:true } })
+        { assigned:{ recId:'R-0001', operator:'Juan Rodríguez', operatorRole:'Operador', date:'15 sep 2026', time:'16:05', evidencePending:true } })
     ]
   },
   'all-assigned':{
@@ -744,7 +753,7 @@ const SAMPLE = {
     ],
     programs:[
       prog('bono-dep', 'Deportista campeón · en individuales, 1 incentivo por deportista',
-        { assigned:{ recId:'R-0002', operator:'Doug Vargas', operatorRole:'Operador', date:'10 sep 2026', time:'15:18' } }),
+        { assigned:{ recId:'R-0002', operator:'Juan Rodríguez', operatorRole:'Operador', date:'10 sep 2026', time:'15:18' } }),
       prog('credito',  'Campeón que cursa grado 11° (o 12° en escuelas normales)',
         { assigned:{ operator:'Carla Suárez', operatorRole:'Operador · Indeportes Cundinamarca', date:'12 sep 2026', time:'09:05' } })
     ]
@@ -842,7 +851,7 @@ function profileView(kind){
     }
     if(!pr.assigned){
       const rec = Object.values(L).find(r => r.doc === p.doc && r.incId === pr.incId && r.estado === 'asig');
-      if(rec) pr.assigned = { recId: rec.id, operator: rec.operator || 'Doug Vargas', operatorRole:'Operador', date: rec.fecha, time: rec.hora, evidencePending: !rec.evidence };
+      if(rec) pr.assigned = { recId: rec.id, operator: rec.operator || 'Juan Rodríguez', operatorRole:'Operador', date: rec.fecha, time: rec.hora, evidencePending: !rec.evidence };
     }
   });
   return p;
@@ -932,13 +941,15 @@ function runDemo(kind, skipLoading, rawDoc){
   const wrap = document.getElementById('stateWrap');
   selectedIncId = null;
   const render = () => {
-    const p = profileView(kind);
+    /* Los perfiles de prueba son de Juegos Intercolegiados 2026: en otro
+       programa el mismo documento no tiene incentivos aplicables. */
+    const p = isDemoProgram() ? profileView(kind) : null;
     if(p){ syncTypeRadio(p.level); if(p.docType && p.role !== 'institution') setDocType(p.docType); wrap.innerHTML = renderEligible(p, kind); autoSelectSingle(); return; }
-    const inputDoc = rawDoc || (kind === 'not-eligible' ? '1003456789' : kind === 'not-eligible-coach' ? '1067543210' : '');
+    const inputDoc = rawDoc || (kind === 'not-eligible' ? '1003456789' : kind === 'not-eligible-coach' ? '1067543210' : (document.getElementById('docNumber').value.trim()));
     wrap.innerHTML = renderNoIncentives(inputDoc);
   };
   if(skipLoading){ render(); return; }
-  wrap.innerHTML = `<div class="loading-banner"><div class="spinner"></div> Buscando entre los ganadores y elegibles de los programas activos…</div>`;
+  wrap.innerHTML = `<div class="loading-banner"><div class="spinner"></div> Buscando entre los ganadores y elegibles de ${esc(prgName())}…</div>`;
   setTimeout(render, 500);
 }
 
@@ -966,7 +977,7 @@ function saveProfileAndGo(doc, kind){
   const obsEl = document.getElementById('fichaObs');
   const pr = (p.programs || []).find(x => x.incId === selectedIncId) || {};
   sessionStorage.setItem('inc-profile', JSON.stringify({
-    doc: p.doc || doc, kind, ts: Date.now(),
+    doc: p.doc || doc, kind, ts: Date.now(), programId: CUR_PRG.id, programName: CUR_PRG.name,
     role: p.role || 'athlete', level: p.level, coachRole: p.coachRole,
     name: p.name, docType: p.docType, initials: p.initials,
     grado: p.grado, institucion: p.institucion, deporte: p.deporte, disc: p.deporte, categoria: p.categoria,
@@ -983,7 +994,7 @@ function goUploadEvidence(kind, incId){
   const p = profileView(kind); if(!p) return;
   const pr = (p.programs || []).find(x => x.incId === incId); if(!pr || !pr.assigned) return;
   sessionStorage.setItem('inc-assignment', JSON.stringify({
-    evidenceOnly: true, recId: pr.assigned.recId, name: p.name, doc: p.doc, docType: p.docType, initials: p.initials,
+    evidenceOnly: true, recId: pr.assigned.recId, programId: CUR_PRG.id, programName: CUR_PRG.name, name: p.name, doc: p.doc, docType: p.docType, initials: p.initials,
     role: p.role, level: p.level, zone: p.departamento, incentive: { id: incId, name: pr.name },
     assignedAt: `${pr.assigned.date} · ${pr.assigned.time}`, from: 'buscar', kind
   }));
@@ -1047,6 +1058,7 @@ function tryRehydrate(){
   try{
     const saved = JSON.parse(sessionStorage.getItem('inc-profile') || '{}');
     if(!saved.doc || !SAMPLE[saved.kind]) return false;
+    if(!CUR_PRG || (saved.programId && saved.programId !== CUR_PRG.id)) return false;
     const lvl = SAMPLE[saved.kind].level;
     if(BENEF_CFG[lvl]) selectBenefType(lvl);
     const inp = document.getElementById('docNumber');
@@ -1404,8 +1416,8 @@ function renderNoIncentives(doc){
         <div class="not-found__icon">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
         </div>
-        <h4>${doc ? `El documento <span style="font-family:'SF Mono',monospace">${doc}</span> no tiene` : 'No tiene'} incentivos aplicables</h4>
-        <p>La búsqueda se hace solo entre los <strong>ganadores y elegibles</strong> de los programas activos. ${reason || 'Este documento no cumple las condiciones de ningún incentivo vigente.'}</p>
+        <h4>${doc ? `El documento <span style="font-family:'SF Mono',monospace">${doc}</span> no tiene` : 'No tiene'} incentivos aplicables en ${esc(prgName())}</h4>
+        <p>La búsqueda se hace solo entre los <strong>ganadores y elegibles</strong> de este programa. ${(isDemoProgram() && reason) || 'Este documento no cumple las condiciones de ningún incentivo del programa.'}</p>
         <div class="not-found__actions">
           <button class="naowee-btn naowee-btn--mute naowee-btn--medium" onclick="document.getElementById('docNumber').value='';document.getElementById('docNumber').focus();resetState()">Buscar otro documento</button>
         </div>
@@ -1421,7 +1433,7 @@ function resetState(){
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
       </div>
       <h4>Ingresa un documento para empezar</h4>
-      <p>La búsqueda se hace <strong>solo entre los ganadores/elegibles</strong> de los programas activos (documento para personas, código DANE para instituciones). Puedes usar los ejemplos de demo arriba.</p>
+      <p>La búsqueda se hace <strong>solo entre los ganadores/elegibles</strong> de ${esc(prgName())} (documento para personas, código DANE para instituciones).${isDemoProgram() ? ' Puedes usar los ejemplos de demo arriba.' : ''}</p>
     </div>
   `;
 }
@@ -1429,7 +1441,7 @@ function resetState(){
 /* Profile switcher */
 const ROLES = {
   admin:    { name:'Doug Vargas', label:'Gestor de incentivos', initials:'DV', bg:'#c4b5fd', fg:'#4c1d95' },
-  operador: { name:'Doug Vargas', label:'Operador', initials:'DV', bg:'#ffdfb5', fg:'#92400e' }
+  operador: { name:'Juan Rodríguez', label:'Operador', initials:'JR', bg:'#ffdfb5', fg:'#92400e' }
 };
 function applyRole(role){
   const r = ROLES[role] || ROLES.operador;
@@ -1460,6 +1472,37 @@ function fadeAndGo(url){
   document.body.style.opacity='0';
   setTimeout(()=>{window.location.href=url},260);
 }
+
+/* ═════ Programa de trabajo ═════ */
+const DEMO_PRG_ID = 'PRG-2026-010';
+let CUR_PRG = null;
+function prgName(){ return CUR_PRG ? CUR_PRG.name : 'el programa'; }
+function isDemoProgram(){ return !!CUR_PRG && CUR_PRG.id === DEMO_PRG_ID; }
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+(function initProgram(){
+  CUR_PRG = OperatorProgram.renderBar(document.getElementById('opPrgBar'), () => {
+    /* Cambiar de programa empieza de cero: la búsqueda es de otro programa. */
+    try{ sessionStorage.removeItem('inc-profile'); sessionStorage.removeItem('inc-assignment'); }catch(e){}
+    location.reload();
+  });
+  if(!CUR_PRG){
+    ['stepperWrap', 'stateWrap'].forEach(id => { const el = document.getElementById(id); if(el) el.hidden = true; });
+    document.querySelectorAll('.search-card').forEach(el => el.hidden = true);
+    return;
+  }
+  const hint = document.getElementById('emptyHint');
+  if(hint) hint.innerHTML = `La búsqueda se hace <strong>solo entre los ganadores/elegibles</strong> de ${esc(CUR_PRG.name)} (documento para personas, código DANE para instituciones).${isDemoProgram() ? ' Usa los ejemplos de demo para ver los casos posibles.' : ''}`;
+  if(!isDemoProgram()){
+    const row = document.querySelector('.quick-row');
+    if(row){
+      row.classList.add('is-other-prg');
+      const note = document.createElement('span');
+      note.className = 'quick-note';
+      note.textContent = 'Los ejemplos de demo son de Juegos Intercolegiados 2026. En este programa cualquier documento sale sin incentivos aplicables.';
+      row.querySelector('.quick-label')?.after(note);
+    }
+  }
+})();
 
 applyRole('operador');
 tryRehydrate();
@@ -1616,7 +1659,7 @@ tryRehydrate();
 })();
 </script>
 
-<script src="shared/profile-switcher.js?v=20260922193617" defer></script>
+<script src="shared/profile-switcher.js?v=20260922200101" defer></script>
 
 <script src="shared/footer-scroll.js" defer></script>
 <script src="shared/tour.js" defer></script>

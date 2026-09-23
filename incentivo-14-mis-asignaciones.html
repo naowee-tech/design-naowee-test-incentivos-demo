@@ -7,8 +7,9 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.4.0/dist/design-system.css"/>
-<link rel="stylesheet" href="shared/shell.css"/>
+<link rel="stylesheet" href="shared/shell.css?v=20260922200101"/>
 <script src="shared/programs-data.js?v=20260922191536"></script>
+<script src="shared/operador-programa.js?v=20260922200101"></script>
 
 <style>
   .page-header{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:24px;flex-wrap:wrap}
@@ -244,6 +245,8 @@
   .valor-cell.muted{color:#9c9ebf;font-weight:400}
 
   .tablet-foot{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:var(--naowee-color-text-secondary,#646587)}
+  .closed-tag{display:inline-flex;align-items:center;font-size:11.5px;font-weight:600;color:#646587;background:#f1f1f6;border-radius:999px;padding:3px 9px;white-space:nowrap}
+  .dd-sub{font-size:11px;color:#9c9ebf;margin-left:6px}
 </style>
 </head>
 <body>
@@ -284,8 +287,8 @@
     <header class="top-header">
       <div class="profile-switcher">
         <div class="user-chip">
-          <div class="ava"><div class="ava-ring" style="background:#ffdfb5;color:#92400e">DV</div><div class="ava-dot"></div></div>
-          <div class="user-info"><span class="user-name">Doug Vargas</span><span class="user-role">Operador</span></div>
+          <div class="ava"><div class="ava-ring" style="background:#ffdfb5;color:#92400e">JR</div><div class="ava-dot"></div></div>
+          <div class="user-info"><span class="user-name">Juan Rodríguez</span><span class="user-role">Operador</span></div>
           <button class="user-chip__chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>
         </div>
       </div>
@@ -379,6 +382,14 @@
               <button type="button" class="naowee-segment__item" data-period="7d" onclick="setPeriod('7d', this)">7 días</button>
               <button type="button" class="naowee-segment__item" data-period="30d" onclick="setPeriod('30d', this)">30 días</button>
               <button type="button" class="naowee-segment__item naowee-segment__item--active" data-period="all" onclick="setPeriod('all', this)">Todo</button>
+            </div>
+
+            <div class="toolbar-dd-wrap" id="ddPrgWrap">
+              <button type="button" class="toolbar-dd" onclick="toggleDD('ddPrgWrap')">
+                <span id="ddPrgLabel">Programa: Todos</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="toolbar-dd-menu" role="listbox" id="ddPrgMenu"></div>
             </div>
 
             <div class="toolbar-dd-wrap" id="ddEstadoWrap">
@@ -507,7 +518,7 @@
 
 <script>
 /* ═══════════════════════════════════════════════════════════════
-   MIS ASIGNACIONES — vista personal del operador (Doug Vargas)
+   MIS ASIGNACIONES — vista personal del operador (Juan Rodríguez)
    Ajustes reunión 22-09-2026:
    · Sin navegación a la ficha del programa (incentivo-05 es del gestor y
      rebotaba al operador a "Asignar" — "problema en la navegación", 00:29:22).
@@ -516,7 +527,7 @@
    · Acción "Revertir" visible por fila, motivo obligatorio, queda en el historial (00:30:59).
    · Sin valores monetarios ni códigos en la tabla (solo en "Consultar código").
    ═══════════════════════════════════════════════════════════════ */
-const CURRENT_OPERATOR = 'Doug Vargas';
+const CURRENT_OPERATOR = 'Juan Rodríguez';
 const LEDGER_KEY = 'inc-op-ledger';
 function ledgerAll(){ try{ return JSON.parse(localStorage.getItem(LEDGER_KEY) || '{}') || {}; }catch(e){ return {}; } }
 function ledgerPut(rec){ try{ const all = ledgerAll(); all[rec.id] = Object.assign({}, all[rec.id] || {}, rec); localStorage.setItem(LEDGER_KEY, JSON.stringify(all)); }catch(e){} }
@@ -524,8 +535,13 @@ function ledgerPut(rec){ try{ const all = ledgerAll(); all[rec.id] = Object.assi
 const INC = {
   'bono-dep': { name:'Bono Deportivo',                  bg:'#fff3e6', fg:'#d74009', path:'<circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>' },
   'credito':  { name:'Crédito Condonable ICETEX',       bg:'#eef5ff', fg:'#1f78d1', path:'<path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1 2.7 3 6 3s6-2 6-3v-5"/>' },
-  'kit':      { name:'Kit de implementación deportiva', bg:'#e6f4f1', fg:'#0d9488', path:'<rect x="5" y="8" width="14" height="12" rx="2"/><path d="M9 8V5a3 3 0 016 0v3"/>' }
+  'kit':      { name:'Kit de implementación deportiva', bg:'#e6f4f1', fg:'#0d9488', path:'<rect x="5" y="8" width="14" height="12" rx="2"/><path d="M9 8V5a3 3 0 016 0v3"/>' },
+  'bono-transp': { name:'Bono transporte mensual',       bg:'#fff3e6', fg:'#d74009', path:'<rect x="3" y="6" width="18" height="11" rx="2"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/>' },
+  'bono-indig':  { name:'Bono participación · Olimpiadas indígenas', bg:'#fff3e6', fg:'#d74009', path:'<circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>' }
 };
+/* Programa de cada entrega. Las del seed son en su mayoría de JIN 2026; unas
+   pocas de Bono transporte (activo) y de Olimpiadas indígenas 2025 (cerrado). */
+const JIN_ID = 'PRG-2026-010', TRANSP_ID = 'PRG-2026-003', INDIG_ID = 'PRG-2025-019';
 const TYPE_LBL = { deportista:'Deportista', paradeportista:'Paradeportista', 'docente-entrenador':'Docente entrenador', 'docente-asistente':'Docente asistente', institucion:'Institución educativa', organizacion:'Organización' };
 const MES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
 
@@ -535,7 +551,7 @@ function buildStatic(){
     { id:'R-0001', name:'Valentina Pérez Gómez', docType:'TI', doc:'1033445566', level:'deportista', incId:'bono-dep', d:[2026,8,15,16,5], evidence:null, kind:'evidence-pending', zone:'Atlántico' },
     { id:'R-0002', name:'Sebastián Camilo Vargas Rincón', docType:'TI', doc:'1022334455', level:'deportista', incId:'bono-dep', d:[2026,8,10,15,18], evidence:'foto-entrega-sebastian.jpg', kind:'all-assigned', zone:'Cundinamarca' },
     { id:'R-0003', name:'Juan Sebastián Rodríguez', docType:'TI', doc:'1019887766', level:'deportista', incId:'credito', d:[2026,8,9,11,20], evidence:'acta-icetex.pdf', estado:'rev',
-      motivo:'Beneficiario no elegible', detalle:'Cursa grado 10°, el Crédito Condonable exige grado 11°.', revertedBy:'Doug Vargas · Operador', revertedAt:'11 sep 2026 · 09:12', zone:'Valle del Cauca' },
+      motivo:'Beneficiario no elegible', detalle:'Cursa grado 10°, el Crédito Condonable exige grado 11°.', revertedBy:'Juan Rodríguez · Operador', revertedAt:'11 sep 2026 · 09:12', zone:'Valle del Cauca' },
     { id:'R-0004', name:'I.E. Normal Superior de Pasto', docType:'DANE', doc:'152001000456', level:'institucion', incId:'kit', d:[2026,8,18,10,0], evidence:'kit-normal-pasto.jpg', zone:'Nariño' },
     { id:'R-0005', name:'Ana María Castro Luna', docType:'CC', doc:'1044001122', level:'docente-asistente', incId:'bono-dep', d:[2026,8,19,17,40], evidence:null, zone:'Santander' }
   ];
@@ -544,15 +560,18 @@ function buildStatic(){
   const out = fixed.slice();
   for(let i=0;i<26;i++){
     const [name, level] = PEOPLE[i % PEOPLE.length];
-    const incId = level.startsWith('docente') ? (i % 2 ? 'credito' : 'bono-dep') : (i % 3 === 2 ? 'credito' : 'bono-dep');
-    const day = 1 + ((i * 5) % 21), month = i < 20 ? 8 : 7;
-    out.push({ id:'R-' + String(i + 6).padStart(4,'0'), name, level, incId,
+    const prgId = i % 9 === 7 ? INDIG_ID : (i % 5 === 3 ? TRANSP_ID : JIN_ID);
+    const incId = prgId === INDIG_ID ? 'bono-indig' : prgId === TRANSP_ID ? 'bono-transp'
+      : level.startsWith('docente') ? (i % 2 ? 'credito' : 'bono-dep') : (i % 3 === 2 ? 'credito' : 'bono-dep');
+    const day = 1 + ((i * 5) % 21), month = prgId === INDIG_ID ? 10 : (i < 20 ? 8 : 7), year = prgId === INDIG_ID ? 2025 : 2026;
+    out.push({ id:'R-' + String(i + 6).padStart(4,'0'), name, level, incId, prgId,
       docType: level.startsWith('docente') ? 'CC' : 'TI', doc: String(1004000000 + i * 7919),
-      d:[2026, month, day, 8 + (i * 3) % 10, (i * 13) % 60],
-      evidence: i % 7 === 3 ? null : `evidencia-${i + 6}.jpg`,
+      d:[year, month, day, 8 + (i * 3) % 10, (i * 13) % 60],
+      /* Un programa cerrado no deja entregas a medias: todas con evidencia. */
+      evidence: i % 7 === 3 && prgId !== INDIG_ID ? null : `evidencia-${i + 6}.jpg`,
       estado: i % 11 === 5 ? 'rev' : 'asig',
       motivo: i % 11 === 5 ? 'Error en la asignación' : null, detalle: i % 11 === 5 ? 'Se registró el incentivo equivocado; se reasignó el correcto.' : null,
-      revertedBy: i % 11 === 5 ? 'Doug Vargas · Operador' : null, revertedAt: i % 11 === 5 ? `${String(day).padStart(2,'0')} ${MES[month]} 2026` : null,
+      revertedBy: i % 11 === 5 ? 'Juan Rodríguez · Operador' : null, revertedAt: i % 11 === 5 ? `${String(day).padStart(2,'0')} ${MES[month]} ${year}` : null,
       zone: ZONES[i % ZONES.length] });
   }
   return out.map(r => {
@@ -574,21 +593,44 @@ function loadAll(){
     r.incName = r.incName || (INC[r.incId] || {}).name || 'Incentivo';
     r.initials = r.initials || r.name.split(' ').map(x => x[0]).slice(0,2).join('');
     r.view = r.estado === 'rev' ? 'rev' : (r.evidence ? 'asig' : 'pend');
+    r.prgId = r.prgId || r.programId || JIN_ID;
+    const prg = OperatorProgram.byId(r.prgId);
+    r.prgName = (prg && prg.name) || r.programName || 'Programa';
+    /* Programa cerrado: la entrega queda solo para consulta. */
+    r.prgClosed = !!prg && prg.status !== 'active';
   });
   rows.sort((a,b) => b.dt - a.dt);
   ALL = rows;
 }
 
-const state = { estado: 'all', period: 'all', search: '', page: 1, pageSize: 10 };
+const state = { prg: 'all', estado: 'all', period: 'all', search: '', page: 1, pageSize: 10 };
+
+/* Filtro por programa: todos los programas donde el operador está o estuvo
+   (los cerrados se marcan y quedan solo para consulta). */
+function buildPrgMenu(){
+  const list = OperatorProgram.programsOf(false);
+  const item = (val, label, sub) => `<div class="toolbar-dd-item" role="option" aria-selected="${state.prg === val ? 'true' : 'false'}" data-val="${val}" onclick="setPrg('${val}')">${label}${sub ? ` <small class="dd-sub">${sub}</small>` : ''}</div>`;
+  document.getElementById('ddPrgMenu').innerHTML = item('all', 'Todos')
+    + list.map(p => item(p.id, p.name, p.status === 'active' ? '' : 'Cerrado')).join('');
+}
+function setPrg(val){
+  state.prg = val; state.page = 1;
+  const p = OperatorProgram.byId(val);
+  document.getElementById('ddPrgLabel').textContent = val === 'all' ? 'Programa: Todos' : p.name;
+  buildPrgMenu();
+  toggleDD('ddPrgWrap'); updateKPIs(); render();
+}
+function inPrg(a){ return state.prg === 'all' || a.prgId === state.prg; }
 
 function updateKPIs(){
-  const act = ALL.filter(a => a.estado !== 'rev');
-  const rev = ALL.length - act.length;
+  const base = ALL.filter(inPrg);
+  const act = base.filter(a => a.estado !== 'rev');
+  const rev = base.length - act.length;
   document.getElementById('kpiTotal').textContent = act.length.toLocaleString('es-CO');
   document.getElementById('kpiPend').textContent = act.filter(a => !a.evidence).length.toLocaleString('es-CO');
   document.getElementById('kpiUnicos').textContent = new Set(act.map(a => a.doc)).size.toLocaleString('es-CO');
   document.getElementById('kpiRev').textContent = rev.toLocaleString('es-CO');
-  document.getElementById('kpiRevPct').textContent = ALL.length ? `${((rev/ALL.length)*100).toFixed(1)}%` : '0%';
+  document.getElementById('kpiRevPct').textContent = base.length ? `${((rev/base.length)*100).toFixed(1)}%` : '0%';
 }
 
 /* ═════ Dropdowns toolbar ═════ */
@@ -644,11 +686,12 @@ function inPeriod(a){
 }
 function filtered(){
   return ALL.filter(a => {
+    if(!inPrg(a)) return false;
     if(state.estado !== 'all' && a.view !== state.estado) return false;
     if(!inPeriod(a)) return false;
     if(state.search){
       const q = state.search.toLowerCase();
-      if(!`${a.name} ${a.doc} ${a.incName}`.toLowerCase().includes(q)) return false;
+      if(!`${a.name} ${a.doc} ${a.incName} ${a.prgName}`.toLowerCase().includes(q)) return false;
     }
     return true;
   });
@@ -664,6 +707,7 @@ const IC_REV = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stro
 
 function rowActions(a){
   const btns = [];
+  if(a.prgClosed) return `<div class="row-actions"><span class="closed-tag" title="El programa está cerrado: sus entregas son solo de consulta">Solo consulta</span><button type="button" class="naowee-btn naowee-btn--link naowee-btn--small" onclick="event.stopPropagation();openDetail('${a.id}')">Ver detalle</button></div>`;
   if(a.view === 'pend') btns.push(`<button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--small" onclick="event.stopPropagation();goUploadEvidence('${a.id}')">${IC_UP} Subir evidencia</button>`);
   if(a.estado !== 'rev') btns.push(`<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small" onclick="event.stopPropagation();openRevert('${a.id}')">${IC_REV} Revertir</button>`);
   btns.push(`<button type="button" class="naowee-btn naowee-btn--link naowee-btn--small" onclick="event.stopPropagation();openDetail('${a.id}')">Ver detalle</button>`);
@@ -698,7 +742,7 @@ function render(){
         <td>
           <div class="prg-mini">
             <div class="prg-mini__ico" style="background:${inc.bg};color:${inc.fg}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${inc.path}</svg></div>
-            <div class="prg-mini__body"><div class="prg-mini__name">${a.incName}</div><div class="prg-mini__id">Juegos Intercolegiados 2026</div></div>
+            <div class="prg-mini__body"><div class="prg-mini__name">${a.incName}</div><div class="prg-mini__id">${a.prgName}${a.prgClosed ? ' · cerrado' : ''}</div></div>
           </div>
         </td>
         <td>${BADGE[a.view]}${a.view === 'rev' && a.motivo ? `<div class="estado-sub" title="${a.motivo}">${a.motivo}</div>` : ''}</td>
@@ -744,7 +788,7 @@ function openDetail(id){
   document.getElementById('dtBody').innerHTML = `
     <dl class="dl-grid">
       <div class="dl-item"><dt>Incentivo</dt><dd>${a.incName}</dd></div>
-      <div class="dl-item"><dt>Programa</dt><dd>Juegos Intercolegiados 2026</dd></div>
+      <div class="dl-item"><dt>Programa</dt><dd>${a.prgName}${a.prgClosed ? ' <span class="closed-tag">Cerrado · solo consulta</span>' : ''}</dd></div>
       <div class="dl-item"><dt>Estado</dt><dd>${BADGE[a.view]}</dd></div>
       <div class="dl-item"><dt>Departamento</dt><dd>${a.zone || '—'}</dd></div>
       ${a.obs || a.evidenceObs ? `<div class="dl-item dl-item--full"><dt>Observaciones</dt><dd>${a.obs || a.evidenceObs}</dd></div>` : ''}
@@ -753,8 +797,8 @@ function openDetail(id){
     <ul class="timeline">${tl.join('')}</ul>`;
   const f = [];
   f.push(`<button class="naowee-btn naowee-btn--mute naowee-btn--medium" onclick="closeModal('detailModal')">Cerrar</button>`);
-  if(a.estado !== 'rev') f.push(`<button class="naowee-btn naowee-btn--mute naowee-btn--medium" onclick="closeModal('detailModal');openRevert('${a.id}')">${IC_REV} Revertir</button>`);
-  if(a.view === 'pend') f.push(`<button class="naowee-btn naowee-btn--loud naowee-btn--medium" onclick="goUploadEvidence('${a.id}')">${IC_UP} Subir evidencia</button>`);
+  if(!a.prgClosed && a.estado !== 'rev') f.push(`<button class="naowee-btn naowee-btn--mute naowee-btn--medium" onclick="closeModal('detailModal');openRevert('${a.id}')">${IC_REV} Revertir</button>`);
+  if(!a.prgClosed && a.view === 'pend') f.push(`<button class="naowee-btn naowee-btn--loud naowee-btn--medium" onclick="goUploadEvidence('${a.id}')">${IC_UP} Subir evidencia</button>`);
   document.getElementById('dtFooter').innerHTML = f.join('');
   openModal('detailModal');
 }
@@ -764,7 +808,8 @@ function goUploadEvidence(id){
   sessionStorage.setItem('inc-assignment', JSON.stringify({
     evidenceOnly: true, recId: a.id, from: 'mis-asignaciones', name: a.name, doc: a.doc, docType: a.docType,
     initials: a.initials, role: a.level && a.level.startsWith('docente') ? 'coach' : (a.level === 'institucion' || a.level === 'organizacion' ? 'institution' : 'athlete'),
-    level: a.level, zone: a.zone, incentive: { id: a.incId, name: a.incName }, assignedAt: `${a.fecha} · ${a.hora}`
+    level: a.level, zone: a.zone, incentive: { id: a.incId, name: a.incName }, assignedAt: `${a.fecha} · ${a.hora}`,
+    programId: a.prgId, programName: a.prgName
   }));
   window.location.href = 'incentivo-09-validar-foto.html?evidencia=1';
 }
@@ -775,7 +820,7 @@ function goUploadEvidence(id){
 let revertId = null, revertMotivo = null;
 const MOTIVOS = ['Error en la asignación','Beneficiario no elegible','Devolución del beneficiario','Datos del beneficiario incorrectos','Otro motivo'];
 function openRevert(id){
-  const a = byId(id); if(!a || a.estado === 'rev') return;
+  const a = byId(id); if(!a || a.estado === 'rev' || a.prgClosed) return;
   revertId = id; revertMotivo = null;
   document.getElementById('rvSub').textContent = `${a.incName} · ${a.name} (${a.docType} ${a.doc})`;
   document.getElementById('rvMotivos').innerHTML = MOTIVOS.map(m => `
@@ -842,6 +887,7 @@ function consultCode(){
 }
 
 loadAll();
+buildPrgMenu();
 updateKPIs();
 /* ?estado=pend permite llegar filtrado desde otros enlaces */
 (function(){ const e = new URLSearchParams(location.search).get('estado'); if(e && ['asig','pend','rev'].includes(e)){ state.estado = e; const it = document.querySelector(`#ddEstadoWrap .toolbar-dd-item[data-val="${e}"]`); if(it){ document.getElementById('ddEstadoLabel').textContent = it.textContent.trim(); document.querySelectorAll('#ddEstadoWrap .toolbar-dd-item').forEach(x => x.setAttribute('aria-selected', x === it ? 'true' : 'false')); } } })();
@@ -853,7 +899,7 @@ requestAnimationFrame(() => {
 function fadeAndGo(url){ window.location.href = url; }
 </script>
 
-<script src="shared/profile-switcher.js?v=20260922193617" defer></script>
+<script src="shared/profile-switcher.js?v=20260922200101" defer></script>
 
 <script src="shared/footer-scroll.js" defer></script>
 <script src="shared/tour.js" defer></script>

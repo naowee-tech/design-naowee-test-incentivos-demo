@@ -7,7 +7,7 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.4.0/dist/design-system.css"/>
-<link rel="stylesheet" href="shared/shell.css"/>
+<link rel="stylesheet" href="shared/shell.css?v=20260922200101"/>
 
 <style>
   .page-header{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:24px;flex-wrap:wrap}
@@ -307,8 +307,8 @@
     <header class="top-header">
       <div class="profile-switcher">
         <div class="user-chip">
-          <div class="ava"><div class="ava-ring" style="background:#ffdfb5;color:#92400e">DV</div><div class="ava-dot"></div></div>
-          <div class="user-info"><span class="user-name">Doug Vargas</span><span class="user-role">Operador</span></div>
+          <div class="ava"><div class="ava-ring" style="background:#ffdfb5;color:#92400e">JR</div><div class="ava-dot"></div></div>
+          <div class="user-info"><span class="user-name">Juan Rodríguez</span><span class="user-role">Operador</span></div>
           <button class="user-chip__chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>
         </div>
       </div>
@@ -466,6 +466,10 @@
             <span class="val">CC 1.001.234.567</span>
           </div>
           <hr/>
+          <div class="summary-row">
+            <span class="lbl">Programa</span>
+            <span class="val" id="sumPrg">Juegos Intercolegiados 2026</span>
+          </div>
           <div class="summary-row" id="sumInc">
             <span class="lbl">Incentivo</span>
             <span class="val">—</span>
@@ -475,7 +479,7 @@
           <hr/>
           <div class="summary-row">
             <span class="lbl">Operador</span>
-            <span class="val">Doug Vargas</span>
+            <span class="val">Juan Rodríguez</span>
           </div>
           <div class="summary-row">
             <span class="lbl">Fecha</span>
@@ -725,6 +729,11 @@ function benefMetaHTML(p){
 
 /* Confirmar asignación (validar → entregar → evidencia, 00:27:10 – 00:28:12):
    el código queda reservado y el incentivo pasa a "Asignado · evidencia pendiente". */
+/* Programa en el que se entrega (lo elige el operador en "Asignar incentivo"). */
+(function(){
+  try{ const p = JSON.parse(sessionStorage.getItem('inc-profile') || '{}'); if(p.programName) document.getElementById('sumPrg').textContent = p.programName; }catch(e){}
+})();
+
 function confirmAssignment(){
   if(!selectedInc || (selectedInc.hasCodes && !selectedCode)) return;
   let p = {};
@@ -736,7 +745,8 @@ function confirmAssignment(){
     isNew: true, estado: 'asig', evidence: null,
     doc: p.doc, docType: p.docType, name: p.name, initials: p.initials, role: p.role, level: p.level, kind: p.kind,
     zone: p.departamento || p.zone || '', incId: selectedInc.id, incName: selectedInc.name, code: selectedCode || null,
-    obs: p.obs || '', operator: 'Doug Vargas',
+    obs: p.obs || '', operator: 'Juan Rodríguez',
+    programId: p.programId || 'PRG-2026-010', programName: p.programName || 'Juegos Intercolegiados 2026',
     fecha: `${String(now.getDate()).padStart(2,'0')} ${MES[now.getMonth()]} ${now.getFullYear()}`,
     hora: `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`,
     ts: now.getTime()
@@ -827,7 +837,7 @@ function fadeAndGo(url){
   onScroll();
 })();
 </script>
-<script src="shared/profile-switcher.js?v=20260922193617" defer></script>
+<script src="shared/profile-switcher.js?v=20260922200101" defer></script>
 
 <script src="shared/footer-scroll.js" defer></script>
 <script src="shared/tour.js" defer></script>
