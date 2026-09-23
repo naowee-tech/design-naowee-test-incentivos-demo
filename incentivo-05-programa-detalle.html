@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.4.0/dist/design-system.css"/>
 <link rel="stylesheet" href="shared/shell.css"/>
-<link rel="stylesheet" href="shared/programa-wizard.css?v=20260922192454"/>
+<link rel="stylesheet" href="shared/programa-wizard.css?v=20260922194132"/>
 <script src="shared/programs-data.js?v=20260922191536"></script>
 
 <style>
@@ -495,11 +495,11 @@
         <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d74009" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M6 7V5a1 1 0 011-1h10a1 1 0 011 1v2"/><line x1="3" y1="12" x2="21" y2="12"/></svg></div>
         <span class="lbl">Programas</span>
       </div>
-      <div class="nav-row" data-role="superadmin programa" onclick="fadeAndGo('incentivo-07-codigos.html')">
+      <div class="nav-row" data-role="superadmin" onclick="fadeAndGo('incentivo-07-codigos.html')">
         <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 012-2h14a2 2 0 012 2v2a1.5 1.5 0 000 3v3a2 2 0 01-2 2H5a2 2 0 01-2-2v-3a1.5 1.5 0 000-3V8z"/><line x1="13" y1="6" x2="13" y2="9" stroke-dasharray="1.5 1.5"/><line x1="13" y1="11" x2="13" y2="13" stroke-dasharray="1.5 1.5"/><line x1="13" y1="15" x2="13" y2="18" stroke-dasharray="1.5 1.5"/></svg></div>
         <span class="lbl">Códigos</span>
       </div>
-      <div class="nav-row" data-role="superadmin programa" onclick="fadeAndGo('incentivo-12-asignaciones.html')">
+      <div class="nav-row" data-role="superadmin" onclick="fadeAndGo('incentivo-12-asignaciones.html')">
         <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="1.5"/><circle cx="6" cy="12" r="1.5"/><circle cx="6" cy="18" r="1.5"/><line x1="6" y1="7.5" x2="6" y2="10.5"/><line x1="6" y1="13.5" x2="6" y2="16.5"/><line x1="11" y1="6" x2="20" y2="6"/><line x1="11" y1="12" x2="18" y2="12"/><line x1="11" y1="18" x2="16" y2="18"/></svg></div>
         <span class="lbl">Historial</span>
       </div>
@@ -1061,6 +1061,9 @@ function hydrateProgram(){
 
 // Init
 window.addEventListener('load', () => {
+  if(guardProgramAccess()) return;
+  // Menú: el gestor de programa ve "Mis programas"
+  if(currentRoleKey() === 'programa') document.querySelectorAll('.nav-row.active .lbl').forEach(l => { l.textContent = 'Mis programas'; });
   hydrateProgram();
   positionTabIndicator();
   setTimeout(positionTabIndicator, 100);
@@ -1148,6 +1151,24 @@ function renderKpis(){
    Pausar queda fuera del alcance. */
 const ICO_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
 const ICO_WARN  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="17" x2="12" y2="17.01"/></svg>';
+function currentRoleKey(){ return (window.currentRole && window.currentRole()) || 'admin'; }
+function currentUserName(){ return ((window.ROLES || {})[currentRoleKey()] || {}).name || 'Doug Vargas'; }
+/* Gestor de programa: solo entra a los programas donde es gestor. */
+function guardProgramAccess(){
+  if(currentRoleKey() !== 'programa') return false;
+  const allowed = (window.getRoleAssignments && window.getRoleAssignments()) || [];
+  const id = new URLSearchParams(location.search).get('id');
+  if(!id || allowed.includes(id)) return false;
+  const page = document.querySelector('.page');
+  if(page) page.innerHTML = `
+    <div class="naowee-message naowee-message--caution" style="margin-top:24px">
+      <div class="naowee-message__header"><div class="naowee-message__text">
+        <strong>No tienes acceso a este programa.</strong> Solo ves los programas donde eres gestor de programa.
+        <div style="margin-top:10px"><button class="naowee-btn naowee-btn--mute naowee-btn--small" onclick="fadeAndGo('incentivo-03-programas.html')">Ir a Mis programas</button></div>
+      </div></div>
+    </div>`;
+  return true;
+}
 function renderStatusActions(p){
   const box = document.getElementById('hdActions');
   if(!box) return;
@@ -1156,9 +1177,22 @@ function renderStatusActions(p){
     : p.status === 'active'
       ? `<button class="naowee-btn naowee-btn--mute naowee-btn--large" onclick="askClose()">Cerrar programa</button>`
       : '';
-  // Cerrado: solo lectura
+  // Permisos por rol. El gestor de programa OPERA su programa (operadores y
+  // códigos); armarlo (datos, incentivos, condiciones) y activarlo o cerrarlo
+  // es del gestor de incentivos. Cerrado: solo lectura para todos.
   const closed = p.status === 'closed';
-  document.querySelectorAll('.section-edit, #btnCargarCodigos, [onclick="editSection(\'condiciones\')"]').forEach(el => { el.hidden = closed; });
+  const isPG = currentRoleKey() === 'programa';
+  const allow = { datos: !isPG, incentivos: !isPG, condiciones: !isPG, equipo: true, codigos: true };
+  document.querySelectorAll('[onclick^="editSection("]').forEach(el => {
+    const sec = (el.getAttribute('onclick').match(/editSection\('(\w+)'\)/) || [])[1];
+    el.hidden = closed || !allow[sec];
+  });
+  const teamBtn = document.getElementById('btnEditTeam');
+  if(teamBtn && isPG){
+    const hasOps = !!(p.team && p.team.operators && p.team.operators.length);
+    teamBtn.textContent = hasOps ? 'Editar operadores' : 'Asignar operadores';
+  }
+  if(isPG) box.innerHTML = '';
   const note = document.getElementById('closedNote');
   if(note){
     note.hidden = !closed;
@@ -1227,7 +1261,7 @@ function setProgramStatus(status){
   const p = CURRENT_PROGRAM;
   const prog = { ...p, status };
   prog.history = [...(p.history || []), {
-    at: new Date().toISOString(), who: 'Doug Vargas',
+    at: new Date().toISOString(), who: currentUserName(),
     title: status === 'active' ? 'Programa activado' : 'Programa cerrado',
     desc: status === 'active' ? 'Disponible para los operadores en campo.' : 'Ya no se entregan incentivos.'
   }];
@@ -1914,9 +1948,9 @@ function clearSearch(inputId){
 }
 </script>
 
-<script src="shared/programa-wizard.js?v=20260922192454" defer></script>
+<script src="shared/programa-wizard.js?v=20260922194132" defer></script>
 
-<script src="shared/profile-switcher.js?v=role-7" defer></script>
+<script src="shared/profile-switcher.js?v=20260922193617" defer></script>
 
 <script src="shared/footer-scroll.js" defer></script>
 <script src="shared/tour.js" defer></script>
