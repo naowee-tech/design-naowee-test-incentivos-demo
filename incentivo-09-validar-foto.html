@@ -293,6 +293,7 @@
   .summary-note strong{color:var(--accent)}
   .summary-actions{display:flex;flex-direction:column;gap:8px;margin-top:6px}
 
+  [hidden]{display:none !important}
 </style>
 </head>
 <body>
@@ -344,19 +345,17 @@
       <div class="page-header">
         <div>
           <h1 class="page-title" id="pageTitle">Evidencia de entrega</h1>
-          <p class="page-sub" id="pageSub">La asignación ya quedó registrada. Sube la foto de la entrega ahora o hazlo después desde Mis asignaciones.</p>
+          <p class="page-sub" id="pageSub">La entrega ya quedó registrada. Sube la foto ahora o, si no la tienes, después.</p>
         </div>
       </div>
 
       <!-- Stepper sticky (paridad con paso 1) -->
       <div class="stepper" id="stepperWrap">
-        <div class="step done"><span class="n"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span><span class="step-lbl">Buscar y seleccionar</span></div>
+        <div class="step done"><span class="n"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span><span class="step-lbl">Verificar datos</span></div>
         <span class="step-sep"></span>
-        <div class="step done"><span class="n"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span><span class="step-lbl">Confirmar asignación</span></div>
+        <div class="step done"><span class="n"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span><span class="step-lbl">Entregar</span></div>
         <span class="step-sep"></span>
-        <div class="step active"><span class="n">3</span><span class="step-lbl">Evidencia de entrega</span></div>
-        <span class="step-sep"></span>
-        <div class="step"><span class="n">4</span><span class="step-lbl">Confirmación</span></div>
+        <div class="step active"><span class="n">3</span><span class="step-lbl">Evidencia</span></div>
       </div>
 
       <div class="layout">
@@ -391,20 +390,16 @@
                 <span class="fmt">Imagen (JPG, PNG, HEIC, WEBP…)</span><span class="fmt">PDF</span><span class="fmt">Máx 10MB</span>
               </div>
             </div>
-            <div class="obs-field">
-              <label for="obs" class="naowee-textfield__label">Observaciones del operador (opcional)</label>
-              <textarea id="obs" class="naowee-textfield__input" rows="3" placeholder="Ej. Entrega realizada al finalizar la jornada del evento."></textarea>
-            </div>
             </div><!-- /.panel__body -->
 
             <div class="flow-footer">
               <!-- La asignación ya se confirmó en el paso 2 (código reservado): no se vuelve atrás; la evidencia puede quedar pendiente (00:27:10). -->
-              <button class="naowee-btn naowee-btn--mute naowee-btn--large" id="btnLater" onclick="uploadLater()">
+              <button class="naowee-btn naowee-btn--quiet naowee-btn--large" id="btnLater" onclick="uploadLater()">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                <span id="btnLaterLbl">Subir evidencia después</span>
+                <span id="btnLaterLbl">La subo después</span>
               </button>
               <button class="naowee-btn naowee-btn--loud naowee-btn--large" id="btnConfirmMain" disabled onclick="confirmDelivery()">
-                <span id="btnConfirmLbl">Registrar evidencia</span>
+                <span id="btnConfirmLbl">Registrar foto</span>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               </button>
             </div>
@@ -429,7 +424,7 @@
               <div class="naowee-message__icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
               </div>
-              <div class="naowee-message__text" id="asideMsg">El incentivo ya está <strong>Asignado</strong> y el código reservado. Si no tienes la foto ahora, elige <strong>Subir evidencia después</strong>: quedará como <strong>Evidencia pendiente</strong> en Mis asignaciones.</div>
+              <div class="naowee-message__text" id="asideMsg">La entrega ya está registrada y el código asignado. Si no tienes la foto, elige <strong>La subo después</strong>: queda como <strong>Evidencia pendiente</strong> y la retomas desde <strong>Mis asignaciones</strong> o buscando de nuevo al beneficiario.</div>
             </div>
           </div>
         </aside>
@@ -538,8 +533,8 @@ function currentAssignment(){ try{ return JSON.parse(sessionStorage.getItem('inc
 
 function finish(evidence){
   const s = currentAssignment();
-  const obs = document.getElementById('obs').value || null;
-  if(s.recId && evidence) ledgerPut({ id: s.recId, evidence, evidenceAt: new Date().toLocaleString('es-CO'), evidenceObs: obs });
+  const obs = s.obs || null;
+  if(s.recId && evidence) ledgerPut({ id: s.recId, evidence, evidenceAt: new Date().toLocaleString('es-CO') });
   sessionStorage.setItem('inc-assignment-complete', JSON.stringify(Object.assign({}, s, {
     incentive: s.incentive?.name || 'Incentivo',
     observation: obs,
@@ -584,6 +579,9 @@ function uploadLater(){
       document.getElementById('pageTitle').textContent = 'Subir evidencia pendiente';
       document.getElementById('pageSub').textContent = `Incentivo entregado el ${s.assignedAt || '—'}. Registra la foto o el PDF de la entrega.`;
       document.getElementById('btnLaterLbl').textContent = 'Cancelar';
+      document.getElementById('btnLater').className = 'naowee-btn naowee-btn--mute naowee-btn--large';
+      /* Retomar una evidencia no es el flujo de entrega: sin pasos. */
+      document.getElementById('stepperWrap').hidden = true;
       document.getElementById('asideMsg').innerHTML = 'Este incentivo ya fue <strong>entregado</strong>; solo falta la evidencia. Al registrarla, el estado pasa de <strong>Evidencia pendiente</strong> a <strong>Entregado</strong>.';
     }
     if(!s.name && !s.recId){ window.location.replace('incentivo-08-asignar-buscar.html'); return; }
@@ -681,10 +679,10 @@ document.addEventListener('click', (e) => { const sw = document.getElementById('
 })();
 </script>
 
-<script src="shared/profile-switcher.js?v=20260922200101" defer></script>
+<script src="shared/profile-switcher.js?v=20260922201316" defer></script>
 
 <script src="shared/footer-scroll.js" defer></script>
-<script src="shared/tour.js" defer></script>
+<script src="shared/tour.js?v=20260922201316" defer></script>
 
 <!-- Footer flotante Naowee -->
 <div class="naowee-floating-footer" role="contentinfo" aria-label="Pie de página Naowee">

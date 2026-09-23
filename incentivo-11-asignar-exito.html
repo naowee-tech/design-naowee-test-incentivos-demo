@@ -367,11 +367,11 @@ try{
     const chk = document.getElementById('heroCheck');
     chk.classList.add('success-check--pending');
     chk.innerHTML = '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
-    document.getElementById('heroTitle').textContent = 'Incentivo asignado · evidencia pendiente';
-    document.getElementById('heroText').innerHTML = 'La entrega quedó registrada y el código reservado. Falta subir la <strong>foto de evidencia</strong>: puedes hacerlo ahora o después desde <strong>Mis asignaciones</strong>.';
+    document.getElementById('heroTitle').textContent = 'Entregado · falta la evidencia';
+    document.getElementById('heroText').innerHTML = 'La entrega quedó registrada y el código asignado. Falta la <strong>foto de evidencia</strong>: súbela ahora o después, desde <strong>Mis asignaciones</strong> o buscando de nuevo al beneficiario.';
     const now = document.getElementById('stateNow');
     now.className = 'naowee-badge naowee-badge--caution naowee-badge--quiet naowee-badge--small';
-    now.textContent = 'Asignado · evidencia pendiente';
+    now.textContent = 'Entregado · evidencia pendiente';
     const ev = document.getElementById('receiptEvidence');
     ev.innerHTML = '<span class="naowee-badge naowee-badge--caution naowee-badge--quiet naowee-badge--small">Pendiente</span>';
     document.getElementById('btnUploadNow').hidden = false;
@@ -425,10 +425,10 @@ document.addEventListener('click', (e) => { const sw = document.getElementById('
 
 </script>
 
-<script src="shared/profile-switcher.js?v=20260922200101" defer></script>
+<script src="shared/profile-switcher.js?v=20260922201316" defer></script>
 
 <script src="shared/footer-scroll.js" defer></script>
-<script src="shared/tour.js" defer></script>
+<script src="shared/tour.js?v=20260922201316" defer></script>
 
 <!-- Footer flotante Naowee -->
 <div class="naowee-floating-footer" role="contentinfo" aria-label="Pie de página Naowee">

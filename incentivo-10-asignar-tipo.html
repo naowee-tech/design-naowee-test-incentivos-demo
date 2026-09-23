@@ -262,6 +262,19 @@
   .summary-actions{display:flex;flex-direction:column;gap:8px}
   /* Reunión 22-09: incentivo elegido (solo lectura) + consulta de códigos */
   .chosen-inc{cursor:default;grid-template-columns:auto 1fr auto}
+  [hidden]{display:none !important}
+  .inc-conds{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .inc-cond{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;color:#1f6f23;background:#eaf6eb;border-radius:999px;padding:3px 9px}
+  .inc-cond svg{width:11px;height:11px}
+  .inc-cond b{font-weight:700;color:#14532d}
+  .inc--done{cursor:default;background:#fafbfd}
+  .inc--done:hover{background:#fafbfd;border-color:var(--naowee-color-border-default,#e7e9f3)}
+  .inc--done .inc__name{color:#646587}
+  .inc__state{display:flex;flex-direction:column;align-items:flex-end;gap:4px;padding-right:30px;text-align:right}
+  .inc__state small{font-size:11px;color:#646587}
+  .flow-section h3 .opt{font-weight:500;color:#9c9ebf;font-size:12px;margin-left:4px}
+  .obs-field{width:100%}
+  .obs-field textarea{min-height:56px;resize:vertical;font-family:inherit}
   .chosen-inc::after{display:none}
   .code-scope{height:36px}
   .code-lookup{margin:0 0 12px}
@@ -319,19 +332,17 @@
       <div class="page-header">
         <div>
           <h1 class="page-title">Asignar incentivo</h1>
-          <p class="page-sub">Confirma el incentivo a entregar y, si maneja códigos, el código del inventario.</p>
+          <p class="page-sub">Elige el incentivo que entregas y, si es un bono, su código.</p>
         </div>
       </div>
 
       <!-- Stepper sticky (paridad con paso 1) -->
       <div class="stepper" id="stepperWrap">
-        <div class="step done"><span class="n"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span><span class="step-lbl">Buscar y seleccionar</span></div>
+        <div class="step done"><span class="n"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span><span class="step-lbl">Verificar datos</span></div>
         <span class="step-sep"></span>
-        <div class="step active"><span class="n">2</span><span class="step-lbl">Confirmar asignación</span></div>
+        <div class="step active"><span class="n">2</span><span class="step-lbl">Entregar</span></div>
         <span class="step-sep"></span>
-        <div class="step"><span class="n">3</span><span class="step-lbl">Evidencia de entrega</span></div>
-        <span class="step-sep"></span>
-        <div class="step"><span class="n">4</span><span class="step-lbl">Confirmación</span></div>
+        <div class="step"><span class="n">3</span><span class="step-lbl">Evidencia</span></div>
       </div>
 
       <div class="layout">
@@ -349,26 +360,17 @@
                 <span style="color:var(--naowee-color-feedback-fill-positive-loud,#1f8923);font-weight:600">Medalla de oro · JN 2025</span>
               </div>
             </div>
-            <button class="naowee-btn naowee-btn--link naowee-btn--small" onclick="fadeAndGo('incentivo-08-asignar-buscar.html')">
+            <button class="naowee-btn naowee-btn--link naowee-btn--small" onclick="try{sessionStorage.removeItem('inc-profile')}catch(e){};fadeAndGo('incentivo-08-asignar-buscar.html')">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
               Cambiar beneficiario
             </button>
           </div>
 
-          <!-- Reunión 22-09 (00:23:13): el incentivo se elige UNA sola vez en el paso 1 (lista única con radio).
-               Aquí solo se confirma; ya no se vuelve a listar para seleccionar. -->
+          <!-- El incentivo se elige aquí, una vez verificados los datos. Cada uno
+               muestra las condiciones que cumple y su estado. -->
           <div class="flow-section">
             <h3><span class="step-num">1</span> Incentivo a entregar</h3>
-            <div class="inc selected chosen-inc" id="chosenInc">
-              <div class="inc__ico" id="chosenIco" style="background:#fff3e6;color:#d74009">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
-              </div>
-              <div class="inc__body">
-                <div class="inc__name" id="chosenName">Bono Deportivo</div>
-                <div class="inc__desc" id="chosenDesc">Deportista campeón · en individuales, 1 incentivo por deportista</div>
-              </div>
-              <button type="button" class="naowee-btn naowee-btn--link naowee-btn--small" onclick="fadeAndGo('incentivo-08-asignar-buscar.html')">Cambiar incentivo</button>
-            </div>
+            <div class="incentive-list" id="incList" role="radiogroup" aria-label="Incentivo a entregar"></div>
           </div>
 
           <div class="flow-section" id="noCodePanel" hidden>
@@ -381,9 +383,9 @@
             </div>
           </div>
 
-          <div class="flow-section" id="codePanel">
+          <div class="flow-section" id="codePanel" hidden>
             <h3><span class="step-num">2</span> Código del inventario</h3>
-            <p class="desc">Estos son los códigos del <strong id="codeIncName">Bono Deportivo</strong>. Selecciona uno disponible, o escribe un código para <strong>consultar si está disponible o ya asignado</strong> (reunión 22-09, 00:29:22). Al confirmar queda reservado para este beneficiario.</p>
+            <p class="desc">Estos son los códigos del <strong id="codeIncName">Bono Deportivo</strong>. Selecciona uno disponible, o escribe un código para <strong>consultar si está disponible o ya asignado</strong> (reunión 22-09, 00:29:22). Al confirmar queda asignado a este beneficiario.</p>
 
             <div class="code-toolbar">
               <div class="naowee-searchbox naowee-searchbox--small naowee-searchbox--pill">
@@ -441,14 +443,23 @@
             </div>
           </div>
 
+          <div class="flow-section" id="obsPanel" hidden>
+            <h3><span class="step-num" id="obsNum">3</span> Observaciones <span class="opt">(opcional)</span></h3>
+            <div class="naowee-textfield naowee-textfield--textarea obs-field">
+              <div class="naowee-textfield__input-wrap">
+                <textarea class="naowee-textfield__input" id="deliveryObs" rows="2" maxlength="400" placeholder="Ej. Se corrigió el teléfono registrado en la inscripción."></textarea>
+              </div>
+            </div>
+          </div>
+
           <!-- Footer nav (consistente) -->
           <div class="flow-footer">
             <button class="naowee-btn naowee-btn--mute naowee-btn--large" onclick="fadeAndGo('incentivo-08-asignar-buscar.html')">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-              Volver al paso anterior
+              Volver a verificar datos
             </button>
             <button class="naowee-btn naowee-btn--loud naowee-btn--large" id="btnNext" disabled onclick="confirmAssignment()">
-              Confirmar asignación
+              <span id="btnNextLbl">Selecciona un incentivo</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
           </div>
@@ -491,7 +502,7 @@
               <div class="naowee-message__icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
               </div>
-              <div class="naowee-message__text"><strong>Al confirmar</strong>, el código queda reservado y el incentivo pasa a <strong>Asignado · evidencia pendiente</strong>. La foto de la entrega la puedes subir en el siguiente paso o después, desde Mis asignaciones.</div>
+              <div class="naowee-message__text"><strong>Al confirmar</strong>, el código queda asignado y el incentivo pasa a <strong>Entregado · evidencia pendiente</strong>. La foto de la entrega la puedes subir en el siguiente paso o después, desde Mis asignaciones.</div>
             </div>
           </div>
         </aside>
@@ -661,9 +672,12 @@ function selectCode(code){
 
 function updateSummary(){
   const sumInc = document.getElementById('sumInc');
-  if(selectedInc && sumInc) sumInc.querySelector('.val').textContent = selectedInc.name;
+  if(sumInc) sumInc.querySelector('.val').textContent = selectedInc ? selectedInc.name : '—';
   /* Código NO se muestra en el resumen (regla de seguridad: código redimible). */
-  document.getElementById('btnNext').disabled = !(selectedInc && (selectedInc.hasCodes ? selectedCode : true));
+  const ready = !!(selectedInc && (selectedInc.hasCodes ? selectedCode : true));
+  document.getElementById('btnNext').disabled = !ready;
+  const lbl = document.getElementById('btnNextLbl');
+  if(lbl) lbl.textContent = !selectedInc ? 'Selecciona un incentivo' : (!ready ? 'Selecciona un código' : 'Confirmar entrega');
 }
 
 document.getElementById('nowLabel').textContent = new Date().toLocaleString('es-CO', {day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'});
@@ -686,7 +700,53 @@ document.getElementById('nowLabel').textContent = new Date().toLocaleString('es-
   });
 })();
 
-/* ── Hidratar beneficiario + incentivo elegido en el paso 1 ── */
+/* ── Incentivos del beneficiario: cada uno con sus condiciones y su estado ── */
+let PROFILE = {};
+const IC_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+function condsFor(pr){
+  const all = PROFILE.conditions || [];
+  return Array.isArray(pr.conds) ? pr.conds.map(i => all[i]).filter(Boolean) : all;
+}
+function renderIncList(){
+  const box = document.getElementById('incList');
+  box.innerHTML = (PROFILE.programs || []).map(pr => {
+    const st = INC_STYLE[pr.incId] || INC_STYLE['bono-dep'];
+    const ico = `<div class="inc__ico" style="background:${st.bg};color:${st.fg}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${st.path}</svg></div>`;
+    const conds = condsFor(pr).map(c => `<span class="inc-cond">${IC_CHECK}${c.label}${c.val ? ` · <b>${c.val}</b>` : ''}</span>`).join('');
+    const body = `<div class="inc__body"><div class="inc__name">${pr.name}</div><div class="inc__desc">${pr.desc || ''}</div>${conds ? `<div class="inc-conds">${conds}</div>` : ''}</div>`;
+    if(pr.assigned){
+      const a = pr.assigned;
+      const badge = a.evidencePending
+        ? '<span class="naowee-badge naowee-badge--caution naowee-badge--quiet naowee-badge--small">Entregado · falta evidencia</span>'
+        : '<span class="naowee-badge naowee-badge--neutral naowee-badge--quiet naowee-badge--small">Ya entregado</span>';
+      return `<div class="inc inc--done" aria-disabled="true">${ico}${body}<div class="inc__state">${badge}<small>${a.operator} · ${a.date}</small></div></div>`;
+    }
+    return `<div class="inc" data-inc="${pr.incId}" role="radio" aria-checked="false" tabindex="0" onclick="selectInc('${pr.incId}')" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();selectInc('${pr.incId}')}">${ico}${body}<div class="inc__state"><span class="naowee-badge naowee-badge--informative naowee-badge--quiet naowee-badge--small">Disponible</span></div></div>`;
+  }).join('');
+}
+function selectInc(incId){
+  const pr = (PROFILE.programs || []).find(x => x.incId === incId && !x.assigned);
+  if(!pr) return;
+  selectedInc = { id: pr.incId, name: pr.name, desc: pr.desc || '', hasCodes: !!pr.hasCodes };
+  selectedCode = null; searchQ = ''; codePage = 1;
+  const cs = document.getElementById('codeSearch'); if(cs) cs.value = '';
+  document.querySelectorAll('#incList .inc[data-inc]').forEach(el => {
+    const on = el.dataset.inc === incId;
+    el.classList.toggle('selected', on); el.setAttribute('aria-checked', on ? 'true' : 'false');
+  });
+  document.getElementById('codeIncName').textContent = selectedInc.name;
+  document.getElementById('codePanel').hidden = !selectedInc.hasCodes;
+  document.getElementById('noCodePanel').hidden = true;
+  document.getElementById('obsPanel').hidden = false;
+  document.getElementById('obsNum').textContent = selectedInc.hasCodes ? '3' : '2';
+  if(selectedInc.hasCodes){
+    renderCodes();
+    requestAnimationFrame(() => { const a = document.querySelector('.code-scope .naowee-segment__item--active'); if(a) moveScopePill(a); });
+  }
+  updateSummary();
+}
+
+/* ── Hidratar beneficiario verificado en el paso 1 ── */
 const INC_STYLE = {
   'bono-dep': { bg:'#fff3e6', fg:'#d74009', path:'<circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>' },
   'credito':  { bg:'#eef5ff', fg:'#1f78d1', path:'<path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1 2.7 3 6 3s6-2 6-3v-5"/>' },
@@ -704,31 +764,23 @@ function benefMetaHTML(p){
 (function hydrate(){
   let p = {};
   try{ p = JSON.parse(sessionStorage.getItem('inc-profile') || '{}'); }catch(e){}
-  /* Sin incentivo elegido (acceso directo) → el paso 1 es obligatorio. */
-  if(!p.name || !p.selectedIncentive){ window.location.replace('incentivo-08-asignar-buscar.html'); return; }
+  /* Sin beneficiario verificado (acceso directo) → el paso 1 es obligatorio. */
+  if(!p.name || !Array.isArray(p.programs)){ window.location.replace('incentivo-08-asignar-buscar.html'); return; }
+  PROFILE = p;
   document.querySelector('.flow-recap__ava').textContent = p.initials || '—';
   document.querySelector('.flow-recap__name').textContent = p.name;
   document.querySelector('.flow-recap__meta').innerHTML = benefMetaHTML(p);
   const rows = document.querySelectorAll('.summary .summary-row');
   if(rows[0]){ rows[0].querySelector('.lbl').textContent = typeLabel(p); rows[0].querySelector('.val').textContent = p.role==='institution' ? p.name : shortName(p.name); }
   if(rows[1]){ rows[1].querySelector('.val').textContent = `${p.docType || 'CC'} ${p.doc}`; }
-  selectedInc = p.selectedIncentive;
-  const st = INC_STYLE[selectedInc.id] || INC_STYLE['bono-dep'];
-  const ico = document.getElementById('chosenIco');
-  ico.style.background = st.bg; ico.style.color = st.fg;
-  ico.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${st.path}</svg>`;
-  document.getElementById('chosenName').textContent = selectedInc.name;
-  document.getElementById('chosenDesc').textContent = selectedInc.desc || '';
-  document.getElementById('codeIncName').textContent = selectedInc.name;
-  document.getElementById('codePanel').hidden = !selectedInc.hasCodes;
-  document.getElementById('noCodePanel').hidden = !!selectedInc.hasCodes;
-  renderCodes();
+  renderIncList();
+  const avail = p.programs.filter(pr => !pr.assigned);
+  if(avail.length === 1) selectInc(avail[0].incId);
   updateSummary();
-  requestAnimationFrame(() => { const a = document.querySelector('.code-scope .naowee-segment__item--active'); if(a) moveScopePill(a); });
 })();
 
 /* Confirmar asignación (validar → entregar → evidencia, 00:27:10 – 00:28:12):
-   el código queda reservado y el incentivo pasa a "Asignado · evidencia pendiente". */
+   el código queda asignado y el incentivo pasa a "Entregado · evidencia pendiente". */
 /* Programa en el que se entrega (lo elige el operador en "Asignar incentivo"). */
 (function(){
   try{ const p = JSON.parse(sessionStorage.getItem('inc-profile') || '{}'); if(p.programName) document.getElementById('sumPrg').textContent = p.programName; }catch(e){}
@@ -745,7 +797,7 @@ function confirmAssignment(){
     isNew: true, estado: 'asig', evidence: null,
     doc: p.doc, docType: p.docType, name: p.name, initials: p.initials, role: p.role, level: p.level, kind: p.kind,
     zone: p.departamento || p.zone || '', incId: selectedInc.id, incName: selectedInc.name, code: selectedCode || null,
-    obs: p.obs || '', operator: 'Juan Rodríguez',
+    obs: (document.getElementById('deliveryObs').value || '').trim(), operator: 'Juan Rodríguez',
     programId: p.programId || 'PRG-2026-010', programName: p.programName || 'Juegos Intercolegiados 2026',
     fecha: `${String(now.getDate()).padStart(2,'0')} ${MES[now.getMonth()]} ${now.getFullYear()}`,
     hora: `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`,
@@ -753,7 +805,7 @@ function confirmAssignment(){
   };
   ledgerPut(rec);
   sessionStorage.setItem('inc-assignment', JSON.stringify(Object.assign({}, p, {
-    recId: rec.id, incentive: selectedInc, code: selectedCode || null, assignedAt: `${rec.fecha} · ${rec.hora}`, ts: rec.ts
+    recId: rec.id, obs: rec.obs, incentive: selectedInc, code: selectedCode || null, assignedAt: `${rec.fecha} · ${rec.hora}`, ts: rec.ts
   })));
   fadeAndGo('incentivo-09-validar-foto.html');
 }
@@ -837,10 +889,10 @@ function fadeAndGo(url){
   onScroll();
 })();
 </script>
-<script src="shared/profile-switcher.js?v=20260922200101" defer></script>
+<script src="shared/profile-switcher.js?v=20260922201316" defer></script>
 
 <script src="shared/footer-scroll.js" defer></script>
-<script src="shared/tour.js" defer></script>
+<script src="shared/tour.js?v=20260922201316" defer></script>
 
 <!-- Footer flotante Naowee -->
 <div class="naowee-floating-footer" role="contentinfo" aria-label="Pie de página Naowee">

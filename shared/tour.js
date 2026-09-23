@@ -101,28 +101,27 @@
 
     /* ═══ OPERADOR EN CAMPO (rol operador) ═══ */
     'HU-OP-01': { ph: 'Operador en campo', page: 'incentivo-08-asignar-buscar.html', role: 'operador',
-      title: 'Buscar beneficiario', purpose: 'Buscar a un beneficiario por documento y validar automáticamente su elegibilidad.',
+      title: 'Buscar y verificar', purpose: 'Buscar al beneficiario entre quienes cumplen las condiciones del programa y verificar sus datos.',
       steps: [
         { sel: '#benefTabs', body: 'Elige el <b>tipo de beneficiario</b>: deportista, paradeportista, personal de apoyo o institución educativa.' },
         { sel: '#docNumber', body: 'Ingresa el <b>documento</b> (o usa un ejemplo de demo abajo).' },
         { sel: '.quick-chip[data-type="deportista"]', body: 'Clic en un <b>caso de demo</b> para ver el resultado de la validación.', click: true },
-        { sel: '.profile-card', body: 'El sistema valida las <b>condiciones de elegibilidad</b> contra los programas activos.' },
-        { sel: '.programs-section', body: 'Muestra los <b>incentivos aplicables</b> para este beneficiario.' },
-        { sel: '.profile-card__footer .naowee-btn--loud', body: '<b>Continuar</b> para seleccionar el incentivo y el código.' }
+        { sel: '.profile-card', body: 'Solo aparece quien cumple las condiciones del programa. <b>Verifica sus datos</b>.' },
+        { sel: '#contactBlock', body: 'Corrige el <b>contacto</b> si la inscripción trae datos de la institución.' },
+        { sel: '.profile-card__footer .naowee-btn--loud', body: '<b>Entregar</b>: elegir el incentivo y, si es bono, el código.' }
       ] },
     'HU-OP-02': { ph: 'Operador en campo', page: 'incentivo-10-asignar-tipo.html', role: 'operador',
-      title: 'Seleccionar incentivo + código', purpose: 'Elegir el incentivo aplicable y el código del inventario a entregar (asignación manual, trazable).',
+      title: 'Entregar', purpose: 'Elegir el incentivo aplicable y el código del inventario a entregar (asignación manual, trazable).',
       steps: [
-        { sel: '#incList', body: 'Selecciona el <b>incentivo</b> aplicable para el beneficiario.' },
-        { sel: '#codePanel, #incList', body: 'Si el incentivo maneja código, aparece el <b>panel de códigos</b> del inventario para elegir uno.' },
-        { sel: '#btnNext', body: '<b>Continuar a evidencia</b> para registrar la entrega.' }
+        { sel: '#incList', body: 'Cada incentivo muestra las <b>condiciones que cumple</b>. Si es un bono, al elegirlo aparece el <b>inventario de códigos</b>.' },
+        { sel: '#btnNext', body: '<b>Confirmar entrega</b> y pasar a la evidencia.' }
       ] },
     'HU-OP-03': { ph: 'Operador en campo', page: 'incentivo-09-validar-foto.html', role: 'operador',
       title: 'Evidencia de entrega', purpose: 'Adjuntar la evidencia de la entrega física (foto o archivo de respaldo). No es validación biométrica.',
       steps: [
         { sel: '#dropZone', body: 'Adjunta la <b>evidencia</b>: foto del beneficiario recibiendo, o un documento de respaldo.' },
-        { sel: '#obs', body: 'Agrega <b>observaciones</b> del operador (opcional).' },
-        { sel: '#btnConfirmMain', body: '<b>Completar entrega</b>: la evidencia es obligatoria para confirmar.' }
+        { sel: '#btnLater', body: 'Si no tienes la foto, <b>la subes después</b>: queda como evidencia pendiente.' },
+        { sel: '#btnConfirmMain', body: '<b>Registrar foto</b> de la entrega.' }
       ] },
     'HU-OP-04': { ph: 'Operador en campo', page: 'incentivo-11-asignar-exito.html', role: 'operador',
       title: 'Confirmación exitosa', purpose: 'Confirmar visualmente que la asignación quedó registrada y su comprobante.',
