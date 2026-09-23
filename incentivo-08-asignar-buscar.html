@@ -426,6 +426,24 @@
   .prog-info-banner.caution{background:#fff7ec;border-color:#ffd99c;color:#7a3d04}
   .prog-info-banner.caution svg{color:#d97706}
 
+  /* ═════ Lista única seleccionable de incentivos aplicables (reunión 22-09, 00:23:13) ═════ */
+  .prog{grid-template-columns:auto auto 1fr auto}
+  .prog--assigned{grid-template-columns:auto auto 1fr auto}
+  .prog--assigned .prog__assignment{grid-column:3 / 5;justify-content:space-between}
+  .prog--assigned .naowee-radio{opacity:.45}
+  .prog--selectable{cursor:pointer}
+  .prog--selectable:focus-visible{outline:none;border-color:var(--naowee-color-text-accent,#d74009);box-shadow:0 0 0 3px rgba(215,64,9,.15)}
+  .prog--selectable.is-selected{border-color:var(--naowee-color-text-accent,#d74009);background:#fff7f2;box-shadow:0 0 0 1px var(--naowee-color-text-accent,#d74009)}
+  .prog--selectable .naowee-radio{pointer-events:none}
+  .prog--pending-ev{background:#fffaf2;border-color:#ffd99c}
+  .prog--pending-ev:hover{background:#fffaf2;border-color:#ffd99c}
+  .prog--pending-ev .prog__assignment{border-top-color:#ffd99c}
+  .prog__ev-btn{margin-left:auto}
+  .programs-section__hint{font-size:12.5px;color:var(--naowee-color-text-secondary,#646587);margin:-6px 0 14px;line-height:1.45}
+  .obs-section{padding:4px 28px 20px}
+  .obs-section .naowee-textfield{width:100%}
+  .obs-section textarea{min-height:56px;resize:vertical;font-family:inherit}
+
   /* Not eligible */
   .no-elig{
     background:#fff;border:1px solid #ffc4bb;border-radius:16px;
@@ -533,16 +551,16 @@
       <div class="page-header">
         <div class="page-header__title-group">
           <h1 class="page-title">Asignar incentivo</h1>
-          <p class="page-sub">Busca al deportista por su documento. El sistema valida automáticamente si cumple las condiciones de los programas activos.</p>
+          <p class="page-sub">Busca al beneficiario entre los ganadores/elegibles de los programas activos, selecciona el incentivo a entregar y registra la evidencia (ahora o después).</p>
         </div>
       </div>
 
       <!-- Stepper sticky con progressive collapse estilo digitación.
            El .stepper ES el sticky element directamente (patrón .sport-section) -->
       <div class="stepper" id="stepperWrap">
-        <div class="step active"><span class="n">1</span><span class="step-lbl">Buscar deportista</span></div>
+        <div class="step active"><span class="n">1</span><span class="step-lbl">Buscar y seleccionar</span></div>
         <span class="step-sep"></span>
-        <div class="step"><span class="n">2</span><span class="step-lbl">Seleccionar incentivo</span></div>
+        <div class="step"><span class="n">2</span><span class="step-lbl">Confirmar asignación</span></div>
         <span class="step-sep"></span>
         <div class="step"><span class="n">3</span><span class="step-lbl">Evidencia de entrega</span></div>
         <span class="step-sep"></span>
@@ -552,7 +570,7 @@
       <!-- Search card -->
       <div class="search-card">
         <div class="search-card__title">Documento del beneficiario</div>
-        <p class="search-card__hint" id="searchHint">Busca al deportista por su documento. El sistema valida automáticamente si cumple las condiciones de los programas activos.</p>
+        <p class="search-card__hint" id="searchHint">Busca al deportista por su documento entre los ganadores de la fase final nacional.</p>
 
         <!-- Tipo de beneficiario — feedback Danna (instituciones + paradeportistas + personal de apoyo) -->
         <div class="benef-types">
@@ -566,13 +584,21 @@
               <span class="naowee-radio"><span class="naowee-radio__circle"></span></span>
               <span>Paradeportista</span>
             </button>
-            <button type="button" class="benef-radio" data-type="apoyo" role="radio" aria-checked="false" tabindex="-1" onclick="selectBenefType('apoyo')">
+            <button type="button" class="benef-radio" data-type="docente-entrenador" role="radio" aria-checked="false" tabindex="-1" onclick="selectBenefType('docente-entrenador')">
               <span class="naowee-radio"><span class="naowee-radio__circle"></span></span>
-              <span>Personal de apoyo</span>
+              <span>Docente / Entrenador</span>
+            </button>
+            <button type="button" class="benef-radio" data-type="docente-asistente" role="radio" aria-checked="false" tabindex="-1" onclick="selectBenefType('docente-asistente')">
+              <span class="naowee-radio"><span class="naowee-radio__circle"></span></span>
+              <span>Docente / Asistente (conjunto)</span>
             </button>
             <button type="button" class="benef-radio" data-type="institucion" role="radio" aria-checked="false" tabindex="-1" onclick="selectBenefType('institucion')">
               <span class="naowee-radio"><span class="naowee-radio__circle"></span></span>
               <span>Institución educativa</span>
+            </button>
+            <button type="button" class="benef-radio" data-type="organizacion" role="radio" aria-checked="false" tabindex="-1" onclick="selectBenefType('organizacion')">
+              <span class="naowee-radio"><span class="naowee-radio__circle"></span></span>
+              <span>Organización (para deportes)</span>
             </button>
           </div>
         </div>
@@ -608,15 +634,18 @@
 
         <div class="quick-row">
           <span class="quick-label">Demo · probar con:</span>
-          <button class="quick-chip" data-type="deportista" onclick="runDemo('eligible')"><code>1001234567</code> · deportista aplica</button>
-          <button class="quick-chip" data-type="deportista" onclick="runDemo('partial-assigned')"><code>1011223344</code> · 1 de 2 ya asignado</button>
-          <button class="quick-chip" data-type="deportista" onclick="runDemo('all-assigned')"><code>1022334455</code> · todos ya asignados</button>
-          <button class="quick-chip" data-type="deportista" onclick="runDemo('not-eligible')"><code>1003456789</code> · deportista no cumple</button>
-          <button class="quick-chip" data-type="paradeportista" style="display:none" onclick="runDemo('eligible-para')"><code>1090345678</code> · paradeportista aplica</button>
-          <button class="quick-chip" data-type="apoyo" style="display:none" onclick="runDemo('eligible-coach')"><code>1050987654</code> · entrenador aplica</button>
-          <button class="quick-chip" data-type="apoyo" style="display:none" onclick="runDemo('not-eligible-coach')"><code>1067543210</code> · entrenador no fue el primero</button>
-          <button class="quick-chip" data-type="institucion" style="display:none" onclick="runDemo('institution')"><code>800.214.553-7</code> · institución #1 del ranking</button>
-          <button class="quick-chip" data-type="all" onclick="runDemo('not-found')"><code>9999999999</code> · sin registro</button>
+          <button class="quick-chip" data-type="deportista" onclick="runDemo('eligible')"><code>1001234567</code> · campeona grado 11° (Bono + Crédito)</button>
+          <button class="quick-chip" data-type="deportista" onclick="runDemo('partial-assigned')"><code>1011223344</code> · 1 de 2 ya entregado</button>
+          <button class="quick-chip" data-type="deportista" onclick="runDemo('evidence-pending')"><code>1033445566</code> · entregado · falta evidencia</button>
+          <button class="quick-chip" data-type="deportista" onclick="runDemo('all-assigned')"><code>1022334455</code> · todos ya entregados</button>
+          <button class="quick-chip" data-type="deportista" onclick="runDemo('not-eligible')"><code>1003456789</code> · no está entre los ganadores</button>
+          <button class="quick-chip" data-type="paradeportista" style="display:none" onclick="runDemo('eligible-para')"><code>1090345678</code> · paradeportista campeón grado 10°</button>
+          <button class="quick-chip" data-type="docente-entrenador" style="display:none" onclick="runDemo('eligible-coach')"><code>1050987654</code> · docente que inscribió al campeón</button>
+          <button class="quick-chip" data-type="docente-entrenador" style="display:none" onclick="runDemo('not-eligible-coach')"><code>1067543210</code> · solo acompañó en la final nacional</button>
+          <button class="quick-chip" data-type="docente-asistente" style="display:none" onclick="runDemo('eligible-assistant')"><code>1044556677</code> · asistente equipo campeón</button>
+          <button class="quick-chip" data-type="institucion" style="display:none" onclick="runDemo('institution')"><code>108001000123</code> · DANE · institución con más oros</button>
+          <button class="quick-chip" data-type="organizacion" style="display:none" onclick="runDemo('organization')"><code>900456789</code> · organización con más oros en para deportes</button>
+          <button class="quick-chip" data-type="all" onclick="resetDemoData()" title="Borra las asignaciones hechas en esta demo (vuelve al estado inicial)">↺ Reiniciar demo</button>
         </div>
       </div>
 
@@ -627,7 +656,7 @@
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
           </div>
           <h4>Ingresa un documento para empezar</h4>
-          <p>El beneficiario debe presentar su documento (cédula o NIT según el tipo) para iniciar la validación. Usa los ejemplos de demo para ver los casos posibles.</p>
+          <p>La búsqueda se hace <strong>solo entre los ganadores/elegibles</strong> de los programas activos (documento para personas, código DANE para instituciones). Usa los ejemplos de demo para ver los casos posibles.</p>
         </div>
       </div>
 
@@ -636,188 +665,188 @@
 </div>
 
 <script>
+/* ═════ Catálogo de incentivos reales · Juegos Intercolegiados 2026 (xlsx requisitos) ═════
+   El operador NO ve valores monetarios (feedback Danna). Solo el Bono Deportivo maneja
+   códigos de inventario; Crédito Condonable (ICETEX) y Kit se registran sin código. */
+const INCENTIVES = {
+  'bono-dep': { name:'Bono Deportivo',                    iconBg:'#fff3e6', iconColor:'#d74009', icon:'award',  hasCodes:true  },
+  'credito':  { name:'Crédito Condonable ICETEX',         iconBg:'#eef5ff', iconColor:'#1f78d1', icon:'grad',   hasCodes:false },
+  'kit':      { name:'Kit de implementación deportiva',   iconBg:'#e6f4f1', iconColor:'#0d9488', icon:'bag',    hasCodes:false }
+};
+function prog(incId, desc, extra){ return Object.assign({ incId, name: INCENTIVES[incId].name, desc, iconBg: INCENTIVES[incId].iconBg, iconColor: INCENTIVES[incId].iconColor, icon: INCENTIVES[incId].icon }, extra || {}); }
+
+/* La búsqueda es ENTRE LOS GANADORES/ELEGIBLES (00:28:12), no en toda la plataforma.
+   Cualquier documento fuera de esta lista → "no tiene incentivos aplicables". */
 const SAMPLE = {
   eligible: {
-    role:'athlete', level:'olimpico',
-    name:'María Camila Herrera Rojas',
-    docType:'CC', doc:'1001234567',
-    age:19, category:'Prejuvenil', disc:'Atletismo · 400m',
-    zone:'Atlántico · Barranquilla', strat:'Estrato 2', matricula:'Activa',
-    grado:'11° grado', phone:'300 412 7788', email:'maria.herrera@email.com',
-    medal:'Oro · Juegos Nacionales 2025', initials:'MC',
-    medals:[
-      { type:'oro',    event:'Juegos Nacionales 2025', year:2025 },
-      { type:'oro',    event:'Sudamericano sub-20',     year:2024 },
-      { type:'plata',  event:'Bolivarianos',            year:2023 },
-      { type:'bronce', event:'Nacional juvenil',        year:2022 }
-    ],
+    role:'athlete', level:'deportista',
+    name:'María Camila Herrera Rojas', docType:'TI', doc:'1001234567', initials:'MC',
+    grado:'11°', institucion:'I.E. Técnica Distrital de Barranquilla', deporte:'Atletismo · 400 m planos',
+    categoria:'Juvenil', departamento:'Atlántico', phone:'300 412 7788', email:'maria.herrera@email.com',
+    medal:'Oro · Final nacional 2026', obs:'',
+    medals:[ { type:'oro', event:'Final nacional 2026 · 400 m', year:2026 }, { type:'oro', event:'Final departamental Atlántico', year:2026 } ],
     conditions:[
-      { label:'Mayor de 18 años', val:'19 años', ok:true },
-      { label:'Categoría prejuvenil o superior', val:'Prejuvenil', ok:true },
-      { label:'Medalla de oro o plata', val:'Oro', ok:true },
-      { label:'Matrícula activa', val:'Activa', ok:true }
+      { label:'1er puesto · fase final nacional', val:'Oro · 400 m', ok:true },
+      { label:'Grado escolar ≤ 11°', val:'11°', ok:true },
+      { label:'Cursa grado 11° (Crédito Condonable)', val:'11°', ok:true }
     ],
     programs:[
-      { name:'Becas deportivas 2026 — Medallistas de oro', desc:'Beca educativa · condición única por beneficiario', value:'$1.000.000', iconBg:'#fff3e6', iconColor:'#d74009', icon:'trophy' },
-      { name:'Kit deportivo Atlántico', desc:'Dotación completa · disciplinas pista', value:'$350.000', iconBg:'#eef5ff', iconColor:'#1f78d1', icon:'bag' },
-      { name:'Bono nutrición 2026', desc:'Bono trimestral · canjeable con código en aliados', value:'$500.000', iconBg:'#f3e8ff', iconColor:'#7c3aed', icon:'award' }
-    ]
-  },
-  'not-eligible':{
-    role:'athlete', level:'amateur',
-    name:'Juan David Castaño Pérez',
-    docType:'CC', doc:'1003456789',
-    age:16, category:'Juvenil', disc:'Fútbol · delantero',
-    zone:'Cundinamarca · Bogotá', strat:'Estrato 3', matricula:'Activa',
-    grado:'10° grado', phone:'301 555 2210', email:'juan.castano@email.com',
-    medal:'Sin medallas registradas', initials:'JD',
-    medals:[],
-    conditions:[
-      { label:'Mayor de 18 años', val:'16 años', ok:false },
-      { label:'Medalla de oro o plata', val:'Sin medallas', ok:false },
-      { label:'Matrícula activa', val:'Activa', ok:true }
-    ]
-  },
-  'eligible-coach':{
-    role:'coach', supportType:'entrenador',
-    name:'Carlos Alberto Ruiz Mendoza',
-    docType:'CC', doc:'1050987654',
-    age:42, coachRole:'Entrenador principal', years:12,
-    disc:'Atletismo · velocidad', zone:'Atlántico · Barranquilla',
-    vinculacion:'Activa · Liga de Atletismo Atlántico',
-    initials:'CR',
-    phone:'300 778 1290', email:'carlos.ruiz@email.com',
-    athlete:{ name:'María Camila Herrera Rojas', disc:'Atletismo · 400m', medal:'Oro · JN 2025', firstSince:'feb 2018' },
-    conditions:[
-      { label:'Primer entrenador registrado del deportista', val:'Sí · desde feb 2018', ok:true },
-      { label:'Deportista con medalla de oro o plata', val:'Oro JN 2025', ok:true },
-      { label:'Vinculación activa con el Ministerio', val:'Activa', ok:true },
-      { label:'Mínimo 5 años como entrenador', val:'12 años', ok:true }
-    ],
-    programs:[
-      { name:'Reconocimiento al formador — Oro', desc:'Bono único · primer entrenador registrado del medallista', value:'$500.000', iconBg:'#fff3e6', iconColor:'#d74009', icon:'medal' },
-      { name:'Bono formativo continuado', desc:'Estímulo anual por trayectoria del entrenador', value:'$200.000', iconBg:'#f3f0ff', iconColor:'#7c3aed', icon:'award' }
+      prog('bono-dep', 'Deportista campeón · en individuales, 1 incentivo por deportista'),
+      prog('credito',  'Campeón que cursa grado 11° (o 12° en escuelas normales)')
     ]
   },
   'partial-assigned':{
-    role:'athlete', level:'profesional',
-    name:'Andrea Sofía López Mejía',
-    docType:'CC', doc:'1011223344',
-    age:21, category:'Mayores', disc:'Natación · 200m libre',
-    zone:'Atlántico · Barranquilla', strat:'Estrato 3', matricula:'Activa',
-    grado:'Educación superior · 3er sem', phone:'302 660 4471', email:'andrea.lopez@email.com',
-    medal:'Oro · Juegos Nacionales 2025', initials:'AL',
-    medals:[
-      { type:'oro',    event:'Juegos Nacionales 2025', year:2025 },
-      { type:'plata',  event:'Centroamericanos',       year:2024 },
-      { type:'bronce', event:'Sudamericano sub-23',    year:2023 }
-    ],
+    role:'athlete', level:'deportista',
+    name:'Andrea Sofía López Mejía', docType:'TI', doc:'1011223344', initials:'AL',
+    grado:'11°', institucion:'Colegio Nuestra Señora del Rosario', deporte:'Natación · 200 m libre',
+    categoria:'Juvenil', departamento:'Bolívar', phone:'302 660 4471', email:'andrea.lopez@email.com',
+    medal:'Oro · Final nacional 2026', obs:'',
+    medals:[ { type:'oro', event:'Final nacional 2026 · 200 m libre', year:2026 }, { type:'plata', event:'Final nacional 2026 · 100 m libre', year:2026 } ],
     conditions:[
-      { label:'Mayor de 18 años', val:'21 años', ok:true },
-      { label:'Categoría prejuvenil o superior', val:'Mayores', ok:true },
-      { label:'Medalla de oro o plata', val:'Oro', ok:true },
-      { label:'Matrícula activa', val:'Activa', ok:true }
+      { label:'1er puesto · fase final nacional', val:'Oro · 200 m libre', ok:true },
+      { label:'Grado escolar ≤ 11°', val:'11°', ok:true },
+      { label:'Cursa grado 11° (Crédito Condonable)', val:'11°', ok:true }
     ],
     programs:[
-      { name:'Becas deportivas 2026 — Medallistas de oro', desc:'Beca educativa · condición única por beneficiario', value:'$1.000.000', iconBg:'#fff3e6', iconColor:'#d74009', icon:'trophy',
-        assigned:{ operator:'Laura Meza', operatorRole:'Operador · Indeportes Atlántico', date:'08 mar 2026', time:'10:42', code:'2026001-00187' } },
-      { name:'Kit deportivo Atlántico', desc:'Dotación completa · disciplinas pista', value:'$350.000', iconBg:'#eef5ff', iconColor:'#1f78d1', icon:'bag' }
+      prog('bono-dep', 'Deportista campeón · en individuales, 1 incentivo por deportista',
+        { assigned:{ operator:'Laura Meza', operatorRole:'Operador · Indeportes Bolívar', date:'08 sep 2026', time:'10:42' } }),
+      prog('credito',  'Campeón que cursa grado 11° (o 12° en escuelas normales)')
+    ]
+  },
+  'evidence-pending':{
+    role:'athlete', level:'deportista',
+    name:'Valentina Pérez Gómez', docType:'TI', doc:'1033445566', initials:'VP',
+    grado:'9°', institucion:'I.E. San José de Soledad', deporte:'Tenis de mesa · individual',
+    categoria:'Prejuvenil', departamento:'Atlántico', phone:'301 998 1203', email:'valentina.perez@email.com',
+    medal:'Oro · Final nacional 2026', obs:'',
+    medals:[ { type:'oro', event:'Final nacional 2026 · individual', year:2026 } ],
+    conditions:[
+      { label:'1er puesto · fase final nacional', val:'Oro · individual', ok:true },
+      { label:'Grado escolar ≤ 11°', val:'9°', ok:true }
+    ],
+    programs:[
+      /* recId enlaza con la fila R-0001 de Mis asignaciones (14): subir la evidencia o revertir allí se refleja aquí. */
+      prog('bono-dep', 'Deportista campeón · en individuales, 1 incentivo por deportista',
+        { assigned:{ recId:'R-0001', operator:'Doug Vargas', operatorRole:'Operador', date:'15 sep 2026', time:'16:05', evidencePending:true } })
     ]
   },
   'all-assigned':{
-    role:'athlete', level:'olimpico',
-    name:'Sebastián Camilo Vargas Rincón',
-    docType:'CC', doc:'1022334455',
-    age:24, category:'Mayores', disc:'Levantamiento de pesas · 73kg',
-    zone:'Cundinamarca · Bogotá', strat:'Estrato 2', matricula:'Activa',
-    grado:'Bachiller (2019)', phone:'304 233 9087', email:'sebastian.vargas@email.com',
-    medal:'Oro · Juegos Nacionales 2025', initials:'SV',
-    medals:[
-      { type:'oro',    event:'Juegos Nacionales 2025', year:2025 },
-      { type:'oro',    event:'Panamericanos sub-23',   year:2024 },
-      { type:'plata',  event:'Sudamericanos',          year:2023 },
-      { type:'bronce', event:'Bolivarianos',           year:2022 },
-      { type:'bronce', event:'Nacional juvenil',       year:2021 }
-    ],
+    role:'athlete', level:'deportista',
+    name:'Sebastián Camilo Vargas Rincón', docType:'TI', doc:'1022334455', initials:'SV',
+    grado:'11°', institucion:'I.E. Departamental de Soacha', deporte:'Levantamiento de pesas · 73 kg',
+    categoria:'Juvenil', departamento:'Cundinamarca', phone:'304 233 9087', email:'sebastian.vargas@email.com',
+    medal:'Oro · Final nacional 2026', obs:'',
+    medals:[ { type:'oro', event:'Final nacional 2026 · 73 kg', year:2026 }, { type:'oro', event:'Final departamental', year:2026 } ],
     conditions:[
-      { label:'Mayor de 18 años', val:'24 años', ok:true },
-      { label:'Categoría prejuvenil o superior', val:'Mayores', ok:true },
-      { label:'Medalla de oro o plata', val:'Oro', ok:true },
-      { label:'Matrícula activa', val:'Activa', ok:true }
+      { label:'1er puesto · fase final nacional', val:'Oro · 73 kg', ok:true },
+      { label:'Grado escolar ≤ 11°', val:'11°', ok:true },
+      { label:'Cursa grado 11° (Crédito Condonable)', val:'11°', ok:true }
     ],
     programs:[
-      { name:'Becas deportivas 2026 — Medallistas de oro', desc:'Beca educativa · condición única por beneficiario', value:'$1.000.000', iconBg:'#fff3e6', iconColor:'#d74009', icon:'trophy',
-        assigned:{ operator:'Doug Vargas', operatorRole:'Gestor de incentivos · Mindeporte', date:'22 feb 2026', time:'15:18', code:'2026001-00042' } },
-      { name:'Reconocimiento al medallista 2026', desc:'Bono único por logro deportivo nacional', value:'$750.000', iconBg:'#f3f0ff', iconColor:'#7c3aed', icon:'award',
-        assigned:{ operator:'Carla Suárez', operatorRole:'Operador · Indeportes Cundinamarca', date:'04 abr 2026', time:'09:05', code:'2026005-00091' } }
-    ]
-  },
-  'not-eligible-coach':{
-    role:'coach', supportType:'entrenador',
-    name:'Laura Patricia Gómez Valencia',
-    docType:'CC', doc:'1067543210',
-    age:36, coachRole:'Entrenadora alto rendimiento', years:4,
-    disc:'Atletismo · velocidad', zone:'Atlántico · Barranquilla',
-    vinculacion:'Activa · Liga de Atletismo Atlántico',
-    initials:'LG',
-    phone:'305 119 6643', email:'laura.gomez@email.com',
-    athlete:{ name:'María Camila Herrera Rojas', disc:'Atletismo · 400m', medal:'Oro · JN 2025', currentSince:'ago 2024' },
-    conditions:[
-      { label:'Primer entrenador registrado del deportista', val:'No · vinculada desde ago 2024', ok:false },
-      { label:'Deportista con medalla de oro o plata', val:'Oro JN 2025', ok:true },
-      { label:'Vinculación activa con el Ministerio', val:'Activa', ok:true },
-      { label:'Mínimo 5 años como entrenador', val:'4 años', ok:false }
+      prog('bono-dep', 'Deportista campeón · en individuales, 1 incentivo por deportista',
+        { assigned:{ recId:'R-0002', operator:'Doug Vargas', operatorRole:'Operador', date:'10 sep 2026', time:'15:18' } }),
+      prog('credito',  'Campeón que cursa grado 11° (o 12° en escuelas normales)',
+        { assigned:{ operator:'Carla Suárez', operatorRole:'Operador · Indeportes Cundinamarca', date:'12 sep 2026', time:'09:05' } })
     ]
   },
   'eligible-para':{
-    role:'athlete', level:'paradeportista', kindId:'eligible-para',
-    name:'Andrés Felipe Quintero Mora',
-    docType:'CC', doc:'1090345678',
-    age:27, category:'Mayores', disc:'Atletismo Para · 100m T44',
-    zone:'Atlántico · Soledad', strat:'Estrato 2', matricula:'Activa',
-    grado:'Bachiller (2016)', phone:'300 561 8842', email:'andres.quintero@email.com',
-    medal:'Oro · Parapanamericanos 2024', initials:'AQ',
-    medals:[
-      { type:'oro',   event:'Parapanamericanos 2024',     year:2024 },
-      { type:'oro',   event:'Nacional Paralímpico 2025',  year:2025 },
-      { type:'plata', event:'Mundial Para Athletics',     year:2023 }
-    ],
+    role:'athlete', level:'paradeportista',
+    name:'Andrés Felipe Quintero Mora', docType:'TI', doc:'1090345678', initials:'AQ',
+    grado:'10°', institucion:'I.E. Normal Superior del Atlántico', deporte:'Para atletismo · 100 m T44',
+    categoria:'Juvenil', departamento:'Atlántico', phone:'300 561 8842', email:'andres.quintero@email.com',
+    medal:'Oro · Final nacional 2026', obs:'',
+    medals:[ { type:'oro', event:'Final nacional 2026 · 100 m T44', year:2026 } ],
     conditions:[
-      { label:'Mayor de 18 años', val:'27 años', ok:true },
-      { label:'Categoría prejuvenil o superior', val:'Mayores', ok:true },
-      { label:'Medalla de oro o plata', val:'Oro', ok:true },
-      { label:'Matrícula activa', val:'Activa', ok:true }
+      { label:'1er puesto · fase final nacional (para deportes)', val:'Oro · 100 m T44', ok:true },
+      { label:'Grado escolar ≤ 11°', val:'10°', ok:true }
+    ],
+    programs:[ prog('bono-dep', 'Paradeportista campeón · el Crédito Condonable no aplica (requiere cursar 11°)') ]
+  },
+  'eligible-coach':{
+    role:'coach', level:'docente-entrenador', coachRole:'Docente entrenador',
+    name:'Carlos Alberto Ruiz Mendoza', docType:'CC', doc:'1050987654', initials:'CR',
+    institucion:'I.E. Técnica Distrital de Barranquilla', deporte:'Atletismo', categoria:'Juvenil', departamento:'Atlántico',
+    phone:'300 778 1290', email:'carlos.ruiz@email.com', obs:'',
+    athlete:{ name:'María Camila Herrera Rojas', medal:'Oro · 400 m · Final nacional 2026' },
+    conditions:[
+      { label:'Inscrito desde la fase municipal', val:'Sí', ok:true },
+      { label:'Inscribió y acompañó al campeón hasta la final departamental', val:'Sí', ok:true },
+      { label:'Relacionado con el deportista en la plataforma de inscripción', val:'Sí', ok:true }
     ],
     programs:[
-      { name:'Becas deportivas 2026 — Medallistas de oro', desc:'Beca educativa · condición única por beneficiario', value:'$1.000.000', iconBg:'#fff3e6', iconColor:'#d74009', icon:'trophy' },
-      { name:'Apoyo paradeportivo 2026', desc:'Estímulo a deportistas paralímpicos medallistas', value:'$600.000', iconBg:'#eef5ff', iconColor:'#1f78d1', icon:'award' }
+      prog('bono-dep', 'Docente entrenador que inscribió al campeón desde la fase municipal'),
+      prog('credito',  'Docente entrenador del campeón · educación superior')
     ]
   },
-  'institution':{
-    role:'institution', kindId:'institution',
-    name:'I.E.D. Liceo Deportivo del Norte',
-    docType:'NIT', doc:'800.214.553-7',
-    zone:'Atlántico · Barranquilla', sede:'Sede principal · Calle 84',
-    deportistas:48, initials:'LN',
-    medal:'Primer lugar · ranking institucional 2025',
-    rankPos:1, rankTotal:36,
-    /* Regla Elkin: institución = cantidad TOTAL de medallas (sin diferenciar oro/plata/bronce). */
-    medalsTotal:29,
-    clasificados:48,
-    rep:'Martha L. Crespo (Rectora)',
-    phone:'(605) 372 4410', email:'rectoria@liceodelnorte.edu.co',
-    /* medals[] eliminado del perfil institution — el desglose por tipo aplica sólo al medallero personal (deportista). */
+  'eligible-assistant':{
+    role:'coach', level:'docente-asistente', coachRole:'Docente asistente · deporte de conjunto',
+    name:'Jorge Enrique Pardo Díaz', docType:'CC', doc:'1044556677', initials:'JP',
+    institucion:'I.E. Normal Superior de Pasto', deporte:'Voleibol · femenino', categoria:'Juvenil', departamento:'Nariño',
+    phone:'315 402 7781', email:'jorge.pardo@email.com', obs:'',
+    athlete:{ name:'Equipo Voleibol femenino · I.E. Normal Superior de Pasto', medal:'Oro · Final nacional 2026' },
     conditions:[
-      { label:'Primer lugar del ranking institucional', val:'#1 de 36', ok:true },
-      { label:'Mayor cantidad de medallas · deportes convencionales', val:'29 medallas', ok:true },
+      { label:'Equipo campeón · oro en la final nacional', val:'Oro', ok:true },
+      { label:'Inscrito desde la fase municipal', val:'Sí', ok:true },
+      { label:'Relacionado con el equipo en la plataforma de inscripción', val:'Sí', ok:true }
+    ],
+    programs:[ prog('bono-dep', 'Docente asistente del equipo campeón (deportes de conjunto)') ]
+  },
+  'institution':{
+    role:'institution', level:'institucion', docType:'DANE', doc:'108001000123', initials:'LN',
+    name:'I.E.D. Liceo Deportivo del Norte', zone:'Barranquilla', departamento:'Atlántico', sede:'Sede principal · Calle 84',
+    oros:14, rankPos:1, rankTotal:36, clasificados:48, rep:'Martha L. Crespo (Rectora)', obs:'',
+    conditions:[
+      { label:'Institución con más oros · deportes convencionales', val:'14 oros · #1 de 36', ok:true },
       { label:'Desempate: más deportistas llevados a la final', val:'48 clasificados', ok:true }
     ],
-    programs:[
-      { name:'Dotación deportiva institucional 2026', desc:'Implementación deportiva para la institución con mayor cantidad de medallas en deportes convencionales', value:'$8.000.000', iconBg:'#fff3e6', iconColor:'#d74009', icon:'trophy' },
-      { name:'Reconocimiento a la institución', desc:'Estímulo económico por desempeño deportivo escolar', value:'$3.000.000', iconBg:'#f3e8ff', iconColor:'#7c3aed', icon:'award' }
-    ]
+    programs:[ prog('kit', 'Institución educativa con más medallas de oro en deportes convencionales') ]
+  },
+  'organization':{
+    role:'institution', level:'organizacion', docType:'NIT', doc:'900456789', initials:'DS',
+    name:'Fundación Deporte Sin Límites', zone:'Medellín', departamento:'Antioquia', sede:'Sede Laureles',
+    oros:9, rankPos:1, rankTotal:12, clasificados:21, rep:'Paula A. Restrepo (Representante legal)', obs:'',
+    conditions:[
+      { label:'Organización con más oros · para deportes', val:'9 oros · #1 de 12', ok:true }
+    ],
+    programs:[ prog('kit', 'Organización para personas con discapacidad con más oros en para deportes') ]
   }
 };
+
+/* Documentos que el sistema SÍ conoce pero que no están entre los ganadores → mensaje específico. */
+const NOT_ELIGIBLE_REASON = {
+  '1003456789': 'No figura entre los ganadores (1er puesto) de la fase final nacional.',
+  '1067543210': 'Acompañó al deportista en la final nacional, pero <strong>no lo inscribió</strong> desde la fase municipal. El incentivo corresponde a quien se inscribió con el deportista en la plataforma.'
+};
+
+/* ═════ Registro local de asignaciones de la demo (compartido 08 · 09 · 10 · 13 · 14) ═════
+   localStorage 'inc-op-ledger' = { [id]: registro | parche }. "Reiniciar demo" lo borra. */
+const LEDGER_KEY = 'inc-op-ledger';
+function ledgerAll(){ try{ return JSON.parse(localStorage.getItem(LEDGER_KEY) || '{}') || {}; }catch(e){ return {}; } }
+function resetDemoData(){
+  try{ localStorage.removeItem(LEDGER_KEY); sessionStorage.removeItem('inc-profile'); sessionStorage.removeItem('inc-assignment'); sessionStorage.removeItem('inc-assignment-complete'); }catch(e){}
+  const inp = document.getElementById('docNumber'); if(inp) inp.value = '';
+  const btn = document.getElementById('btnSearch'); if(btn) btn.disabled = true;
+  resetState();
+}
+/* Vista del perfil = SAMPLE + lo que haya pasado en la demo (asignaciones nuevas, evidencias, reversiones). */
+function profileView(kind){
+  const base = SAMPLE[kind];
+  if(!base) return null;
+  const p = JSON.parse(JSON.stringify(base));
+  const L = ledgerAll();
+  (p.programs || []).forEach(pr => {
+    if(pr.assigned && pr.assigned.recId && L[pr.assigned.recId]){
+      const patch = L[pr.assigned.recId];
+      if(patch.estado === 'rev') delete pr.assigned;
+      else if(patch.evidence) pr.assigned.evidencePending = false;
+    }
+    if(!pr.assigned){
+      const rec = Object.values(L).find(r => r.doc === p.doc && r.incId === pr.incId && r.estado === 'asig');
+      if(rec) pr.assigned = { recId: rec.id, operator: rec.operator || 'Doug Vargas', operatorRole:'Operador', date: rec.fecha, time: rec.hora, evidencePending: !rec.evidence };
+    }
+  });
+  return p;
+}
 
 function getSelectedDocType(){
   return document.getElementById('docTypeDd')?.dataset.value || 'CC';
@@ -825,10 +854,12 @@ function getSelectedDocType(){
 
 /* ═════ Tipo de beneficiario (feedback Danna) ═════ */
 const BENEF_CFG = {
-  deportista:    { docLabel:'Número de documento',   placeholder:'Ej. 1001234567',     showDocType:true,  hint:'Busca al deportista por su documento. El sistema valida automáticamente si cumple las condiciones de los programas activos.' },
-  paradeportista:{ docLabel:'Número de documento',   placeholder:'Ej. 1090345678',     showDocType:true,  hint:'Busca al paradeportista por su documento. La elegibilidad considera su categoría y medallero paralímpico.' },
-  apoyo:         { docLabel:'Número de documento',   placeholder:'Ej. 1050987654',     showDocType:true,  hint:'Busca al personal de apoyo (entrenador, coach, preparador) por su documento para validar su elegibilidad.' },
-  institucion:   { docLabel:'NIT de la institución', placeholder:'Ej. 800.214.553-7',  showDocType:false, hint:'Busca la institución educativa por su NIT. Se evalúa por cantidad de medallas en deportes convencionales; en empate, la institución con más deportistas llevados a la final. Solo el primer lugar recibe el incentivo.' }
+  deportista:          { docLabel:'Número de documento', placeholder:'Ej. 1001234567', showDocType:true, docType:'TI', hint:'Busca al deportista por su documento entre los ganadores (1er puesto) de la fase final nacional.' },
+  paradeportista:      { docLabel:'Número de documento', placeholder:'Ej. 1090345678', showDocType:true, docType:'TI', hint:'Busca al paradeportista por su documento entre los ganadores de la final nacional en para deportes.' },
+  'docente-entrenador':{ docLabel:'Número de documento', placeholder:'Ej. 1050987654', showDocType:true, docType:'CC', hint:'Busca al docente entrenador. Aplica solo quien inscribió al campeón desde la fase municipal y lo acompañó hasta la final departamental (no quien lo acompañó solo en nacionales).' },
+  'docente-asistente': { docLabel:'Número de documento', placeholder:'Ej. 1044556677', showDocType:true, docType:'CC', hint:'Busca al docente asistente de un equipo campeón (oro) en deportes de conjunto.' },
+  institucion:         { docLabel:'Código DANE de la institución', placeholder:'Ej. 108001000123', showDocType:false, hint:'Busca la institución educativa por su código DANE. Recibe el kit la institución con más oros en deportes convencionales (consulta el top en el dashboard).' },
+  organizacion:        { docLabel:'Código DANE o NIT de la organización', placeholder:'Ej. 900456789', showDocType:false, hint:'Busca la organización para personas con discapacidad por su código DANE o NIT. Recibe el kit la organización con más oros en para deportes.' }
 };
 /* WAI-ARIA radiogroup: navegación con flechas + Home/End + wrap-around. */
 (function attachRadioKeydown(){
@@ -864,57 +895,99 @@ function selectBenefType(type, opts){
   document.querySelectorAll('.quick-chip[data-type]').forEach(c => { c.style.display = (c.dataset.type === type || c.dataset.type === 'all') ? '' : 'none'; });
   const lbl = document.getElementById('docNumLabel'); if(lbl) lbl.textContent = cfg.docLabel;
   const inp = document.getElementById('docNumber'); if(inp){ inp.placeholder = cfg.placeholder; inp.value = ''; }
-  const dd = document.getElementById('docTypeDd'); if(dd) dd.style.display = cfg.showDocType ? '' : 'none';
+  const dd = document.getElementById('docTypeDd'); if(dd){ dd.style.display = cfg.showDocType ? '' : 'none'; if(cfg.docType) setDocType(cfg.docType); }
   document.querySelector('.search-row')?.classList.toggle('search-row--no-doctype', !cfg.showDocType);
   const hint = document.getElementById('searchHint'); if(hint) hint.textContent = cfg.hint;
   const btn = document.getElementById('btnSearch'); if(btn) btn.disabled = true;
   resetState();
 }
 
-function doSearch(){
-  const n = document.getElementById('docNumber').value.trim();
-  if(!n){ document.getElementById('docNumber').focus(); return; }
-  if(n === '1001234567') return runDemo('eligible');
-  if(n === '1011223344') return runDemo('partial-assigned');
-  if(n === '1022334455') return runDemo('all-assigned');
-  if(n === '1003456789') return runDemo('not-eligible');
-  if(n === '1050987654') return runDemo('eligible-coach');
-  if(n === '1067543210') return runDemo('not-eligible-coach');
-  if(n === '1090345678') return runDemo('eligible-para');
-  if(n.replace(/[.\-\s]/g,'') === '8002145537') return runDemo('institution');
-  return runDemo('not-found');
+function setDocType(val){
+  const dd = document.getElementById('docTypeDd'); if(!dd) return;
+  dd.dataset.value = val;
+  dd.querySelectorAll('.naowee-dropdown__option').forEach(o => {
+    const on = o.dataset.val === val;
+    o.classList.toggle('naowee-dropdown__option--selected', on);
+    if(on){ const v = dd.querySelector('.naowee-dropdown__value'); if(v) v.textContent = o.textContent.trim(); }
+  });
 }
 
-function runDemo(kind, skipLoading){
+/* Documento → caso de demo. Solo están los ganadores/elegibles (búsqueda acotada, 00:28:12). */
+const DOC_INDEX = {};
+Object.keys(SAMPLE).forEach(k => { DOC_INDEX[SAMPLE[k].doc.replace(/[^0-9]/g,'')] = k; });
+
+function doSearch(){
+  const raw = document.getElementById('docNumber').value.trim();
+  if(!raw){ document.getElementById('docNumber').focus(); return; }
+  const n = raw.replace(/[^0-9]/g,'');
+  /* NIT con dígito de verificación (900456789-1) también resuelve la organización */
+  const kind = DOC_INDEX[n] || DOC_INDEX[n.slice(0,-1)];
+  if(kind) return runDemo(kind);
+  return runDemo('not-eligible', false, raw);
+}
+
+let selectedIncId = null;
+
+function runDemo(kind, skipLoading, rawDoc){
   const wrap = document.getElementById('stateWrap');
+  selectedIncId = null;
   const render = () => {
-    if(kind === 'eligible') wrap.innerHTML = renderEligible(SAMPLE.eligible);
-    else if(kind === 'partial-assigned') wrap.innerHTML = renderEligible(SAMPLE['partial-assigned']);
-    else if(kind === 'all-assigned') wrap.innerHTML = renderEligible(SAMPLE['all-assigned']);
-    else if(kind === 'not-eligible') wrap.innerHTML = renderNotEligible(SAMPLE['not-eligible']);
-    else if(kind === 'eligible-coach') wrap.innerHTML = renderEligible(SAMPLE['eligible-coach']);
-    else if(kind === 'not-eligible-coach') wrap.innerHTML = renderNotEligible(SAMPLE['not-eligible-coach']);
-    else if(kind === 'eligible-para') wrap.innerHTML = renderEligible(SAMPLE['eligible-para']);
-    else if(kind === 'institution') wrap.innerHTML = renderEligible(SAMPLE['institution']);
-    else wrap.innerHTML = renderNotFound();
+    const p = profileView(kind);
+    if(p){ syncTypeRadio(p.level); if(p.docType && p.role !== 'institution') setDocType(p.docType); wrap.innerHTML = renderEligible(p, kind); autoSelectSingle(); return; }
+    const inputDoc = rawDoc || (kind === 'not-eligible' ? '1003456789' : kind === 'not-eligible-coach' ? '1067543210' : '');
+    wrap.innerHTML = renderNoIncentives(inputDoc);
   };
   if(skipLoading){ render(); return; }
-  wrap.innerHTML = `<div class="loading-banner"><div class="spinner"></div> Validando datos del beneficiario en la plataforma…</div>`;
+  wrap.innerHTML = `<div class="loading-banner"><div class="spinner"></div> Buscando entre los ganadores y elegibles de los programas activos…</div>`;
   setTimeout(render, 500);
 }
 
+/* Selección única del incentivo a entregar (radio). Unifica "incentivos aplicables" + selección (00:23:13). */
+function selectIncentive(incId){
+  selectedIncId = incId;
+  document.querySelectorAll('.prog[data-inc]').forEach(el => {
+    const on = el.dataset.inc === incId;
+    el.classList.toggle('is-selected', on);
+    el.setAttribute('aria-checked', on ? 'true' : 'false');
+    const r = el.querySelector('.naowee-radio'); if(r) r.classList.toggle('naowee-radio--selected', on);
+  });
+  const btn = document.getElementById('btnContinue');
+  if(btn){
+    btn.disabled = !incId;
+    const lbl = btn.querySelector('.btn-lbl');
+    if(lbl) lbl.textContent = incId ? `Continuar con ${INCENTIVES[incId].name}` : 'Selecciona un incentivo';
+  }
+}
+
 function saveProfileAndGo(doc, kind){
-  /* Guarda el beneficiario COMPLETO para que viaje por todo el flujo (10 → 09 → 11). */
-  const p = SAMPLE[kind] || {};
+  if(!selectedIncId) return;
+  /* Guarda el beneficiario COMPLETO + el incentivo elegido para que viaje por el flujo (10 → 09 → 11). */
+  const p = profileView(kind) || {};
+  const obsEl = document.getElementById('fichaObs');
+  const pr = (p.programs || []).find(x => x.incId === selectedIncId) || {};
   sessionStorage.setItem('inc-profile', JSON.stringify({
-    doc, kind, ts: Date.now(),
-    role: p.role || 'athlete', level: p.level, supportType: p.supportType,
+    doc: p.doc || doc, kind, ts: Date.now(),
+    role: p.role || 'athlete', level: p.level, coachRole: p.coachRole,
     name: p.name, docType: p.docType, initials: p.initials,
-    age: p.age, disc: p.disc, zone: p.zone, category: p.category,
-    coachRole: p.coachRole, deportistas: p.deportistas, sede: p.sede,
-    rep: p.rep, medal: p.medal, programs: p.programs || []
+    grado: p.grado, institucion: p.institucion, deporte: p.deporte, disc: p.deporte, categoria: p.categoria,
+    departamento: p.departamento, zone: p.zone ? `${p.zone} · ${p.departamento}` : p.departamento,
+    medal: p.medal, oros: p.oros, obs: obsEl ? obsEl.value.trim() : (p.obs || ''),
+    programs: p.programs || [],
+    selectedIncentive: { id: selectedIncId, name: pr.name || INCENTIVES[selectedIncId].name, desc: pr.desc || '', hasCodes: !!INCENTIVES[selectedIncId].hasCodes }
   }));
-  fadeAndGo('incentivo-10-asignar-tipo.html?doc=' + doc);
+  fadeAndGo('incentivo-10-asignar-tipo.html?doc=' + encodeURIComponent(p.doc || doc));
+}
+
+/* "Subir evidencia" de un incentivo ya entregado (pendiente de evidencia) → pantalla 09 en modo solo-evidencia. */
+function goUploadEvidence(kind, incId){
+  const p = profileView(kind); if(!p) return;
+  const pr = (p.programs || []).find(x => x.incId === incId); if(!pr || !pr.assigned) return;
+  sessionStorage.setItem('inc-assignment', JSON.stringify({
+    evidenceOnly: true, recId: pr.assigned.recId, name: p.name, doc: p.doc, docType: p.docType, initials: p.initials,
+    role: p.role, level: p.level, zone: p.departamento, incentive: { id: incId, name: pr.name },
+    assignedAt: `${pr.assigned.date} · ${pr.assigned.time}`, from: 'buscar', kind
+  }));
+  fadeAndGo('incentivo-09-validar-foto.html?evidencia=1');
 }
 
 /* ═════ Edición de datos de contacto (antes de asignar) ═════
@@ -935,9 +1008,11 @@ function cancelContact(){
   document.getElementById('ctError').hidden = true;
 }
 function saveContact(kind){
-  const name  = (document.getElementById('ctNameInput').value  || '').trim();
-  const phone = (document.getElementById('ctPhoneInput').value || '').trim();
-  const email = (document.getElementById('ctEmailInput').value || '').trim();
+  const val = id => { const el = document.getElementById(id); return el ? (el.value || '').trim() : null; };
+  const name  = val('ctNameInput');
+  const doc   = val('ctDocInput');    /* solo deportista (editable) */
+  const phone = val('ctPhoneInput');  /* solo deportista (editable) */
+  const email = val('ctEmailInput');
   const err = document.getElementById('ctError');
   const errTxt = document.getElementById('ctErrorText');
   const fail = (msg, focusId) => {
@@ -947,16 +1022,17 @@ function saveContact(kind){
     if(f) f.focus();
   };
   if(!name){ return fail('El nombre no puede quedar vacío.', 'ctNameInput'); }
+  if(doc !== null && !/^[0-9]{6,12}$/.test(doc)){ return fail('El documento debe tener entre 6 y 12 dígitos.', 'ctDocInput'); }
   if(phone && !/^[0-9+()\s-]{7,}$/.test(phone)){ return fail('El teléfono no parece válido (mínimo 7 dígitos).', 'ctPhoneInput'); }
   if(email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ return fail('El correo no tiene un formato válido.', 'ctEmailInput'); }
   // Actualiza el modelo en memoria (demo)
-  if(SAMPLE[kind]){ SAMPLE[kind].name = name; SAMPLE[kind].phone = phone; SAMPLE[kind].email = email; }
-  // Refleja en la vista de lectura + encabezado del card
-  document.getElementById('ctName').textContent  = name;
-  document.getElementById('ctPhone').textContent = phone || '—';
-  document.getElementById('ctEmail').textContent = email || '—';
+  const m = SAMPLE[kind];
+  if(m){ m.name = name; if(doc !== null) m.doc = doc; if(phone !== null) m.phone = phone; if(email !== null) m.email = email; }
+  const setTxt = (id, v) => { const el = document.getElementById(id); if(el && v !== null) el.textContent = v || '—'; };
+  setTxt('ctName', name); setTxt('ctDoc', doc); setTxt('ctPhone', phone); setTxt('ctEmail', email);
   const hn = document.querySelector('.profile-name');
   if(hn) hn.textContent = name;
+  const hd = document.getElementById('headDoc'); if(hd && doc !== null) hd.textContent = doc;
   // Sale de edición + feedback de éxito (auto-oculta)
   err.hidden = true;
   document.getElementById('contactBlock').classList.remove('is-editing');
@@ -970,12 +1046,35 @@ function saveContact(kind){
 function tryRehydrate(){
   try{
     const saved = JSON.parse(sessionStorage.getItem('inc-profile') || '{}');
-    if(!saved.doc) return false;
+    if(!saved.doc || !SAMPLE[saved.kind]) return false;
+    const lvl = SAMPLE[saved.kind].level;
+    if(BENEF_CFG[lvl]) selectBenefType(lvl);
     const inp = document.getElementById('docNumber');
     if(inp) inp.value = saved.doc;
-    runDemo(saved.kind || 'eligible', true);
+    runDemo(saved.kind, true);
+    /* Re-seleccionar el incentivo elegido si sigue disponible */
+    const incId = saved.selectedIncentive?.id;
+    if(incId && document.querySelector(`.prog[data-inc="${incId}"]`)) selectIncentive(incId);
     return true;
   }catch(e){ return false; }
+}
+
+/* Si se busca un documento de otro tipo, el radio de tipo se sincroniza sin limpiar el resultado. */
+function syncTypeRadio(type){
+  if(!BENEF_CFG[type]) return;
+  document.querySelectorAll('#benefTabs .benef-radio').forEach(t => {
+    const on = t.dataset.type === type;
+    t.classList.toggle('is-selected', on);
+    t.setAttribute('aria-checked', on ? 'true' : 'false');
+    t.setAttribute('tabindex', on ? '0' : '-1');
+    const r = t.querySelector('.naowee-radio'); if(r) r.classList.toggle('naowee-radio--selected', on);
+  });
+  document.querySelectorAll('.quick-chip[data-type]').forEach(c => { c.style.display = (c.dataset.type === type || c.dataset.type === 'all') ? '' : 'none'; });
+  const cfg = BENEF_CFG[type];
+  const lbl = document.getElementById('docNumLabel'); if(lbl) lbl.textContent = cfg.docLabel;
+  const dd = document.getElementById('docTypeDd'); if(dd){ dd.style.display = cfg.showDocType ? '' : 'none'; }
+  document.querySelector('.search-row')?.classList.toggle('search-row--no-doctype', !cfg.showDocType);
+  const hint = document.getElementById('searchHint'); if(hint) hint.textContent = cfg.hint;
 }
 
 const KV_ICONS = {
@@ -1007,16 +1106,17 @@ const PROFILE_BADGES = {
   mecanico:    { cls:'profile-tag--mecanico',    label:'Mecánico',     ico:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>' },
   preparador:  { cls:'profile-tag--preparador',  label:'Preparador físico', ico:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h12M6 20h12M9 4v16M15 4v16M3 8h3M3 12h3M3 16h3M18 8h3M18 12h3M18 16h3"/></svg>' },
   coach:       { cls:'profile-tag--coach',       label:'Coach',        ico:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>' },
-  // Feedback Danna: nuevos tipos de beneficiario
+  // Tipos de beneficiario reales (Juegos Intercolegiados 2026)
+  deportista:  { cls:'profile-tag--profesional', label:'Deportista', ico:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>' },
   paradeportista:{ cls:'profile-tag--paradeportista', label:'Paradeportista', ico:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4" r="2"/><path d="M5 14a5 5 0 0 0 5 5h1l3 4M11 12l3 1M19 19a3 3 0 0 0-3-3"/></svg>' },
-  institucion: { cls:'profile-tag--institucion', label:'Institución educativa', ico:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-5h6v5"/></svg>' }
+  'docente-entrenador':{ cls:'profile-tag--entrenador', label:'Docente / Entrenador', ico:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>' },
+  'docente-asistente': { cls:'profile-tag--preparador', label:'Docente / Asistente', ico:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>' },
+  institucion: { cls:'profile-tag--institucion', label:'Institución educativa', ico:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-5h6v5"/></svg>' },
+  organizacion:{ cls:'profile-tag--paradeportista', label:'Organización · para deportes', ico:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-5h6v5"/></svg>' }
 };
 
 function renderProfileTypeBadge(p){
-  const isCoach = p.role === 'coach';
-  const isInstitution = p.role === 'institution';
-  const key = isInstitution ? 'institucion' : (isCoach ? (p.supportType || 'entrenador') : (p.level || 'amateur'));
-  const def = PROFILE_BADGES[key] || PROFILE_BADGES[isCoach ? 'coach' : 'amateur'];
+  const def = PROFILE_BADGES[p.level] || PROFILE_BADGES.deportista;
   return `<div style="display:inline-flex;margin-bottom:2px"><span class="profile-tag ${def.cls}">${def.ico}${def.label}</span></div>`;
 }
 
@@ -1024,294 +1124,176 @@ const MEDAL_GLYPH = { oro:'🥇', plata:'🥈', bronce:'🥉' };
 const MEDAL_LABEL = { oro:'Oro', plata:'Plata', bronce:'Bronce' };
 
 function renderMedalStrip(p){
-  if(!Array.isArray(p.medals)) return '';
-  if(p.medals.length === 0){
-    return `<div class="medal-strip"><span class="medal-strip__empty">Sin medallas registradas</span></div>`;
-  }
-  // Mostrar máx 3 chips, el resto como "+N"
+  if(!Array.isArray(p.medals) || !p.medals.length) return '';
   const visible = p.medals.slice(0, 3);
   const extra = p.medals.length - visible.length;
   const chips = visible.map(m => {
-    const lbl = `${MEDAL_LABEL[m.type] || m.type} · ${m.event} (${m.year})`;
+    const lbl = `${MEDAL_LABEL[m.type] || m.type} · ${m.event}`;
     return `<span class="medal-strip__chip medal-strip__chip--${m.type}" title="${lbl}" aria-label="${lbl}">${MEDAL_GLYPH[m.type] || '•'}</span>`;
   }).join('');
-  const more = extra > 0 ? `<span class="medal-strip__chip medal-strip__chip--more" title="${extra} medalla${extra>1?'s':''} más" aria-label="${extra} medallas más">+${extra}</span>` : '';
-  const totalLbl = p.medals.length === 1 ? '1 medalla' : `${p.medals.length} medallas`;
+  const more = extra > 0 ? `<span class="medal-strip__chip medal-strip__chip--more">+${extra}</span>` : '';
+  const n = p.medals.length;
   return `
-    <div class="medal-strip" title="${p.medals.map(m => `${MEDAL_LABEL[m.type]} · ${m.event} ${m.year}`).join(' · ')}">
+    <div class="medal-strip" title="${p.medals.map(m => `${MEDAL_LABEL[m.type]} · ${m.event}`).join(' · ')}">
       <div class="medal-strip__items">${chips}${more}</div>
-      <span class="medal-strip__count"><strong>${totalLbl.split(' ')[0]}</strong> ${totalLbl.split(' ').slice(1).join(' ')}</span>
+      <span class="medal-strip__count"><strong>${n}</strong> medalla${n===1?'':'s'} 2026</span>
     </div>`;
 }
 
-function renderProfileCard(p, opts){
-  const isNotEligible = opts?.notEligible === true;
+function kvRow(ico, lbl, val, id){
+  return `<div class="kv-row"><span class="kv-row__ico">${KV_ICONS[ico] || KV_ICONS.status}</span><span class="kv-row__lbl">${lbl}</span><span class="kv-row__val"${id ? ` id="${id}"` : ''}>${val == null || val === '' ? '—' : val}</span></div>`;
+}
+
+const PROG_ICONS = {
+  award:'<circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>',
+  grad:'<path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1 2.7 3 6 3s6-2 6-3v-5"/>',
+  bag:'<rect x="5" y="8" width="14" height="12" rx="2"/><path d="M9 8V5a3 3 0 016 0v3"/>'
+};
+
+function renderProfileCard(p, kind){
   const isCoach = p.role === 'coach';
   const isInstitution = p.role === 'institution';
-  const total = p.conditions.length;
-  const ok = p.conditions.filter(c => c.ok).length;
-  const pct = total ? Math.round((ok/total)*100) : 0;
+  const isAthlete = !isCoach && !isInstitution;
+  const conds = (p.conditions || []).filter(c => c.ok);
 
-  // Estado de asignaciones
   const programsArr = p.programs || [];
   const assignedCount = programsArr.filter(pr => pr.assigned).length;
-  const pendingCount = programsArr.length - assignedCount;
-  const allAssigned = !isNotEligible && programsArr.length > 0 && pendingCount === 0;
-  const someAssigned = !isNotEligible && assignedCount > 0 && pendingCount > 0;
+  const pendingEvidence = programsArr.filter(pr => pr.assigned && pr.assigned.evidencePending).length;
+  const availableCount = programsArr.length - assignedCount;
+  const allAssigned = programsArr.length > 0 && availableCount === 0;
 
-  let badgeClass, badgeIcon, badgeText;
-  if(isNotEligible){
-    badgeClass = 'naowee-badge--negative';
-    badgeIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>';
-    badgeText = 'No cumple condiciones';
-  } else if(allAssigned){
-    badgeClass = 'naowee-badge--informative';
-    badgeIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
-    badgeText = 'Sin incentivos pendientes';
-  } else if(someAssigned){
-    badgeClass = 'naowee-badge--caution';
-    badgeIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="6" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
-    badgeText = `${pendingCount} pendiente${pendingCount===1?'':'s'} de ${programsArr.length}`;
-  } else {
-    badgeClass = 'naowee-badge--positive';
-    badgeIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
-    badgeText = `Aplica a ${programsArr.length} incentivos`;
-  }
-  // Avatar con gradiente + elevation tintada del mismo color
-  const avatarStyle = isNotEligible
-    ? 'background:linear-gradient(135deg,#b5b9d4,#646587);box-shadow:0 0 0 1px var(--naowee-color-border-default,#e7e9f3),0 10px 28px rgba(100,101,135,.28),0 2px 6px rgba(100,101,135,.14)'
-    : (isCoach
-        ? 'background:linear-gradient(135deg,#c4b5fd,#7c3aed);box-shadow:0 0 0 1px var(--naowee-color-border-default,#e7e9f3),0 10px 28px rgba(124,58,237,.32),0 2px 6px rgba(124,58,237,.18)'
-        : (isInstitution
-            ? 'background:linear-gradient(135deg,#5eead4,#0d9488);box-shadow:0 0 0 1px var(--naowee-color-border-default,#e7e9f3),0 10px 28px rgba(13,148,136,.30),0 2px 6px rgba(13,148,136,.18)'
-            : ''));
-  const dataTitle = isInstitution ? 'Datos de la institución' : (isCoach ? 'Datos del personal de apoyo' : 'Datos del deportista');
-  let kindId = p.kindId;
-  if(!kindId){
-    if(isCoach){
-      kindId = isNotEligible ? 'not-eligible-coach' : 'eligible-coach';
-    } else if(allAssigned){
-      kindId = 'all-assigned';
-    } else if(someAssigned){
-      kindId = 'partial-assigned';
-    } else {
-      kindId = isNotEligible ? 'not-eligible' : 'eligible';
-    }
-  }
+  let badgeClass, badgeText;
+  if(allAssigned){ badgeClass = 'naowee-badge--informative'; badgeText = 'Sin incentivos por entregar'; }
+  else if(assignedCount){ badgeClass = 'naowee-badge--caution'; badgeText = `${availableCount} disponible${availableCount===1?'':'s'} de ${programsArr.length}`; }
+  else { badgeClass = 'naowee-badge--positive'; badgeText = `Aplica a ${programsArr.length} incentivo${programsArr.length===1?'':'s'}`; }
 
-  const profileTypeBadge = renderProfileTypeBadge(p);
+  const avatarStyle = isCoach
+    ? 'background:linear-gradient(135deg,#c4b5fd,#7c3aed);box-shadow:0 0 0 1px var(--naowee-color-border-default,#e7e9f3),0 10px 28px rgba(124,58,237,.32),0 2px 6px rgba(124,58,237,.18)'
+    : (isInstitution ? 'background:linear-gradient(135deg,#5eead4,#0d9488);box-shadow:0 0 0 1px var(--naowee-color-border-default,#e7e9f3),0 10px 28px rgba(13,148,136,.30),0 2px 6px rgba(13,148,136,.18)' : '');
+  const dataTitle = isInstitution ? (p.level === 'organizacion' ? 'Datos de la organización' : 'Datos de la institución') : (isCoach ? 'Datos del docente' : (p.level === 'paradeportista' ? 'Datos del paradeportista' : 'Datos del deportista'));
+  const dot = '<span class="dot"></span>';
 
-  const subMeta = isInstitution ? `
-    <span><strong>${p.docType}</strong> ${p.doc}</span><span class="dot"></span>
-    <span>${p.zone}</span><span class="dot"></span>
-    <span>${p.deportistas} deportistas registrados</span>
-  ` : isCoach ? `
-    <span><strong>${p.docType}</strong> ${p.doc}</span><span class="dot"></span>
-    <span>${p.coachRole}</span><span class="dot"></span>
-    <span>${p.disc}</span><span class="dot"></span>
-    <span>${p.zone}</span>
-  ` : `
-    <span><strong>${p.docType}</strong> ${p.doc}</span><span class="dot"></span>
-    <span>${p.age} años</span><span class="dot"></span>
-    <span>${p.disc}</span><span class="dot"></span>
-    <span>${p.zone}</span>
-  `;
+  const subMeta = isInstitution
+    ? `<span><strong>${p.docType}</strong> ${p.doc}</span>${dot}<span>${p.zone} · ${p.departamento}</span>${dot}<span>${p.oros} oros 2026</span>`
+    : isCoach
+      ? `<span><strong>${p.docType}</strong> <span id="headDoc">${p.doc}</span></span>${dot}<span>${p.coachRole}</span>${dot}<span>${p.deporte}</span>${dot}<span>${p.departamento}</span>`
+      : `<span><strong>${p.docType}</strong> <span id="headDoc">${p.doc}</span></span>${dot}<span>Grado ${p.grado}</span>${dot}<span>${p.deporte}</span>${dot}<span>${p.departamento}</span>`;
 
+  /* Ficha — campos definidos en el xlsx de requisitos (Juegos Intercolegiados 2026) */
   const dataRows = isInstitution ? `
     <div class="kv-list">
-      <div class="kv-row">
-        <span class="kv-row__ico">${KV_ICONS.matricula}</span>
-        <span class="kv-row__lbl">NIT</span>
-        <span class="kv-row__val">${p.doc}</span>
-      </div>
-      <div class="kv-row">
-        <span class="kv-row__ico">${KV_ICONS.strat}</span>
-        <span class="kv-row__lbl">Sede</span>
-        <span class="kv-row__val">${p.sede || p.zone}</span>
-      </div>
-      <div class="kv-row">
-        <span class="kv-row__ico">${KV_ICONS.athlete}</span>
-        <span class="kv-row__lbl">Deportistas registrados</span>
-        <span class="kv-row__val">${p.deportistas}</span>
-      </div>
-      <div class="kv-row">
-        <span class="kv-row__ico">${KV_ICONS.medal}</span>
-        <span class="kv-row__lbl">Medallas · deportes convencionales</span>
-        <span class="kv-row__val">${p.medalsTotal != null ? `${p.medalsTotal} medallas` : '—'}</span>
-      </div>
-      <div class="kv-row">
-        <span class="kv-row__ico">${KV_ICONS.athlete}</span>
-        <span class="kv-row__lbl">Deportistas llevados a la final</span>
-        <span class="kv-row__val">${p.clasificados != null ? p.clasificados : '—'}</span>
-      </div>
-      <div class="kv-row">
-        <span class="kv-row__ico">${KV_ICONS.ctName}</span>
-        <span class="kv-row__lbl">Representante</span>
-        <span class="kv-row__val">${p.rep || '—'}</span>
-      </div>
+      ${kvRow('matricula', p.level === 'organizacion' ? 'Código DANE / NIT' : 'Código DANE', p.doc)}
+      ${kvRow('strat', 'Sede', p.sede)}
+      ${kvRow('category', 'Municipio · departamento', `${p.zone} · ${p.departamento}`)}
+      ${kvRow('medal', p.level === 'organizacion' ? 'Oros · para deportes' : 'Oros · deportes convencionales', `${p.oros} · puesto #${p.rankPos} de ${p.rankTotal}`)}
+      ${kvRow('athlete', 'Deportistas llevados a la final', p.clasificados)}
+      ${kvRow('ctName', 'Representante', p.rep)}
     </div>` : isCoach ? `
     <div class="kv-list">
-      <div class="kv-row">
-        <span class="kv-row__ico">${KV_ICONS.role}</span>
-        <span class="kv-row__lbl">Rol</span>
-        <span class="kv-row__val">${p.coachRole}</span>
-      </div>
-      <div class="kv-row">
-        <span class="kv-row__ico">${KV_ICONS.years}</span>
-        <span class="kv-row__lbl">Años como entrenador</span>
-        <span class="kv-row__val">${p.years} años</span>
-      </div>
-      <div class="kv-row">
-        <span class="kv-row__ico">${KV_ICONS.status}</span>
-        <span class="kv-row__lbl">Vinculación</span>
-        <span class="kv-row__val">${p.vinculacion}</span>
-      </div>
-      <div class="kv-row">
-        <span class="kv-row__ico">${KV_ICONS.athlete}</span>
-        <span class="kv-row__lbl">Deportista vinculado</span>
-        <span class="kv-row__val" style="max-width:220px;line-height:1.35">
-          ${p.athlete.name}<br/>
-          <span style="font-weight:500;color:var(--naowee-color-text-secondary,#646587);font-size:11.5px">${p.athlete.medal}${p.athlete.firstSince ? ' · desde '+p.athlete.firstSince : p.athlete.currentSince ? ' · desde '+p.athlete.currentSince : ''}</span>
-        </span>
-      </div>
+      ${kvRow('role', 'Rol', p.coachRole)}
+      ${kvRow('strat', 'Institución', p.institucion)}
+      ${kvRow('medal', 'Deporte', p.deporte)}
+      ${kvRow('category', 'Categoría', p.categoria)}
+      ${kvRow('years', 'Departamento', p.departamento)}
+      ${kvRow('athlete', p.level === 'docente-asistente' ? 'Equipo vinculado' : 'Deportista vinculado', `${p.athlete.name}<br/><span style="font-weight:500;color:var(--naowee-color-text-secondary,#646587);font-size:11.5px">${p.athlete.medal}</span>`)}
     </div>` : `
     <div class="kv-list">
-      <div class="kv-row">
-        <span class="kv-row__ico">${KV_ICONS.category}</span>
-        <span class="kv-row__lbl">Categoría</span>
-        <span class="kv-row__val">${p.category}</span>
-      </div>
-      <div class="kv-row">
-        <span class="kv-row__ico">${KV_ICONS.strat}</span>
-        <span class="kv-row__lbl">Estrato</span>
-        <span class="kv-row__val">${p.strat}</span>
-      </div>
-      <div class="kv-row">
-        <span class="kv-row__ico">${KV_ICONS.matricula}</span>
-        <span class="kv-row__lbl">Matrícula</span>
-        <span class="kv-row__val">${p.matricula}</span>
-      </div>
-      <div class="kv-row">
-        <span class="kv-row__ico">${KV_ICONS.grado}</span>
-        <span class="kv-row__lbl">Grado escolar</span>
-        <span class="kv-row__val">${p.grado || '—'}</span>
-      </div>
-      <div class="kv-row">
-        <span class="kv-row__ico">${KV_ICONS.medal}</span>
-        <span class="kv-row__lbl">Logro reciente</span>
-        <span class="kv-row__val">${p.medal}</span>
-      </div>
+      ${kvRow('grado', 'Grado', p.grado)}
+      ${kvRow('strat', 'Institución', p.institucion)}
+      ${kvRow('medal', 'Deporte', p.deporte)}
+      ${kvRow('category', 'Categoría', p.categoria)}
+      ${kvRow('years', 'Departamento', p.departamento)}
     </div>`;
 
   const condSection = `
     <div class="cond-block-head">
-      <span class="cond-block-head__title">Condiciones evaluadas</span>
-      <span class="cond-count${ok < total ? ' err' : ''}">
-        ${ok < total
-          ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="17" x2="12" y2="17.01"/></svg>'
-          : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'}
-        ${ok} de ${total} cumplidas
-      </span>
+      <span class="cond-block-head__title">Condiciones del programa que cumple</span>
+      <span class="cond-count"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>${conds.length} de ${conds.length}</span>
     </div>
-    <div class="cond-progress${ok < total ? ' err' : ''}"><div class="cond-progress__fill" style="width:${pct}%"></div></div>
     <div class="cond-list">
-      ${p.conditions.map(c => `
-        <div class="cond ${c.ok ? '' : 'err'}">
-          <span class="mk">
-            ${c.ok
-              ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
-              : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'}
-          </span>
+      ${conds.map(c => `
+        <div class="cond">
+          <span class="mk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
           <span class="txt">${c.label}</span>
           <span class="val">${c.val}</span>
-        </div>
-      `).join('')}
+        </div>`).join('')}
     </div>`;
 
   const ICON_USER = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
   const ICON_CALENDAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>';
-  const ICON_HASH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>';
   const ICON_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+  const ICON_UP = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>';
 
   const banner = allAssigned
     ? `<div class="naowee-message naowee-message--positive" style="margin:0 0 14px">
         <div class="naowee-message__header">
-          <div class="naowee-message__icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          </div>
-          <div class="naowee-message__text">Este beneficiario <strong>ya recibió todos los incentivos aplicables</strong>. No quedan asignaciones pendientes.</div>
+          <div class="naowee-message__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="naowee-message__text">Este beneficiario <strong>ya recibió todos los incentivos aplicables</strong>.${pendingEvidence ? ` Falta subir la evidencia de ${pendingEvidence === 1 ? 'una entrega' : pendingEvidence + ' entregas'}.` : ''}</div>
         </div>
-      </div>`
-    : someAssigned
-      ? `<div class="naowee-message naowee-message--caution" style="margin:0 0 14px">
-          <div class="naowee-message__header">
-            <div class="naowee-message__icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            </div>
-            <div class="naowee-message__text">${assignedCount} incentivo${assignedCount===1?'':'s'} ya fue${assignedCount===1?'':'ron'} asignado${assignedCount===1?'':'s'}. Continúa para entregar el${pendingCount===1?'':'s'} <strong>${pendingCount} pendiente${pendingCount===1?'':'s'}</strong>.</div>
-          </div>
-        </div>`
-      : '';
+      </div>` : '';
 
-  const headBadge = allAssigned
-    ? '<span class="naowee-badge naowee-badge--positive naowee-badge--quiet naowee-badge--small">Todos asignados</span>'
-    : someAssigned
-      ? `<span class="naowee-badge naowee-badge--caution naowee-badge--quiet naowee-badge--small">${pendingCount} pendiente${pendingCount===1?'':'s'} · ${assignedCount} asignado${assignedCount===1?'':'s'}</span>`
-      : `<span class="naowee-badge naowee-badge--caution naowee-badge--quiet naowee-badge--small">${programsArr.length} disponibles</span>`;
-
-  const programsBlock = (!isNotEligible && programsArr.length) ? `
+  const programsBlock = programsArr.length ? `
     <hr class="profile-card__divider"/>
     <div class="programs-section">
       <div class="programs-section__head">
-        <h4>Incentivos aplicables</h4>
-        ${headBadge}
+        <h4 id="incListLbl">Incentivos aplicables</h4>
+        <span class="naowee-badge naowee-badge--${allAssigned ? 'positive' : 'caution'} naowee-badge--quiet naowee-badge--small">${allAssigned ? 'Todos entregados' : `${availableCount} disponible${availableCount===1?'':'s'}${assignedCount ? ` · ${assignedCount} entregado${assignedCount===1?'':'s'}` : ''}`}</span>
       </div>
+      ${allAssigned ? '' : '<p class="programs-section__hint">Selecciona el incentivo que vas a entregar. Los que ya fueron entregados no se pueden volver a seleccionar.</p>'}
       ${banner}
-      <div class="prog-list">
+      <div class="prog-list" role="radiogroup" aria-labelledby="incListLbl">
         ${programsArr.map(pr => {
-          const iconSvg = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${
-            pr.icon === 'trophy' ? '<path d="M6 9H4a2 2 0 01-2-2V5h4M18 9h2a2 2 0 002-2V5h-4M6 5h12v6a6 6 0 01-12 0V5zM10 17h4l1 4H9z"/>'
-            : pr.icon === 'medal' ? '<circle cx="12" cy="8" r="6"/><path d="M8.21 13.89L7 22l5-3 5 3-1.21-8.12"/>'
-            : pr.icon === 'award' ? '<circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>'
-            : '<rect x="5" y="8" width="14" height="12" rx="2"/><path d="M9 8V5a3 3 0 016 0v3"/>'
-          }</svg>`;
+          const iconSvg = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${PROG_ICONS[pr.icon] || PROG_ICONS.award}</svg>`;
+          /* Valor oculto en la vista del operador (feedback Danna). Código tampoco se muestra aquí (regla de seguridad). */
           if(pr.assigned){
             const a = pr.assigned;
+            const stateBadge = a.evidencePending
+              ? '<span class="naowee-badge naowee-badge--caution naowee-badge--quiet naowee-badge--small">Entregado · falta evidencia</span>'
+              : '<span class="naowee-badge naowee-badge--positive naowee-badge--quiet naowee-badge--small">Ya entregado</span>';
             return `
-              <div class="prog prog--assigned">
+              <div class="prog prog--assigned${a.evidencePending ? ' prog--pending-ev' : ''}">
+                <span class="naowee-radio naowee-radio--disabled" aria-hidden="true"><span class="naowee-radio__circle"></span></span>
                 <div class="prog__icon" style="background:${pr.iconBg};color:${pr.iconColor}">${iconSvg}</div>
                 <div class="prog__body">
                   <div class="prog__name">${pr.name}</div>
                   <div class="prog__desc">${pr.desc}</div>
                 </div>
-                <!-- Valor oculto en la vista del operador (feedback Danna): el beneficiario no debe ver el costo. -->
+                ${stateBadge}
                 <div class="prog__assignment">
-                  <span class="prog__assignment-tag">${ICON_CHECK} Asignado</span>
                   <div class="prog__assignment-meta">
                     <span class="item">${ICON_USER} Por <strong>${a.operator}</strong>${a.operatorRole ? ` <span style="color:#646587">· ${a.operatorRole}</span>` : ''}</span>
                     <span class="dot"></span>
                     <span class="item">${ICON_CALENDAR} <strong>${a.date}</strong>${a.time ? ` · ${a.time}` : ''}</span>
-                    <span class="dot"></span>
-                    <span class="item">${ICON_HASH} Código <strong>${a.code}</strong></span>
                   </div>
+                  ${a.evidencePending ? `<button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--small prog__ev-btn" onclick="goUploadEvidence('${kind}','${pr.incId}')">${ICON_UP} Subir evidencia</button>` : ''}
                 </div>
               </div>`;
           }
           return `
-            <div class="prog" style="cursor:default;pointer-events:none">
+            <div class="prog prog--selectable" data-inc="${pr.incId}" role="radio" aria-checked="false" tabindex="0"
+                 onclick="selectIncentive('${pr.incId}')" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();selectIncentive('${pr.incId}')}">
+              <span class="naowee-radio"><span class="naowee-radio__circle"></span></span>
               <div class="prog__icon" style="background:${pr.iconBg};color:${pr.iconColor}">${iconSvg}</div>
               <div class="prog__body">
                 <div class="prog__name">${pr.name}</div>
                 <div class="prog__desc">${pr.desc}</div>
               </div>
-              <span></span>
+              <span class="naowee-badge naowee-badge--informative naowee-badge--quiet naowee-badge--small">Disponible</span>
             </div>`;
         }).join('')}
       </div>
     </div>
   ` : '';
 
-  const contactBlock = (!isNotEligible && !isInstitution) ? `
+  /* Datos editables (feedback Danna 00:23:13: la inscripción trae datos mal registrados).
+     Deportista: nombres, documento, teléfonos y correo editables. Docente: nombres y correo editables. */
+  const editDoc = isAthlete, editPhone = isAthlete;
+  const tf = (id, lbl, type, v, mode) => `
+    <div class="contact-field">
+      <label class="contact-field__lbl" for="${id}">${lbl}</label>
+      <div class="naowee-textfield"><div class="naowee-textfield__input-wrap"><input class="naowee-textfield__input" id="${id}" type="${type}"${mode ? ` inputmode="${mode}"` : ''} value="${v || ''}"/></div></div>
+    </div>`;
+  const contactBlock = !isInstitution ? `
     <hr class="profile-card__divider"/>
     <div class="contact-section" id="contactBlock">
       <div class="contact-section__head">
@@ -1321,45 +1303,26 @@ function renderProfileCard(p, opts){
           Editar
         </button>
       </div>
-      <p class="contact-section__hint">Verifica y corrige los datos antes de asignar — a veces la inscripción trae información mal registrada.</p>
+      <p class="contact-section__hint">Verifica y corrige los datos antes de entregar — a veces la inscripción trae el teléfono o el correo de la institución.${isCoach ? ' En docentes se pueden corregir nombres y correo.' : ''}</p>
       <div class="contact-section__read kv-list">
-        <div class="kv-row">
-          <span class="kv-row__ico">${KV_ICONS.ctName}</span>
-          <span class="kv-row__lbl">Nombre</span>
-          <span class="kv-row__val" id="ctName">${p.name}</span>
-        </div>
-        <div class="kv-row">
-          <span class="kv-row__ico">${KV_ICONS.phone}</span>
-          <span class="kv-row__lbl">Teléfono</span>
-          <span class="kv-row__val" id="ctPhone">${p.phone || '—'}</span>
-        </div>
-        <div class="kv-row">
-          <span class="kv-row__ico">${KV_ICONS.mail}</span>
-          <span class="kv-row__lbl">Correo</span>
-          <span class="kv-row__val" id="ctEmail">${p.email || '—'}</span>
-        </div>
+        ${kvRow('ctName', 'Nombres', p.name, 'ctName')}
+        ${kvRow('matricula', 'Documento', p.doc, 'ctDoc')}
+        ${kvRow('phone', 'Teléfonos', p.phone, 'ctPhone')}
+        ${kvRow('mail', 'Correo', p.email, 'ctEmail')}
       </div>
       <div class="contact-section__edit">
         <div class="contact-fields">
-          <div class="contact-field">
-            <label class="contact-field__lbl" for="ctNameInput">Nombre completo</label>
-            <div class="naowee-textfield"><div class="naowee-textfield__input-wrap"><input class="naowee-textfield__input" id="ctNameInput" type="text" value="${p.name}"/></div></div>
-          </div>
-          <div class="contact-field">
-            <label class="contact-field__lbl" for="ctPhoneInput">Teléfono</label>
-            <div class="naowee-textfield"><div class="naowee-textfield__input-wrap"><input class="naowee-textfield__input" id="ctPhoneInput" type="tel" inputmode="tel" value="${p.phone || ''}"/></div></div>
-          </div>
-          <div class="contact-field">
-            <label class="contact-field__lbl" for="ctEmailInput">Correo electrónico</label>
-            <div class="naowee-textfield"><div class="naowee-textfield__input-wrap"><input class="naowee-textfield__input" id="ctEmailInput" type="email" inputmode="email" value="${p.email || ''}"/></div></div>
-          </div>
+          ${tf('ctNameInput', 'Nombres completos', 'text', p.name)}
+          ${editDoc ? tf('ctDocInput', 'Documento', 'text', p.doc, 'numeric') : ''}
+          ${editPhone ? tf('ctPhoneInput', 'Teléfonos', 'tel', p.phone, 'tel') : ''}
+          ${tf('ctEmailInput', 'Correo electrónico', 'email', p.email, 'email')}
         </div>
         <div class="contact-error naowee-message naowee-message--negative" id="ctError" hidden>
           <div class="naowee-message__header"><div class="naowee-message__text" id="ctErrorText"></div></div>
         </div>
         <div class="contact-actions">
           <button class="naowee-btn naowee-btn--mute naowee-btn--small" onclick="cancelContact()">Cancelar</button>
-          <button class="naowee-btn naowee-btn--loud naowee-btn--small" onclick="saveContact('${kindId}')">Guardar cambios</button>
+          <button class="naowee-btn naowee-btn--loud naowee-btn--small" onclick="saveContact('${kind}')">Guardar cambios</button>
         </div>
       </div>
       <div class="contact-saved naowee-message naowee-message--positive" id="ctSaved" hidden>
@@ -1371,100 +1334,80 @@ function renderProfileCard(p, opts){
     </div>
   ` : '';
 
-  let footer = '';
-  if(!isNotEligible){
-    if(allAssigned){
-      footer = `
-        <div class="profile-card__footer">
-          <span style="font-size:12.5px;color:var(--naowee-color-text-secondary,#646587)">Sin incentivos pendientes para entregar.</span>
-          <button class="naowee-btn naowee-btn--mute naowee-btn--large" onclick="resetState();document.getElementById('docNumber').focus()">
-            Buscar otro beneficiario
-          </button>
-        </div>`;
-    } else {
-      footer = `
-        <div class="profile-card__footer">
-          <span></span>
-          <button class="naowee-btn naowee-btn--loud naowee-btn--large" onclick="saveProfileAndGo('${p.doc}','${kindId}')">
-            Continuar
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
-          </button>
-        </div>`;
-    }
-  }
+  /* Observaciones — campo de la ficha (xlsx requisitos). Viaja con la asignación. */
+  const obsBlock = `
+    <div class="obs-section">
+      <div class="naowee-textfield naowee-textfield--textarea">
+        <label class="naowee-textfield__label" for="fichaObs">Observaciones</label>
+        <div class="naowee-textfield__input-wrap">
+          <textarea class="naowee-textfield__input" id="fichaObs" rows="2" maxlength="400" placeholder="Ej. Se corrigió el teléfono registrado en la inscripción." oninput="if(SAMPLE['${kind}']) SAMPLE['${kind}'].obs = this.value">${p.obs || ''}</textarea>
+        </div>
+      </div>
+    </div>`;
 
-  const sideBlock = `
-    <div class="profile-side">
-      <span class="naowee-badge ${badgeClass} naowee-badge--quiet naowee-badge--small">
-        ${badgeIcon}${badgeText}
-      </span>
-      ${!isCoach ? renderMedalStrip(p) : ''}
-    </div>
-  `;
+  const footer = allAssigned ? `
+    <div class="profile-card__footer">
+      <span style="font-size:12.5px;color:var(--naowee-color-text-secondary,#646587)">Sin incentivos por entregar.</span>
+      <button class="naowee-btn naowee-btn--mute naowee-btn--large" onclick="resetState();document.getElementById('docNumber').focus()">Buscar otro beneficiario</button>
+    </div>` : `
+    <div class="profile-card__footer">
+      <span style="font-size:12.5px;color:var(--naowee-color-text-secondary,#646587)">Al continuar confirmas la entrega y reservas el código.</span>
+      <button class="naowee-btn naowee-btn--loud naowee-btn--large" id="btnContinue" disabled onclick="saveProfileAndGo('${p.doc}','${kind}')">
+        <span class="btn-lbl">Selecciona un incentivo</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>`;
 
   return `
     <div class="profile-card">
       <div class="profile-head">
         <div class="profile-avatar" style="${avatarStyle}">${isInstitution ? '<svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-5h6v5"/><path d="M9 11h.01M15 11h.01"/></svg>' : p.initials}</div>
         <div class="profile-meta">
-          ${profileTypeBadge}
+          ${renderProfileTypeBadge(p)}
           <div class="profile-name">${p.name}</div>
           <div class="profile-sub">${subMeta}</div>
         </div>
-        ${sideBlock}
+        <div class="profile-side">
+          <span class="naowee-badge ${badgeClass} naowee-badge--quiet naowee-badge--small">${badgeText}</span>
+          ${isAthlete ? renderMedalStrip(p) : ''}
+        </div>
       </div>
       <div class="profile-body">
-        <div class="data-block">
-          <h5>${dataTitle}</h5>
-          ${dataRows}
-        </div>
-        <div class="data-block">
-          ${condSection}
-        </div>
+        <div class="data-block"><h5>${dataTitle}</h5>${dataRows}</div>
+        <div class="data-block">${condSection}</div>
       </div>
       ${contactBlock}
+      ${obsBlock}
       ${programsBlock}
       ${footer}
     </div>
   `;
 }
 
-function renderEligible(p){
-  return `<div class="result-wrap">${renderProfileCard(p, { notEligible: false })}</div>`;
+function renderEligible(p, kind){
+  return `<div class="result-wrap">${renderProfileCard(p, kind)}</div>`;
 }
 
-function renderNotEligible(p){
-  const isCoach = p.role === 'coach';
-  const msg = isCoach
-    ? `<strong>${p.name.split(' ')[0]} no es el primer entrenador registrado de ${p.athlete?.name?.split(' ').slice(0,2).join(' ') || 'este deportista'}.</strong> El reconocimiento al formador solo aplica al personal de apoyo que aparece como primer entrenador en el historial del deportista medallista.`
-    : `<strong>Este deportista no aplica para ningún incentivo activo.</strong> Los programas actualmente activos requieren condiciones que no se cumplen en este perfil.`;
-  return `
-    <div class="result-wrap">
-      ${renderProfileCard(p, { notEligible: true })}
-      <div class="naowee-message naowee-message--negative" style="margin-top:4px">
-        <div class="naowee-message__header">
-          <div class="naowee-message__icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          </div>
-          <div class="naowee-message__text">${msg}</div>
-        </div>
-      </div>
-    </div>
-  `;
+function autoSelectSingle(){
+  const avail = document.querySelectorAll('.prog[data-inc]');
+  if(avail.length === 1) selectIncentive(avail[0].dataset.inc);
 }
 
-function renderNotFound(){
+/* Búsqueda acotada a ganadores/elegibles: si no está, "no tiene incentivos aplicables" (00:27:10, 00:28:12).
+   No se muestra la ficha completa de alguien que no aplica (Danna: "mira cómo sale si busca entre todos"). */
+function renderNoIncentives(doc){
+  const n = String(doc || '').replace(/[^0-9]/g,'');
+  const reason = NOT_ELIGIBLE_REASON[n];
   return `
     <div class="result-wrap">
       <div class="not-found">
         <div class="not-found__icon">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3M8.5 11h5M11 8.5v5"/></svg>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
         </div>
-        <h4>Documento no encontrado en la plataforma</h4>
-        <p>El documento ingresado no está registrado en el SUID. Verifica el número o solicita al beneficiario que complete su registro antes de continuar.</p>
+        <h4>${doc ? `El documento <span style="font-family:'SF Mono',monospace">${doc}</span> no tiene` : 'No tiene'} incentivos aplicables</h4>
+        <p>La búsqueda se hace solo entre los <strong>ganadores y elegibles</strong> de los programas activos. ${reason || 'Este documento no cumple las condiciones de ningún incentivo vigente.'}</p>
         <div class="not-found__actions">
-          <button class="naowee-btn naowee-btn--mute naowee-btn--medium" onclick="document.getElementById('docNumber').value='';document.getElementById('docNumber').focus();resetState()">Intentar otro</button>
-          <button class="naowee-btn naowee-btn--link naowee-btn--medium">Contactar soporte</button>
+          <button class="naowee-btn naowee-btn--mute naowee-btn--medium" onclick="document.getElementById('docNumber').value='';document.getElementById('docNumber').focus();resetState()">Buscar otro documento</button>
         </div>
       </div>
     </div>
@@ -1478,7 +1421,7 @@ function resetState(){
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
       </div>
       <h4>Ingresa un documento para empezar</h4>
-      <p>El beneficiario debe presentar su documento (cédula o NIT según el tipo) para iniciar la validación. Puedes usar los ejemplos de demo arriba para ver los resultados posibles.</p>
+      <p>La búsqueda se hace <strong>solo entre los ganadores/elegibles</strong> de los programas activos (documento para personas, código DANE para instituciones). Puedes usar los ejemplos de demo arriba.</p>
     </div>
   `;
 }
@@ -1673,7 +1616,7 @@ tryRehydrate();
 })();
 </script>
 
-<script src="shared/profile-switcher.js?v=role-6" defer></script>
+<script src="shared/profile-switcher.js?v=role-7" defer></script>
 
 <script src="shared/footer-scroll.js" defer></script>
 <script src="shared/tour.js" defer></script>

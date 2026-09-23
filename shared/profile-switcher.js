@@ -12,19 +12,34 @@
 
   const STORAGE_KEY = 'naowee-incentivos-role';
 
+  /* Contrato de rol (matriz de roles 22-09-2026):
+     - clave localStorage: 'naowee-incentivos-role'
+     - superadmin → Superadmin (módulo global). Se comporta como admin:
+                    satisface data-role="admin" y vive en las páginas admin.
+     - admin      → Gestor de incentivos (Naowee · parametriza y audita).
+     - programa   → Gestor de programa (sólo su programa asignado).
+     - operador   → Operador (ministerio · sólo asigna).
+     - gestor     → legacy, se conserva por compatibilidad. */
   const ROLES = {
+    superadmin: { name:'Doug Vargas',   label:'Superadmin',           initials:'DV', bg:'#fecaca', fg:'#7f1d1d', meta:'Módulo global · acceso total' },
     admin:    { name:'Doug Vargas',     label:'Gestor de incentivos', initials:'DV', bg:'#c4b5fd', fg:'#4c1d95', meta:'Parametriza y audita' },
     operador: { name:'Doug Vargas',     label:'Operador',             initials:'DV', bg:'#ffdfb5', fg:'#92400e', meta:'Asigna incentivos en campo' },
     gestor:   { name:'Doug Vargas',     label:'Gestor',               initials:'DV', bg:'#ffdfb5', fg:'#92400e', meta:'Asigna y revierte incentivos' },
     // Gestor de programa: sólo ve el(los) programa(s) que tiene asignado(s).
     // Persona ficticia distinta de Doug para diferenciar visualmente la vista.
-    programa: { name:'Camila Restrepo', label:'Gestor de programa',   initials:'CR', bg:'#bfdbfe', fg:'#1e3a8a', meta:'Gestiona su programa asignado',
-                assignedPrograms: ['PRG-2026-003'] }
+    programa: { name:'Camila Restrepo', label:'Gestor de programa',   initials:'CR', bg:'#bfdbfe', fg:'#1e3a8a', meta:'Solo su programa · Juegos Intercolegiados 2026',
+                assignedPrograms: ['PRG-2026-010'],
+                scopeLabel: 'Juegos Intercolegiados 2026' }
   };
 
   // Qué roles muestra el dropdown por default cuando se auto-inyecta.
   // Incluye programa para que el switcher permita probar la vista filtrada.
-  const DEFAULT_ROLES_IN_DD = ['admin', 'programa', 'operador'];
+  const DEFAULT_ROLES_IN_DD = ['superadmin', 'admin', 'programa', 'operador'];
+
+  // Qué valores de data-role "ve" cada rol además del propio. Superadmin
+  // hereda todo lo marcado como admin (páginas que sólo conocen 'admin').
+  const ROLE_SEES = { superadmin: ['superadmin', 'admin'] };
+  function roleSees(role){ return ROLE_SEES[role] || [role]; }
 
   function currentRole(){
     return localStorage.getItem(STORAGE_KEY) || 'admin';
@@ -41,6 +56,15 @@
     // Actualiza la etiqueta del rol en el chip
     document.querySelectorAll('.user-chip .user-role').forEach(lbl => {
       lbl.textContent = r.label;
+      lbl.title = r.scopeLabel ? `${r.label} · ${r.scopeLabel}` : r.label;
+    });
+    // Alcance del rol (ej: programa asignado) como 3a línea del chip.
+    document.querySelectorAll('.user-chip .user-info').forEach(info => {
+      let sc = info.querySelector('.user-scope');
+      if(r.scopeLabel){
+        if(!sc){ sc = document.createElement('span'); sc.className = 'user-scope'; info.appendChild(sc); }
+        sc.textContent = r.scopeLabel;
+      } else if(sc){ sc.remove(); }
     });
     // Actualiza el nombre del usuario (varía entre Doug y Camila según rol)
     document.querySelectorAll('.user-chip .user-name').forEach(lbl => {
@@ -60,10 +84,12 @@
     // dropdown del switcher (.profile-dd__item) — esos siempre están visibles
     // porque son la lista de perfiles disponibles a elegir, no contenido
     // restringido por rol.
+    // data-role admite varios valores separados por espacio (ej: "admin programa").
+    const sees = roleSees(role);
     document.querySelectorAll('[data-role]').forEach(el => {
       if(el.classList.contains('profile-dd__item')) return;
-      const dr = el.dataset.role;
-      el.style.display = (dr === 'all' || dr === role) ? '' : 'none';
+      const drs = (el.dataset.role || '').split(/\s+/);
+      el.style.display = (drs.includes('all') || drs.some(d => sees.includes(d))) ? '' : 'none';
     });
     // Hook opcional por página: si la página define onRoleApplied(role),
     // se llama después del filtrado base. Permite a cada vista reaccionar
@@ -77,11 +103,12 @@
   // se redirige al "home" del perfil para que la UX refleje el cambio.
   const OPERATOR_PAGES = /incentivo-(08|09|10|11|14)/;
   const ADMIN_PAGES    = /incentivo-(02|03|04|05|06|07|12|13)/;
-  // Gestor de programa sólo vive en la lista (filtrada) y el detalle.
-  const PROGRAMA_PAGES = /incentivo-(03|05)/;
+  // Gestor de programa vive en el dashboard (filtrado a su programa), la
+  // lista (filtrada) y el detalle.
+  const PROGRAMA_PAGES = /incentivo-(02|03|05)/;
   const OPERATOR_HOME  = 'incentivo-08-asignar-buscar.html';
   const ADMIN_HOME     = 'incentivo-02-dashboard.html';
-  const PROGRAMA_HOME  = 'incentivo-03-programas.html';
+  const PROGRAMA_HOME  = 'incentivo-02-dashboard.html';
 
   function switchRole(role){
     localStorage.setItem(STORAGE_KEY, role);
@@ -98,7 +125,7 @@
     } else if(role === 'programa' && !onProgramaPage){
       // Gestor de programa: redirijo a su lista filtrada (PRG asignado).
       setTimeout(() => { window.location.href = PROGRAMA_HOME; }, 180);
-    } else if((role === 'admin' || role === 'gestor') && !onAdminPage){
+    } else if((role === 'superadmin' || role === 'admin' || role === 'gestor') && !onAdminPage){
       // Gestor de incentivos (admin) vive en el dashboard; si estoy en
       // pages del operador, redirijo.
       setTimeout(() => { window.location.href = ADMIN_HOME; }, 180);

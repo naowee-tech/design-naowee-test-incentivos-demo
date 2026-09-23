@@ -419,3 +419,10 @@ a{color:inherit;text-decoration:none}
   ::view-transition-old(*),
   ::view-transition-new(*){ animation-duration: 1ms !important; }
 }
+
+/* Alcance del rol en el chip (ej: Gestor de programa → programa asignado).
+   Lo inyecta shared/profile-switcher.js cuando el rol tiene scopeLabel. */
+.user-scope{
+  font-size:10.5px;font-weight:600;color:var(--accent,#d74009);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;
+}

@@ -8,23 +8,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.4.0/dist/design-system.css"/>
 <link rel="stylesheet" href="shared/shell.css"/>
-<link rel="stylesheet" href="shared/programa-wizard.css"/>
-<script src="shared/programs-data.js"></script>
-<script>
-/* Drena la cola de programas guardados (drafts y activations) que el wizard
-   empuja a sessionStorage antes de navegar acá. Cada entrada se inserta al
-   tope de PROGRAMS_DATA y se elimina de la cola sólo si el detalle la
-   absorbe (otras páginas también drenan, así que no removemos hasta usar). */
-(function drainProgramQueue(){
-  const KEY = 'naowee:program-draft-queue';
-  try {
-    const queue = JSON.parse(sessionStorage.getItem(KEY) || '[]');
-    if(!Array.isArray(queue) || !queue.length) return;
-    queue.reverse().forEach(p => window.PROGRAMS_DATA.unshift(p));
-    sessionStorage.removeItem(KEY);
-  } catch(e){ /* ignora cola corrupta */ }
-})();
-</script>
+<link rel="stylesheet" href="shared/programa-wizard.css?v=20260922192023"/>
+<script src="shared/programs-data.js?v=20260922191536"></script>
 
 <style>
   /* Back link wrapper */
@@ -77,6 +62,9 @@
     display:grid;grid-template-columns:repeat(4,1fr);gap:0;
     padding:18px 4px;
   }
+  /* Sin incentivos Bono se oculta la tarjeta de códigos: 3 columnas */
+  .kpi-strip:has(#kpiBonoBox[hidden]){grid-template-columns:repeat(3,1fr)}
+  .mini-kpi[hidden]{display:none}
   @media(max-width:900px){
     .kpi-strip{grid-template-columns:repeat(2,1fr);gap:0}
   }
@@ -347,20 +335,19 @@
 
   /* Asignaciones table columns — better distribution */
   .cg-table--asign{table-layout:fixed}
-  .cg-table--asign th:nth-child(1),
-  .cg-table--asign td:nth-child(1){width:25%}
-  .cg-table--asign th:nth-child(2),
-  .cg-table--asign td:nth-child(2){width:14%}
-  .cg-table--asign th:nth-child(3),
-  .cg-table--asign td:nth-child(3){width:13%}
-  .cg-table--asign th:nth-child(4),
-  .cg-table--asign td:nth-child(4){width:12%}
-  .cg-table--asign th:nth-child(5),
-  .cg-table--asign td:nth-child(5){width:13%}
-  .cg-table--asign th:nth-child(6),
-  .cg-table--asign td:nth-child(6){width:13%}
-  .cg-table--asign th:nth-child(7),
-  .cg-table--asign td:nth-child(7){width:10%;padding-right:18px;text-align:right}
+  /* Beneficiario · Incentivo · Código · Operador · Departamento · Fecha · Estado · Acciones */
+  .cg-table--asign th:nth-child(1), .cg-table--asign td:nth-child(1){width:20%}
+  .cg-table--asign th:nth-child(2), .cg-table--asign td:nth-child(2){width:15%}
+  .cg-table--asign th:nth-child(3), .cg-table--asign td:nth-child(3){width:12%}
+  .cg-table--asign th:nth-child(4), .cg-table--asign td:nth-child(4){width:10%}
+  .cg-table--asign th:nth-child(5), .cg-table--asign td:nth-child(5){width:11%}
+  .cg-table--asign th:nth-child(6), .cg-table--asign td:nth-child(6){width:10%}
+  .cg-table--asign th:nth-child(7), .cg-table--asign td:nth-child(7){width:10%}
+  .cg-table--asign th:nth-child(8), .cg-table--asign td:nth-child(8){width:12%;padding-right:18px;text-align:right}
+  .cg-table--asign td{overflow:hidden;text-overflow:ellipsis}
+  /* Acciones: sin recorte, para que los tooltips no se corten */
+  .cg-table--asign td:nth-child(8){overflow:visible}
+  .cg-table--asign td.asign-inc{white-space:normal}
 
   /* Botón ojo "Ver evidencia" — DS ghost (naowee-btn--mute icon-only) */
   .ev-btn{padding:0;width:34px;min-width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center}
@@ -413,229 +400,66 @@
   .ev-foot__hint{display:inline-flex;align-items:center;gap:6px}
   .ev-foot__hint svg{width:14px;height:14px}
 
-  /* ═══ Icono + popover de historial de reversión (paridad con incentivo-07) ═══ */
-  .cod-cell{display:inline-flex;align-items:center;gap:8px}
-  .rev-history-btn{
-    width:24px;height:24px;border-radius:6px;border:none;background:#fff3e6;
-    display:inline-flex;align-items:center;justify-content:center;cursor:pointer;
-    color:#d74009;transition:background .15s,color .15s,transform .12s;flex-shrink:0;
-  }
-  .rev-history-btn:hover{background:#ffdaa3;transform:scale(1.08)}
-  .rev-history-btn svg{width:14px;height:14px}
-  .rev-popover{
-    position:fixed;z-index:200;
-    background:#fff;border:1px solid var(--naowee-color-border-default,#e7e9f3);
-    border-radius:12px;box-shadow:0 16px 40px rgba(40,40,52,.16);
-    width:560px;max-width:calc(100vw - 24px);padding:0;
-    opacity:0;transform:translateY(-4px);pointer-events:none;
-    transition:opacity .18s,transform .18s;
-  }
-  .rev-popover.is-open{opacity:1;transform:translateY(0);pointer-events:auto}
-  .rv-pop__head{
-    display:flex;justify-content:space-between;align-items:center;gap:10px;
-    padding:12px 16px;border-bottom:1px solid var(--naowee-color-border-default,#e7e9f3);
-  }
-  .rv-pop__title{font-size:13px;font-weight:700;color:var(--naowee-color-text-primary,#282834)}
-  .rv-pop__sub{font-size:11px;color:var(--naowee-color-text-secondary,#646587);margin-top:1px;font-family:'SF Mono',monospace}
-  .rv-pop__close{
-    width:26px;height:26px;border-radius:6px;border:none;background:transparent;
-    color:#9ca3af;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
-  }
-  .rv-pop__close:hover{background:#f5f6fa;color:#282834}
-  .rv-pop__close svg{width:14px;height:14px}
-  .rv-pop__body{padding:14px 18px;display:grid;grid-template-columns:1fr 1fr;gap:12px 18px;max-height:70vh;overflow-y:auto}
-  .rv-row.rv-row--full{grid-column:1 / -1}
-  @media(max-width:560px){.rv-pop__body{grid-template-columns:1fr}}
-  .rv-trail{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-  .rv-state{
-    display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:9999px;
-    font-size:11px;font-weight:700;letter-spacing:.2px;
-  }
-  .rv-state--asig{background:#e6f4e7;color:#15803d}
-  .rv-state--rev{background:#ffe4ee;color:#be185d}
-  .rv-state--disp{background:#eef5ff;color:#1f78d1}
-  .rv-state__dot{width:6px;height:6px;border-radius:50%;background:currentColor}
-  .rv-arrow{color:#c4c7dc;font-size:12px;display:inline-flex;align-items:center}
-  .rv-row{display:flex;flex-direction:column;gap:2px;padding-bottom:10px;border-bottom:1px dashed var(--naowee-color-border-default,#e7e9f3)}
-  .rv-row:last-child{border-bottom:none;padding-bottom:0}
-  .rv-row__lbl{font-size:10.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--naowee-color-text-secondary,#646587)}
-  .rv-row__val{font-size:12.5px;color:var(--naowee-color-text-primary,#282834);font-weight:500;line-height:1.45}
-  .rv-row__val strong{font-weight:700}
+  /* Códigos: filas clicables y panel lateral con el historial */
+  .cod-row{cursor:pointer}
+  .cod-row:hover td{background:#fafbfd}
+  .cod-row:focus-visible{outline:2px solid var(--naowee-color-text-accent,#d74009);outline-offset:-2px}
+  .cod-inc{font-size:12.5px}
+  .cod-benef{font-weight:600;font-size:13px}
+  .cod-benef__doc,.cod-note{font-size:11.5px;color:var(--naowee-color-text-secondary,#646587)}
+  .cod-empty{color:#9c9ebf}
+  .cod-date{color:var(--naowee-color-text-secondary,#646587);font-size:12.5px}
+  .cod-chev{text-align:right;color:#9c9ebf;width:40px}
+  .cd-drawer{position:fixed;inset:0;z-index:1050;pointer-events:none}
+  .cd-drawer__backdrop{position:absolute;inset:0;background:rgba(40,40,52,.3);opacity:0;transition:opacity .2s}
+  .cd-drawer__panel{position:absolute;top:0;right:0;height:100%;width:440px;max-width:92vw;background:#fff;
+    box-shadow:-12px 0 32px rgba(40,40,52,.18);transform:translateX(100%);transition:transform .25s ease;display:flex;flex-direction:column}
+  .cd-drawer.is-open{pointer-events:auto}
+  .cd-drawer.is-open .cd-drawer__backdrop{opacity:1}
+  .cd-drawer.is-open .cd-drawer__panel{transform:none}
+  .cd-drawer__head{display:flex;align-items:flex-start;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--naowee-color-border-default,#e7e9f3)}
+  .cd-drawer__eyebrow{font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--naowee-color-text-secondary,#646587)}
+  .cd-drawer__head h2{margin:2px 0 0;font-size:17px;font-family:'SF Mono',ui-monospace,monospace;color:var(--naowee-color-text-accent,#d74009)}
+  .cd-drawer__close{border:0;background:transparent;cursor:pointer;color:var(--naowee-color-text-secondary,#646587);padding:6px;border-radius:8px}
+  .cd-drawer__close:hover{background:#f5f6fa}
+  .cd-drawer__body{padding:18px 20px;overflow:auto;display:flex;flex-direction:column;gap:12px}
+  .cd-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .cd-meta__inc{font-size:13px;font-weight:600}
+  .cd-sec{margin-top:6px;font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--naowee-color-text-secondary,#646587)}
+  .cd-benef{display:flex;gap:10px;align-items:flex-start}
+  .cd-benef__name{font-weight:700;font-size:14px}
+  .cd-benef__sub{font-size:12px;color:var(--naowee-color-text-secondary,#646587)}
+  .cd-actions{display:flex;gap:8px;flex-wrap:wrap}
+  .cd-empty{font-size:13px;color:var(--naowee-color-text-secondary,#646587)}
+  .cd-timeline{list-style:none;margin:0;padding:0 0 0 18px;border-left:2px solid var(--naowee-color-border-default,#e7e9f3);display:flex;flex-direction:column;gap:16px}
+  .cd-ev{position:relative}
+  .cd-ev::before{content:'';position:absolute;left:-25px;top:3px;width:12px;height:12px;border-radius:50%;background:#c4c7dc;border:2px solid #fff}
+  .cd-ev--green::before{background:#1f8923}
+  .cd-ev--red::before{background:#b42318}
+  .cd-ev__title{font-weight:700;font-size:13px}
+  .cd-ev__detail{font-size:12.5px;margin-top:2px}
+  .cd-ev__meta{font-size:11.5px;color:var(--naowee-color-text-secondary,#646587);margin-top:2px}
 
-  /* ═════ MODAL: Cargar códigos ═════ */
-  .cc-overlay{
-    position:fixed;inset:0;z-index:1100;
-    background:rgba(0,43,91,.45);backdrop-filter:blur(3px);
-    display:none;align-items:center;justify-content:center;padding:24px;
-  }
-  .cc-overlay.open{display:flex}
-  .cc-modal{
-    width:680px;max-width:calc(100vw - 48px);max-height:calc(100vh - 48px);
-    background:#fff;border-radius:16px;
-    box-shadow:0 24px 48px rgba(0,0,0,.25);
-    display:flex;flex-direction:column;overflow:hidden;
-    animation:ccIn .32s cubic-bezier(.175,.885,.32,1.275);
-  }
-  @keyframes ccIn{from{opacity:0;transform:scale(.94) translateY(16px)}to{opacity:1;transform:scale(1) translateY(0)}}
-  .cc-header{
-    padding:22px 26px 16px;
-    display:flex;align-items:flex-start;justify-content:space-between;gap:16px;
-  }
-  .cc-header__title{font-size:18px;font-weight:700;color:var(--naowee-color-text-primary,#282834);letter-spacing:-.005em}
-  .cc-header__sub{
-    font-size:13px;color:var(--naowee-color-text-secondary,#646587);
-    margin-top:4px;line-height:1.5;
-  }
-  .cc-close{
-    width:32px;height:32px;border-radius:8px;
-    border:none;background:transparent;cursor:pointer;
-    color:var(--naowee-color-text-secondary,#646587);
-    display:inline-flex;align-items:center;justify-content:center;
-    transition:background .15s;
-  }
-  .cc-close:hover{background:#f5f6fa;color:#282834}
-  .cc-body{padding:0 26px 24px;overflow:auto}
-  .cc-segment{display:flex;width:100%;margin:0 auto 18px}
-  .cc-segment .naowee-segment__item{flex:1;justify-content:center}
-
-  /* Step 1: tipo de incentivo */
-  .cc-type-block{margin-bottom:18px}
-  .cc-type-block__lbl{
-    display:block;font-size:12.5px;font-weight:700;color:var(--naowee-color-text-primary,#282834);
-    margin-bottom:4px;
-  }
-  .cc-type-block__hint{
-    font-size:12px;color:var(--naowee-color-text-secondary,#646587);
-    line-height:1.45;margin-bottom:12px;
-  }
-  .cc-type-block__hint strong{color:var(--naowee-color-text-primary,#282834);font-weight:700}
-  .cc-type-grid{
-    display:grid;grid-template-columns:repeat(5,1fr);gap:8px;
-  }
-  @media(max-width:760px){.cc-type-grid{grid-template-columns:repeat(2,1fr)}}
-  .cc-type-card{
-    display:flex;flex-direction:column;align-items:center;gap:6px;
-    padding:14px 10px;border-radius:12px;border:1.5px solid var(--naowee-color-border-default,#e7e9f3);
-    background:#fff;cursor:pointer;font-family:'Inter',sans-serif;
-    transition:border-color .15s,background .15s,transform .12s;
-  }
-  .cc-type-card:hover{border-color:#c4c7dc;background:#fafbfd}
-  .cc-type-card.is-selected{
-    border-color:var(--naowee-color-text-accent,#d74009);
-    background:#fff7f2;
-    box-shadow:0 0 0 3px rgba(215,64,9,.10);
-  }
-  .cc-type-card__ico{
-    width:36px;height:36px;border-radius:10px;
-    display:inline-flex;align-items:center;justify-content:center;
-  }
-  .cc-type-card__ico svg{width:20px;height:20px}
-  .cc-type-card__lbl{font-size:13px;font-weight:700;color:var(--naowee-color-text-primary,#282834)}
-  .cc-type-card__hint{font-size:10.5px;color:var(--naowee-color-text-secondary,#646587);font-weight:500}
-  .cc-type-card.is-selected .cc-type-card__hint{color:var(--naowee-color-text-accent,#d74009);font-weight:700}
-
-  /* Non-Bono section */
-  .cc-nb-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:6px}
-  @media(max-width:560px){.cc-nb-grid{grid-template-columns:1fr}}
-  .cc-nb-total{
-    margin-top:14px;padding:12px 16px;border-radius:10px;background:#fafbfd;
-    border:1px dashed var(--naowee-color-border-default,#e7e9f3);
-    font-size:13px;color:var(--naowee-color-text-secondary,#646587);
-  }
-  .cc-nb-total strong{font-size:16px;font-weight:800;color:var(--naowee-color-text-primary,#282834);font-variant-numeric:tabular-nums}
-  .cc-mode{display:none}
-  .cc-mode.active{display:block}
-
-  /* Upload pane */
-  .cc-dropzone{
-    border:1.5px dashed rgba(215,64,9,.38);
-    border-radius:14px;padding:36px 20px;text-align:center;
-    background:linear-gradient(180deg,#fffaf5 0%,#fff 100%);
-    cursor:pointer;transition:border-color .18s,background .18s;
-  }
-  .cc-dropzone:hover,.cc-dropzone.is-dragover{
-    border-color:rgba(215,64,9,.85);background:#fff6ee;
-  }
-  .cc-dropzone__ico{
-    width:52px;height:52px;margin:0 auto 12px;border-radius:50%;background:#fff;
-    border:1px solid var(--naowee-color-border-default,#e7e9f3);
-    color:var(--naowee-color-text-accent,#d74009);
-    display:flex;align-items:center;justify-content:center;
-  }
-  .cc-dropzone__title{font-size:14px;font-weight:700;margin-bottom:4px}
-  .cc-dropzone__sub{
-    font-size:12px;color:var(--naowee-color-text-secondary,#646587);
-    line-height:1.5;max-width:420px;margin:0 auto;
-  }
-  .cc-dropzone__sub code{
-    font-family:'SF Mono',monospace;font-size:11px;
-    color:var(--naowee-color-text-accent,#d74009);
-    background:#fff;padding:1px 5px;border-radius:4px;
-    border:1px solid var(--naowee-color-border-default,#e7e9f3);
-  }
-  .cc-dropzone__fmts{display:flex;gap:5px;justify-content:center;margin-top:10px}
-  .cc-dropzone__fmts .fmt{
-    font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:4px;background:#fff;
-    border:1px solid var(--naowee-color-border-default,#e7e9f3);
-    color:var(--naowee-color-text-secondary,#646587);
-    text-transform:uppercase;letter-spacing:.3px;
-  }
-  .cc-file-chip{
-    display:none;align-items:center;gap:12px;margin-top:12px;
-    padding:12px 14px;border:1px solid var(--naowee-color-border-default,#e7e9f3);
-    border-radius:10px;background:#fff;
-  }
-  .cc-file-chip.visible{display:flex}
-  .cc-file-chip__ico{
-    width:32px;height:32px;border-radius:8px;flex-shrink:0;
-    background:#e6f4e7;color:var(--naowee-color-feedback-fill-positive-loud,#1f8923);
-    display:inline-flex;align-items:center;justify-content:center;
-  }
-  .cc-file-chip__body{flex:1;min-width:0;font-size:12.5px}
-  .cc-file-chip__name{font-weight:700;color:var(--naowee-color-text-primary,#282834)}
-  .cc-file-chip__meta{font-size:11.5px;color:var(--naowee-color-text-secondary,#646587)}
-
-  /* Manual pane — sin columna Categoría (la categoría ya viene del Step 1) */
-  .cc-manual__cols{
-    display:grid;grid-template-columns:1.3fr 1fr 30px;gap:8px;
-    padding:0 10px 8px;font-size:10.5px;font-weight:700;
-    color:var(--naowee-color-text-secondary,#646587);
-    text-transform:uppercase;letter-spacing:.4px;
-  }
-  .cc-manual__rows{display:flex;flex-direction:column;gap:6px}
-  .cc-manual__row{
-    display:grid;grid-template-columns:1.3fr 1fr 30px;gap:8px;
-    align-items:center;
-  }
-  /* El código usa font mono para los identificadores */
-  .cc-manual__row .cc-manual__code input{font-family:'SF Mono',monospace}
-  .cc-manual__x{
-    width:30px;height:30px;border:none;background:transparent;cursor:pointer;
-    border-radius:6px;color:var(--naowee-color-text-secondary,#646587);
-    display:inline-flex;align-items:center;justify-content:center;
-  }
-  .cc-manual__x:hover{background:#fff0ee;color:#b42318}
-  .cc-manual__add{
-    margin-top:10px;align-self:flex-start;
-  }
-
-  /* Summary info */
-  .cc-summary{
-    margin-top:14px;padding:12px 14px;border-radius:10px;
-    background:#fff3e6;display:flex;gap:10px;align-items:center;
-    font-size:12px;color:var(--naowee-color-text-primary,#282834);
-  }
-  .cc-summary__ico{
-    width:28px;height:28px;border-radius:50%;flex-shrink:0;
-    background:var(--naowee-color-text-accent,#d74009);color:#fff;
-    display:inline-flex;align-items:center;justify-content:center;
-  }
-  .cc-summary strong{font-weight:700}
-
-  .cc-footer{
-    padding:16px 26px;border-top:1px solid var(--naowee-color-border-default,#e7e9f3);
-    display:flex;gap:10px;justify-content:flex-end;align-items:center;
-  }
+  /* Equipo del programa */
+  .team-grid{display:grid;grid-template-columns:1fr 2fr;gap:24px}
+  @media(max-width:760px){.team-grid{grid-template-columns:1fr}}
+  .team-col{display:flex;flex-direction:column;gap:10px}
+  .team-col__lbl{font-size:12px;font-weight:600;color:var(--naowee-color-text-secondary,#646587)}
+  .team-person{display:flex;align-items:center;gap:10px}
+  .team-person__name{font-size:13.5px;font-weight:600;color:var(--naowee-color-text-primary,#282834)}
+  .team-person__role{font-size:12px;color:var(--naowee-color-text-secondary,#646587)}
+  .team-empty{font-size:13px;font-style:italic;color:var(--naowee-color-text-secondary,#646587)}
+  .inc-card--off{opacity:.6}
+  .section-edit{text-transform:none;letter-spacing:0}
+  /* Asignaciones: incentivo y sin código */
+  .asign-inc{max-width:220px;font-size:12.5px}
+  .asign-nocode{font-size:12px;color:var(--naowee-color-text-secondary,#646587);font-style:italic}
+  #ddIncLabel{max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  /* Aviso: abre el microfrontend de Perfil SUID (solo demo) */
+  .suid-toast{position:fixed;right:24px;bottom:24px;z-index:1300;max-width:420px;display:flex;gap:10px;align-items:flex-start;
+    padding:12px 14px;border-radius:12px;background:#fff;border:1px dashed #d9a441;box-shadow:0 12px 32px rgba(40,40,52,.18);
+    font-size:13px;line-height:1.45;color:var(--naowee-color-text-primary,#282834);transition:opacity .25s}
+  .suid-toast code{font-size:12px}
 </style>
 </head>
 <body>
@@ -664,11 +488,11 @@
         <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d74009" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M6 7V5a1 1 0 011-1h10a1 1 0 011 1v2"/><line x1="3" y1="12" x2="21" y2="12"/></svg></div>
         <span class="lbl">Programas</span>
       </div>
-      <div class="nav-row" onclick="fadeAndGo('incentivo-07-codigos.html')">
+      <div class="nav-row" data-role="superadmin programa" onclick="fadeAndGo('incentivo-07-codigos.html')">
         <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 012-2h14a2 2 0 012 2v2a1.5 1.5 0 000 3v3a2 2 0 01-2 2H5a2 2 0 01-2-2v-3a1.5 1.5 0 000-3V8z"/><line x1="13" y1="6" x2="13" y2="9" stroke-dasharray="1.5 1.5"/><line x1="13" y1="11" x2="13" y2="13" stroke-dasharray="1.5 1.5"/><line x1="13" y1="15" x2="13" y2="18" stroke-dasharray="1.5 1.5"/></svg></div>
         <span class="lbl">Códigos</span>
       </div>
-      <div class="nav-row" onclick="fadeAndGo('incentivo-12-asignaciones.html')">
+      <div class="nav-row" data-role="superadmin programa" onclick="fadeAndGo('incentivo-12-asignaciones.html')">
         <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="1.5"/><circle cx="6" cy="12" r="1.5"/><circle cx="6" cy="18" r="1.5"/><line x1="6" y1="7.5" x2="6" y2="10.5"/><line x1="6" y1="13.5" x2="6" y2="16.5"/><line x1="11" y1="6" x2="20" y2="6"/><line x1="11" y1="12" x2="18" y2="12"/><line x1="11" y1="18" x2="16" y2="18"/></svg></div>
         <span class="lbl">Historial</span>
       </div>
@@ -747,12 +571,6 @@
           <h1 class="detail-head__title" id="hdTitle">—</h1>
           <div class="detail-head__meta" id="hdMeta"></div>
         </div>
-        <div class="detail-head__actions">
-          <button class="naowee-btn naowee-btn--mute naowee-btn--large" onclick="editCurrentProgram()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 013 3L12 15l-4 1 1-4z"/></svg>
-            Editar
-          </button>
-        </div>
       </div>
 
       <div class="hero-card__divider"></div>
@@ -760,27 +578,30 @@
       <!-- KPIs (parte inferior del hero-card) -->
       <div class="kpi-strip">
         <div class="mini-kpi">
-          <div class="mini-kpi__lbl">Rubro total</div>
+          <div class="mini-kpi__lbl">Rubro</div>
           <div class="mini-kpi__val" id="kpiRubro">—</div>
+          <div class="naowee-progress naowee-progress--positive" id="kpiRubroBar" style="margin-top:8px">
+            <div class="naowee-progress__fill" id="kpiRubroFill" style="width:0%"></div>
+          </div>
           <div class="mini-kpi__sub" id="kpiRubroSub">—</div>
         </div>
+        <div class="mini-kpi">
+          <div class="mini-kpi__lbl">Total de incentivos</div>
+          <div class="mini-kpi__val" id="kpiCupos">—</div>
+          <div class="mini-kpi__sub" id="kpiCuposSub">—</div>
+        </div>
         <div class="mini-kpi mini-kpi--hero">
-          <div class="mini-kpi__lbl">Ejecutado</div>
-          <div class="mini-kpi__val" id="kpiExec">—</div>
+          <div class="mini-kpi__lbl">Entregados</div>
+          <div class="mini-kpi__val" id="kpiDel" style="color:var(--naowee-color-text-accent,#d74009)">—</div>
           <div class="naowee-progress naowee-progress--positive" style="margin-top:8px">
-            <div class="naowee-progress__fill" id="kpiExecFill" style="width:0%"></div>
+            <div class="naowee-progress__fill" id="kpiDelFill" style="width:0%"></div>
           </div>
-          <div class="mini-kpi__sub" style="margin-top:4px" id="kpiExecSub">—</div>
+          <div class="mini-kpi__sub" id="kpiDelSub">—</div>
         </div>
-        <div class="mini-kpi">
-          <div class="mini-kpi__lbl">Inventario</div>
-          <div class="mini-kpi__val" id="kpiInv" style="color:var(--naowee-color-text-accent,#d74009)">—</div>
-          <div class="mini-kpi__sub">códigos disponibles</div>
-        </div>
-        <div class="mini-kpi">
-          <div class="mini-kpi__lbl">Revertidos</div>
-          <div class="mini-kpi__val" id="kpiRev">—</div>
-          <div class="mini-kpi__sub" id="kpiRevSub">—</div>
+        <div class="mini-kpi" id="kpiBonoBox">
+          <div class="mini-kpi__lbl">Bonos (códigos)</div>
+          <div class="mini-kpi__val" id="kpiBono">—</div>
+          <div class="mini-kpi__sub" id="kpiBonoSub">—</div>
         </div>
       </div>
       </div><!-- /.hero-card -->
@@ -802,12 +623,25 @@
           <!-- Tab: Resumen -->
           <div class="tab-pane" data-pane="resumen">
             <div class="section">
-              <div class="section-label">Tipos de incentivo</div>
-              <div id="incList"></div>
+              <div class="section-label section-label--row">
+                <span>Información general</span>
+                <button class="naowee-btn naowee-btn--link naowee-btn--small section-edit" onclick="editSection('datos')">Editar</button>
+              </div>
+              <dl id="infoList"></dl>
             </div>
             <div class="section">
-              <div class="section-label">Información general</div>
-              <dl id="infoList"></dl>
+              <div class="section-label section-label--row">
+                <span>Equipo del programa</span>
+                <button class="naowee-btn naowee-btn--link naowee-btn--small section-edit" id="btnEditTeam" onclick="editSection('equipo')">Editar</button>
+              </div>
+              <div class="team-grid" id="teamList"></div>
+            </div>
+            <div class="section">
+              <div class="section-label section-label--row">
+                <span>Incentivos</span>
+                <button class="naowee-btn naowee-btn--link naowee-btn--small section-edit" onclick="editSection('incentivos')">Editar</button>
+              </div>
+              <div id="incList"></div>
             </div>
           </div>
 
@@ -815,10 +649,10 @@
           <div class="tab-pane" data-pane="condiciones" hidden>
             <div class="section">
               <div class="section-label section-label--row">
-                <span>Reglas de elegibilidad</span>
-                <button class="naowee-btn naowee-btn--link naowee-btn--small" onclick="editCurrentProgram(3)" style="text-transform:none;letter-spacing:0">
+                <span>Condiciones de elegibilidad</span>
+                <button class="naowee-btn naowee-btn--link naowee-btn--small" onclick="editSection('condiciones')" style="text-transform:none;letter-spacing:0">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 013 3L12 15l-4 1 1-4z"/></svg>
-                  Editar reglas
+                  Editar condiciones
                 </button>
               </div>
               <!-- Natural language preview (mismo UI que la creación del programa) -->
@@ -847,11 +681,18 @@
                     <span class="naowee-searchbox__icon">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                     </span>
-                    <input type="text" class="naowee-searchbox__input" placeholder="Buscar código" id="codigosSearch"/>
+                    <input type="text" class="naowee-searchbox__input" placeholder="Buscar código o beneficiario" id="codigosSearch"/>
                     <button type="button" class="naowee-searchbox__clear" onclick="clearSearch('codigosSearch')" aria-label="Limpiar búsqueda">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                     </button>
                   </div>
+                </div>
+                <div class="toolbar-dd-wrap" id="ddCodIncWrap">
+                  <button type="button" class="toolbar-dd" onclick="toggleDD('ddCodIncWrap')">
+                    <span id="ddCodIncLabel">Incentivo: Todos</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                  </button>
+                  <div class="toolbar-dd-menu" role="listbox" id="ddCodIncMenu"></div>
                 </div>
                 <div class="toolbar-dd-wrap" id="ddEstadoWrap">
                   <button type="button" class="toolbar-dd" id="ddEstado" onclick="toggleDD('ddEstadoWrap')">
@@ -863,10 +704,9 @@
                     <div class="toolbar-dd-item" role="option" data-val="disp" onclick="setEstadoFilter('disp','Disponibles')"><span class="dd-dot" style="background:#a0a3bd"></span>Disponibles</div>
                     <div class="toolbar-dd-item" role="option" data-val="asig" onclick="setEstadoFilter('asig','Asignados')"><span class="dd-dot" style="background:#1f8923"></span>Asignados</div>
                     <div class="toolbar-dd-item" role="option" data-val="reasig" onclick="setEstadoFilter('reasig','Reasignados')"><span class="dd-dot" style="background:#7c3aed"></span>Reasignados</div>
-                    <div class="toolbar-dd-item" role="option" data-val="rev" onclick="setEstadoFilter('rev','Revertidos')"><span class="dd-dot" style="background:#9e0015"></span>Revertidos</div>
                   </div>
                 </div>
-                <button class="naowee-btn naowee-btn--loud naowee-btn--small" id="btnCargarCodigos" onclick="openCargarCodigos()">
+                <button class="naowee-btn naowee-btn--loud naowee-btn--small" id="btnCargarCodigos" onclick="editSection('codigos')">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                   Cargar códigos
                 </button>
@@ -892,10 +732,11 @@
               <thead>
                 <tr>
                   <th>Código</th>
+                  <th>Incentivo</th>
                   <th>Estado</th>
-                  <th>Subido por</th>
+                  <th>Asignado a</th>
                   <th>Última actualización</th>
-                  <th style="text-align:right">Valor</th>
+                  <th aria-label="Ver historial"></th>
                 </tr>
               </thead>
               <tbody id="codigosTbody"></tbody>
@@ -914,22 +755,28 @@
                     <span class="naowee-searchbox__icon">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                     </span>
-                    <input type="text" class="naowee-searchbox__input" placeholder="Buscar deportista o código" id="asignSearch"/>
+                    <input type="text" class="naowee-searchbox__input" placeholder="Buscar beneficiario, documento o código" id="asignSearch"/>
                     <button type="button" class="naowee-searchbox__clear" onclick="clearSearch('asignSearch')" aria-label="Limpiar búsqueda">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                     </button>
                   </div>
                 </div>
-                <div class="toolbar-dd-wrap" id="ddRegionWrap">
-                  <button type="button" class="toolbar-dd" onclick="toggleDD('ddRegionWrap')">
-                    <span id="ddRegionLabel">Región: Todas</span>
+                <div class="toolbar-dd-wrap" id="ddIncWrap">
+                  <button type="button" class="toolbar-dd" onclick="toggleDD('ddIncWrap')">
+                    <span id="ddIncLabel">Incentivo: Todos</span>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                   </button>
-                  <div class="toolbar-dd-menu" role="listbox">
-                    <div class="toolbar-dd-item" role="option" aria-selected="true" data-val="all" onclick="setRegionFilter('all','Región: Todas')">Todas las regiones</div>
-                    <div class="toolbar-dd-item" role="option" data-val="atl" onclick="setRegionFilter('atl','Atlántico')">Atlántico</div>
-                    <div class="toolbar-dd-item" role="option" data-val="cun" onclick="setRegionFilter('cun','Cundinamarca')">Cundinamarca</div>
-                    <div class="toolbar-dd-item" role="option" data-val="val" onclick="setRegionFilter('val','Valle')">Valle</div>
+                  <div class="toolbar-dd-menu" role="listbox" id="ddIncMenu">
+                    <!-- opciones generadas: renderIncFilter() -->
+                  </div>
+                </div>
+                <div class="toolbar-dd-wrap" id="ddRegionWrap">
+                  <button type="button" class="toolbar-dd" onclick="toggleDD('ddRegionWrap')">
+                    <span id="ddRegionLabel">Departamento: Todos</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                  </button>
+                  <div class="toolbar-dd-menu" role="listbox" id="ddRegionMenu">
+                    <!-- opciones generadas: renderDeptoFilter() -->
                   </div>
                 </div>
               </div>
@@ -953,13 +800,14 @@
             <table class="cg-table cg-table--asign" id="asignTable">
               <thead>
                 <tr>
-                  <th>Deportista</th>
+                  <th>Beneficiario</th>
+                  <th>Incentivo</th>
                   <th>Código</th>
                   <th>Operador</th>
-                  <th>Región</th>
+                  <th>Departamento</th>
                   <th>Fecha</th>
                   <th>Estado</th>
-                  <th aria-label="Evidencia"></th>
+                  <th aria-label="Acciones"></th>
                 </tr>
               </thead>
               <tbody id="asignTbody"></tbody>
@@ -1013,11 +861,11 @@ function toggleProfileDD(e){
 function switchRole(role){
   document.querySelectorAll('.profile-dd__item').forEach(it => it.classList.toggle('active', it.dataset.role === role));
   if(role === 'operador') fadeAndGo('incentivo-08-asignar-buscar.html');
-  document.getElementById('profileDD').classList.remove('open');
+  document.getElementById('profileDD')?.classList.remove('open');
 }
 document.addEventListener('click', (e) => {
   const sw = document.getElementById('profileSwitcher');
-  if(sw && !sw.contains(e.target)) document.getElementById('profileDD').classList.remove('open');
+  if(sw && !sw.contains(e.target)) document.getElementById('profileDD')?.classList.remove('open');
 });
 
 function fadeAndGo(url){window.location.href=url}
@@ -1036,12 +884,20 @@ function formatMoney(n){return '$' + Number(n||0).toLocaleString('es-CO')}
 function formatMoneyShort(n){
   if(!n) return '$0';
   if(n >= 1000000000) return '$' + (n/1000000000).toFixed(1).replace('.0','') + 'B';
-  
-  
-  return '$' + n;
+  return '$' + Number(n).toLocaleString('es-CO');
 }
 
 let CURRENT_PROGRAM = null;
+
+/* Vigencia opcional (reunión 22-09): sin fechas el programa no tiene cierre. */
+function vigenciaLabel(p){
+  const f = p.from && p.from !== '—' ? p.from : '';
+  const t = p.to && p.to !== '—' ? p.to : '';
+  if(f && t) return `${f} — ${t}`;
+  if(t) return `Hasta ${t}`;
+  if(f) return `Desde ${f} · sin fecha de cierre`;
+  return 'Sin fecha de cierre';
+}
 
 function hydrateProgram(){
   const params = new URLSearchParams(location.search);
@@ -1068,44 +924,40 @@ function hydrateProgram(){
 
   document.getElementById('hdMeta').innerHTML = `
     <span>${p.shortDesc} · ${p.event}</span><span class="dot"></span>
-    <span>Vigencia: ${p.from} — ${p.to}</span><span class="dot"></span>
+    <span>Vigencia: ${vigenciaLabel(p)}</span><span class="dot"></span>
     <span>Cobertura: <strong>${p.coverage}</strong></span><span class="dot"></span>
-    <span>Responsable: ${p.responsible}</span>
+    <span>Gestor de programa: ${p.team && p.team.gestor ? p.team.gestor.split(' · ')[0] : 'sin asignar'}</span>
   `;
 
-  // KPI strip
-  const execPct = p.rubro ? Math.round((p.exec/p.rubro)*100) : 0;
-  const unitM = '$' + Number(p.unit||0).toLocaleString('es-CO');
-  document.getElementById('kpiRubro').textContent = formatMoneyShort(p.rubro);
-  document.getElementById('kpiRubroSub').textContent = p.codes.total > 0 ? `${p.codes.total} códigos × ${unitM}` : 'Pendiente configurar';
-  document.getElementById('kpiExec').textContent = formatMoneyShort(p.exec);
-  document.getElementById('kpiExecFill').style.width = execPct + '%';
-  document.getElementById('kpiExecSub').textContent = p.rubro ? `${execPct}% · ${p.codes.asig} asignaciones` : '—';
-  document.getElementById('kpiInv').textContent = p.codes.avail;
-  document.getElementById('kpiRev').textContent = p.codes.rev;
-  document.getElementById('kpiRevSub').textContent = p.codes.total ? `${((p.codes.rev/p.codes.total)*100).toFixed(1)}% del total` : '—';
+  // KPIs: se calculan en renderKpis() después de generar entregas y códigos.
 
   // Regla de negocio: solo programas tipo Bono manejan inventario de códigos.
   // Para los demás (Beca, Kit, Inscripción, Transporte) ocultamos el tab y
   // el botón "Cargar códigos".
-  const isBonoProgram = mainCat === 'Bono';
+  const isBonoProgram = (p.incentives || []).some(i => (i.categoryKey || String(i.category).toLowerCase()) === 'bono' && i.active !== false);
   const cargarBtn = document.getElementById('btnCargarCodigos');
   if(cargarBtn) cargarBtn.style.display = isBonoProgram ? '' : 'none';
   // Marca el container del tab códigos para estilizar el empty state
   document.querySelector('.tab-pane[data-pane="codigos"]')?.classList.toggle('codigos-pane--no-codes', !isBonoProgram);
 
   // Tab counts
-  const totalConds = p.conditions.groups.reduce((acc, g) => acc + g.rules.length, 0);
+  const countRules = groups => (groups || []).reduce((acc, g) => acc + g.rules.length, 0);
+  const totalConds = countRules(p.conditions.groups) + (p.incentives || []).reduce((acc, i) => acc + countRules(i.conditions && i.conditions.groups), 0);
   document.getElementById('tabCondCount').textContent = totalConds;
   document.getElementById('tabCodCount').textContent = p.codes.total;
   document.getElementById('tabAsigCount').textContent = p.codes.asig;
 
-  // Resumen: tipos de incentivo
+  // Resumen: incentivos (con entregas, códigos cargados y estado)
+  const codesBy = Object.fromEntries((p.codesByIncentive || []).map(c => [c.name, c.count]));
   document.getElementById('incList').innerHTML = p.incentives.map(inc => {
     const catIco = CAT_ICONS[inc.category] || CAT_ICONS['Beca'];
-    const badges = inc.badges.map(b => `<span class="naowee-badge naowee-badge--${b.variant} naowee-badge--quiet naowee-badge--small">${b.text}</span>`).join('');
+    const off = inc.active === false;
+    const badges = inc.badges.map(b => `<span class="naowee-badge naowee-badge--${b.variant} naowee-badge--quiet naowee-badge--small">${b.text}</span>`).join('')
+      + (off ? '<span class="naowee-badge naowee-badge--neutral naowee-badge--small">Desactivado</span>' : '');
+    const isBono = (inc.categoryKey || String(inc.category).toLowerCase()) === 'bono';
+    const stats = [`${inc.delivered || 0} entregas`, isBono ? (codesBy[inc.name] != null ? `${codesBy[inc.name]} códigos` : 'Sin códigos') : 'Sin código'].join(' · ');
     return `
-      <div class="inc-card">
+      <div class="inc-card${off ? ' inc-card--off' : ''}">
         <div class="inc-card__ico" style="background:${p.iconBg};color:${p.iconColor}">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${catIco}</svg>
         </div>
@@ -1116,21 +968,41 @@ function hydrateProgram(){
         </div>
         <div class="inc-card__val">
           <div class="inc-card__val-val">${inc.valueLabel}</div>
-          <div class="inc-card__val-lbl">${inc.valueFoot}</div>
+          <div class="inc-card__val-lbl">${stats}</div>
         </div>
       </div>
     `;
   }).join('');
+
+  // Resumen: equipo del programa
+  const t = p.team || {};
+  const hasTeam = !!(t.gestor || (t.operators && t.operators.length));
+  const person = (full, role) => {
+    const [name, org] = String(full).split(' · ');
+    const ini = name.split(' ').map(x => x[0]).slice(0, 2).join('');
+    return `<div class="team-person"><span class="naowee-thumbnail naowee-thumbnail--small naowee-thumbnail--neutral naowee-thumbnail--quiet">${ini}</span><div><div class="team-person__name">${name}</div><div class="team-person__role">${[role, org].filter(Boolean).join(' · ')}</div></div></div>`;
+  };
+  document.getElementById('teamList').innerHTML = `
+    <div class="team-col">
+      <div class="team-col__lbl">Gestor de programa</div>
+      ${t.gestor ? person(t.gestor, '') : '<div class="team-empty">Sin asignar</div>'}
+    </div>
+    <div class="team-col">
+      <div class="team-col__lbl">Operadores en campo · ${(t.operators || []).length}</div>
+      ${(t.operators || []).length ? t.operators.map(o => person(o.split(' · ')[0] + ' · ' + (o.split(' · ')[1] || 'Operador'), '')).join('') : '<div class="team-empty">Sin asignar</div>'}
+    </div>`;
+  const teamBtn = document.getElementById('btnEditTeam');
+  if(teamBtn) teamBtn.textContent = hasTeam ? 'Editar' : 'Asignar';
 
   // Resumen: información general
   document.getElementById('infoList').innerHTML = `
     <div class="info-row-plain"><dt>Descripción</dt><dd>${p.longDesc}</dd></div>
     <div class="info-row-plain"><dt>Código del programa</dt><dd><code>${p.id}</code></dd></div>
     <div class="info-row-plain"><dt>Fuente presupuestal</dt><dd>${p.fuente}</dd></div>
-    <div class="info-row-plain"><dt>Acto administrativo</dt><dd>${p.actoAdmin}</dd></div>
+    <div class="info-row-plain"><dt>Acto administrativo</dt><dd>${p.actoAdmin || '<em>Sin registrar</em>'}</dd></div>
     <div class="info-row-plain"><dt>Evento asociado</dt><dd>${p.event}</dd></div>
     <div class="info-row-plain"><dt>Cobertura</dt><dd>${p.coverage}</dd></div>
-    <div class="info-row-plain"><dt>Responsable</dt><dd>${p.responsible}</dd></div>
+    <div class="info-row-plain"><dt>Vigencia</dt><dd>${vigenciaLabel(p)}</dd></div>
   `;
 
   // Condiciones — si los incentivos tienen su propio bloque (multi mode), las
@@ -1156,8 +1028,8 @@ function hydrateProgram(){
       const groups = inc.conditions && inc.conditions.groups || [];
       if(!groups.length) return '';
       const intro = groups.length > 1
-        ? `El atleta es elegible para <strong>${inc.name}</strong> si cumple <strong>cualquiera</strong> de estas reglas:`
-        : `El atleta es elegible para <strong>${inc.name}</strong> si cumple <strong>todas</strong> estas condiciones:`;
+        ? `Es elegible para <strong>${inc.name}</strong> quien cumpla <strong>cualquiera</strong> de estas reglas:`
+        : `Es elegible para <strong>${inc.name}</strong> quien cumpla <strong>todas</strong> estas condiciones${inc.beneficiaryLabel ? ` (<strong>${inc.beneficiaryLabel}</strong>)` : ''}:`;
       return `<div class="cond-inc-block"><div class="cond-inc-block__head"><span class="cond-inc-block__num">#${idx+1}</span><span class="cond-inc-block__name">${inc.name}</span><span class="naowee-badge naowee-badge--neutral naowee-badge--quiet naowee-badge--small">${inc.category}</span></div><p class="wz-cond-preview__intro">${intro}</p>${renderGroupsHTML(groups).join(orDivider)}</div>`;
     }).join('');
   } else if(p.conditions.groups.length){
@@ -1171,8 +1043,6 @@ function hydrateProgram(){
   document.getElementById('condPreviewBody').innerHTML = condBodyHTML;
 
   // Modal cargar codigos — program name
-  const ccName = document.getElementById('ccProgramName');
-  if(ccName) ccName.textContent = p.name;
 
   // Title del documento
   document.title = `SUID – Incentivos · ${p.name}`;
@@ -1183,33 +1053,111 @@ window.addEventListener('load', () => {
   hydrateProgram();
   positionTabIndicator();
   setTimeout(positionTabIndicator, 100);
-  seedCodigos();
   seedAsign();
+  seedCodigos();
+  renderKpis();
   renderCodigos();
   renderAsign();
   renderHistorial();
   showActivatedToastIfNeeded();
+  openTabFromUrl();
 });
 
-/* Abre el wizard de edición con los datos del programa actualmente visible.
-   Si se pasa un step, intenta saltar a ese paso después de abrir. */
-function editCurrentProgram(step){
-  if(!CURRENT_PROGRAM){ if(typeof openWizard === 'function') openWizard(); return; }
-  if(typeof window.openWizardForEdit === 'function'){
-    window.openWizardForEdit(CURRENT_PROGRAM.id);
-    if(step && typeof window.tryGoStep === 'function'){
-      // Esperamos al próximo tick para que el wizard ya esté abierto y el form populado.
-      setTimeout(() => window.tryGoStep(step), 100);
-    }
-  } else if(typeof openWizard === 'function'){
-    openWizard();
+/* ══ KPIs del programa ══
+   - Rubro: monto y % ejecutado (si hay rubro).
+   - Total de incentivos: cupos del programa. Bono = sus códigos; Kit u otros
+     con "Puestos que reciben" = esos puestos; con rubro y valor unitario =
+     rubro ÷ valor; si no, "sin cupo definido" (no suma).
+   - Entregados: entregas y % sobre los cupos definidos (solo cuenta las
+     entregas de incentivos con cupo).
+   - Bonos (códigos): entregados / cargados y disponibles. */
+function cupoOf(inc, p){
+  const isBono = (inc.categoryKey || String(inc.category).toLowerCase()) === 'bono';
+  if(isBono){
+    const byName = Object.fromEntries((p.codesByIncentive || []).map(c => [c.name, c.count]));
+    if(byName[inc.name] != null) return byName[inc.name];
+    return p.incentives.length === 1 ? ((p.codes && p.codes.total) || 0) : 0;
+  }
+  const rules = (inc.conditions && inc.conditions.groups && inc.conditions.groups[0] && inc.conditions.groups[0].rules) || [];
+  const puestos = rules.find(r => r.fieldKey === 'puestos' || r.field === 'Puestos que reciben' || r.field === 'Recibe');
+  if(puestos){ const v = String(puestos.value || ''); return /3/.test(v) ? 3 : /2/.test(v) ? 2 : 1; }
+  if(inc.rubro && inc.value) return Math.floor(inc.rubro / inc.value);
+  if(p.incentives.length === 1 && p.codes && p.codes.total) return p.codes.total; // programas de un solo incentivo
+  return null;
+}
+function renderKpis(){
+  const p = CURRENT_PROGRAM;
+  if(!p) return;
+  const fmt = n => Number(n || 0).toLocaleString('es-CO');
+  // Rubro
+  const execPct = p.rubro ? Math.min(100, Math.round((p.exec / p.rubro) * 100)) : 0;
+  document.getElementById('kpiRubro').textContent = p.rubro ? formatMoneyShort(p.rubro) : 'Sin rubro';
+  document.getElementById('kpiRubroBar').hidden = !p.rubro;
+  document.getElementById('kpiRubroFill').style.width = execPct + '%';
+  document.getElementById('kpiRubroSub').textContent = p.rubro ? `${execPct}% ejecutado · ${formatMoneyShort(p.exec)}` : 'El programa no tiene rubro definido';
+  // Cupos
+  const incs = (p.incentives || []).filter(i => i.active !== false || i.delivered);
+  const withCupo = incs.map(inc => ({ inc, cupo: cupoOf(inc, p) }));
+  const defined = withCupo.filter(x => x.cupo != null);
+  const totalCupos = defined.reduce((a, x) => a + x.cupo, 0);
+  const group = {};
+  defined.forEach(x => { const k = x.inc.category || 'Otros'; group[k] = (group[k] || 0) + x.cupo; });
+  const noCupo = [...new Set(withCupo.filter(x => x.cupo == null).map(x => x.inc.category))];
+  document.getElementById('kpiCupos').textContent = defined.length ? fmt(totalCupos) : '—';
+  document.getElementById('kpiCuposSub').textContent = [
+    ...Object.entries(group).map(([k, n]) => `${fmt(n)} ${k.toLowerCase()}${n === 1 ? '' : 's'}`),
+    ...(noCupo.length ? [`${noCupo.join(', ').toLowerCase()} sin cupo definido`] : [])
+  ].join(' · ') || '—';
+  // Entregados
+  const delivered = incs.reduce((a, i) => a + (i.delivered || 0), 0);
+  const deliveredWithCupo = defined.reduce((a, x) => a + (x.inc.delivered || 0), 0);
+  const pct = totalCupos ? Math.round((deliveredWithCupo / totalCupos) * 100) : 0;
+  document.getElementById('kpiDel').textContent = fmt(delivered);
+  document.getElementById('kpiDelFill').style.width = pct + '%';
+  document.getElementById('kpiDelSub').textContent = totalCupos
+    ? `${pct}% de los ${fmt(totalCupos)} cupos${deliveredWithCupo !== delivered ? ` · ${fmt(delivered - deliveredWithCupo)} sin cupo` : ''}`
+    : 'Sin cupos definidos';
+  // Bonos (códigos)
+  const box = document.getElementById('kpiBonoBox');
+  const codes = state.all || [];
+  box.hidden = !codes.length;
+  if(codes.length){
+    const used = codes.filter(c => c.estado !== 'disp').length;
+    document.getElementById('kpiBono').textContent = `${fmt(used)} / ${fmt(codes.length)}`;
+    document.getElementById('kpiBonoSub').textContent = `${fmt(codes.length - used)} códigos disponibles`;
   }
 }
-window.editCurrentProgram = editCurrentProgram;
 
-/* Si el detalle se abrió tras activar un programa (?activated=1), mostrar
-   un toast positive bottom-right confirmando la creación. Limpia el query
-   param para que un refresh no lo dispare de nuevo. */
+/* Una sola forma de editar: cada sección abre el wizard solo con esa sección. */
+function editSection(section){
+  if(!CURRENT_PROGRAM || typeof window.openWizardSection !== 'function') return;
+  window.openWizardSection(CURRENT_PROGRAM.id, section);
+}
+window.editSection = editSection;
+const SECTION_TAB = { datos:'resumen', equipo:'resumen', incentivos:'resumen', condiciones:'condiciones', codigos:'codigos' };
+window.onSectionSaved = function(prog, section){
+  const tab = SECTION_TAB[section] || 'resumen';
+  location.href = `incentivo-05-programa-detalle.html?id=${encodeURIComponent(prog.id)}&tab=${tab}&saved=${section}`;
+};
+/* ?tab= abre esa pestaña; ?saved= muestra "Cambios guardados". */
+function openTabFromUrl(){
+  const params = new URLSearchParams(location.search);
+  const tab = params.get('tab');
+  const btn = tab && document.querySelector(`.naowee-tab[data-tab="${tab}"]`);
+  if(btn) switchTab(tab, btn);
+  const saved = params.get('saved');
+  if(saved){
+    const msg = { datos:'Información general actualizada.', equipo:'Equipo del programa actualizado.', incentivos:'Incentivos actualizados.', condiciones:'Condiciones actualizadas.', codigos:'Códigos agregados al inventario.' }[saved] || 'Cambios guardados.';
+    const wrap = document.createElement('div');
+    wrap.className = 'wz-toast-wrap';
+    wrap.innerHTML = `<div class="wz-toast naowee-message naowee-message--positive"><div class="naowee-message__header"><div class="naowee-message__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="naowee-message__text"><strong>Cambios guardados.</strong> ${msg} Quedó registrado en el historial.</div></div></div>`;
+    document.body.appendChild(wrap);
+    setTimeout(() => { wrap.style.opacity = '0'; setTimeout(() => wrap.remove(), 250); }, 4500);
+  }
+  params.delete('tab'); params.delete('saved');
+  history.replaceState(null, '', location.pathname + (params.toString() ? '?' + params : ''));
+}
+
 function showActivatedToastIfNeeded(){
   const params = new URLSearchParams(location.search);
   if(params.get('activated') !== '1') return;
@@ -1281,6 +1229,11 @@ function renderHistorial(){
     );
   }
 
+  const hist = (p.history || []).slice().reverse().map(h => ({
+    dot: 'blue', ico: ICONS.edit, title: h.title, desc: h.desc,
+    date: `${h.who} · ${new Date(h.at).toLocaleString('es-CO', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}`
+  }));
+  items.unshift(...hist);
   tl.innerHTML = items.map(it => `
     <div class="timeline-item">
       <div class="timeline-dot ${it.dot}">${it.ico}</div>
@@ -1334,82 +1287,84 @@ function setRegionFilter(val, label){
 /* ══ Códigos: data fake (200 codes) ══ */
 const PEOPLE = ['Ana García','Pedro Martínez','Andrés García','María C. Herrera','Laura Meza','Camila Ríos','Santiago López','Valentina Pérez','Juan Rodríguez','Diana Torres','Carlos Guzmán','Natalia Ruiz','Esteban Mora','Isabella Gil','Nicolás Bernal'];
 const OPERATORS = ['Doug Vargas','Laura Meza','Carla Suárez','Andrés Polo'];
-const REGIONS = [['atl','Atlántico'],['cun','Cundinamarca'],['val','Valle'],['ant','Antioquia']];
-const state = { all: [], filter: 'all', search: '', page: 1, pageSize: 10 };
-const asignState = { all: [], region: 'all', search: '', page: 1, pageSize: 10 };
+const REGIONS = [['atl','Atlántico'],['cun','Cundinamarca'],['val','Valle del Cauca'],['ant','Antioquia'],['bog','Bogotá D.C.'],['san','Santander'],['bol','Bolívar']];
+const BENEF_SHORT = { deportista:'Deportista', paradeportista:'Paradeportista', entrenador:'Docente entrenador', asistente:'Docente asistente', institucion:'Institución educativa', organizacion:'Organización' };
+const state = { all: [], filter: 'all', inc: 'all', search: '', page: 1, pageSize: 10 };
+const asignState = { all: [], region: 'all', inc: 'all', search: '', page: 1, pageSize: 10 };
 
+/* Códigos del programa, generados a partir de las MISMAS entregas de la
+   pestaña Asignaciones: el código de una entrega es el que aparece como
+   "Asignado a" aquí. Cada código guarda su historial (cargado → asignado →
+   revertido → reasignado). Solo los incentivos Bono llevan códigos. */
 function seedCodigos(){
-  // Regla de negocio: solo Bono usa inventario de códigos
-  const primaryCat = CURRENT_PROGRAM?.incentives?.[0]?.category;
-  if(primaryCat !== 'Bono'){
-    state.all = [];
-    return;
-  }
-  // Programa creado por el usuario en el wizard: usar SUS códigos reales.
-  // Si no asignó nada todavía, mostrar lista vacía — sin operadores/beneficiarios fake.
-  if(CURRENT_PROGRAM && CURRENT_PROGRAM._userCreated){
-    const codes = Array.isArray(CURRENT_PROGRAM.manualCodes) ? CURRENT_PROGRAM.manualCodes : [];
-    state.all = codes.map(code => ({ code, estado: 'disp', benef: null, op: null, fecha: null }));
-    return;
-  }
-  // Programa demo seeded en programs-data.js: mantener la data fake rica para la demo.
-  const out = [];
-  const total = (CURRENT_PROGRAM && CURRENT_PROGRAM.codes && CURRENT_PROGRAM.codes.total) || 200;
-  const RV_MOTIVOS = [
-    { k:'devolucion', label:'Devolución del beneficiario', just:'El beneficiario solicitó devolver el código por cambio de programa.' },
-    { k:'error',      label:'Error en la asignación',      just:'Se detectó un error en los datos del beneficiario tras la entrega.' },
-    { k:'no-elegible',label:'Beneficiario no elegible',     just:'Auditoría posterior identificó que el beneficiario no cumplía requisitos.' },
-    { k:'fraude',     label:'Sospecha de fraude',           just:'Caso reportado por la línea de auditoría. Bajo investigación.' }
-  ];
-  for(let i = 1; i <= total; i++){
-    const code = `2026BEC-${String(i).padStart(5, '0')}`;
-    let estado;
-    if(i > total - 3) estado = 'rev';
-    else if(i > total - 18) estado = 'disp';
-    else if(i % 25 === 0) estado = 'reasig';
-    else estado = 'asig';
-    const benef = estado === 'disp' ? null : PEOPLE[(i * 7) % PEOPLE.length];
-    const op = estado === 'disp' ? null : OPERATORS[i % OPERATORS.length];
-    // Gestor de incentivos que subió el código (rol "admin" en este sistema)
-    const UPLOADERS = ['Doug Vargas','María Rojas','Andrés Polo','Camila Pérez'];
-    const uploader = UPLOADERS[i % UPLOADERS.length];
-    const day = 22 - Math.floor(i / 30);
-    const hour = String((6 + i) % 18 + 6).padStart(2, '0');
-    const min = String((i * 13) % 60).padStart(2, '0');
-    const fecha = estado === 'disp'
-      ? `${15 - (i % 12)} feb · cargado`
-      : `${day} abr · ${hour}:${min}`;
-    // Seed history: ~1/8 de los disp arrancan con reversión previa
-    let reversionHistory = null;
-    if(estado === 'disp' && i % 8 === 0){
-      const m = RV_MOTIVOS[i % RV_MOTIVOS.length];
-      const benefPrev = PEOPLE[(i*11) % PEOPLE.length];
-      const opPrev = OPERATORS[(i*5) % OPERATORS.length];
-      const dayR = String(Math.max(1, day - 2)).padStart(2,'0');
-      reversionHistory = [{
-        beneficiarioPrevio: benefPrev,
-        operadorPrevio: opPrev,
-        fechaAsignacion: `${day} abr 2026 · ${hour}:${min}`,
-        motivo: m.k,
-        motivoLabel: m.label,
-        solicitante: ['Carlos Pérez','Mariana Soto','Felipe Cárdenas','Andrea López'][i % 4],
-        justificacion: m.just,
-        autor: 'Doug Vargas · Gestor de incentivos',
-        fecha: `${dayR} abr 2026 · ${hour}:${min}`,
-        valor: CURRENT_PROGRAM.unit
-      }];
+  const p = CURRENT_PROGRAM;
+  state.all = [];
+  if(!p) return;
+  const isBono = inc => (inc.categoryKey || String(inc.category).toLowerCase()) === 'bono';
+  const bonos = (p.incentives || []).filter(isBono);
+  if(!bonos.length) return;
+  const countBy = Object.fromEntries((p.codesByIncentive || []).map(c => [c.name, c.count]));
+  const manualBy = Object.fromEntries((p.manualCodesByIncentive || []).map(g => [g.name, g.codes]));
+  const prefix = p.codePrefix || '2026BEC';
+  const UPLOADERS = ['Doug Vargas', 'María Rojas', 'Andrés Polo'];
+  const MOTIVOS = ['Error en la asignación', 'Beneficiario no elegible', 'Devolución del beneficiario'];
+  const rowsBy = {};
+  asignState.all.filter(r => r.code).forEach(r => (rowsBy[r.incName] = rowsBy[r.incName] || []).push(r));
+  let next = asignState.all.filter(r => r.code).length;
+  let demoRev = p._userCreated ? 0 : Math.min(2, (p.codes && p.codes.rev) || 0); // reversiones de ejemplo
+  bonos.forEach((inc, bi) => {
+    const rows = rowsBy[inc.name] || [];
+    const manual = manualBy[inc.name];
+    const total = manual ? manual.length : (countBy[inc.name] != null ? countBy[inc.name] : (bonos.length === 1 ? ((p.codes && p.codes.total) || 0) : rows.length));
+    const n = Math.max(total, rows.length);
+    const loaded = { type: 'load', title: 'Cargado al inventario', who: UPLOADERS[bi % UPLOADERS.length], date: '15 feb 2026', detail: manual ? 'Carga uno por uno' : 'Plantilla Excel' };
+    for(let k = 0; k < n; k++){
+      const row = rows[k] || null;
+      const code = row ? row.code : (manual ? manual[k] : `${prefix}-${String(++next).padStart(5, '0')}`);
+      const history = [loaded];
+      let estado = 'disp';
+      // Ejemplos de reversión: 1 código reasignado (tenía una entrega anterior) y 1 que volvió a estar disponible
+      const withPrevRevert = demoRev > 0 && ((row && k === 2) || (!row && k === rows.length));
+      if(withPrevRevert){
+        demoRev--;
+        const prev = PEOPLE[(k * 11 + bi) % PEOPLE.length];
+        history.push({ type: 'assign', title: 'Asignado', who: OPERATORS[(k + 1) % OPERATORS.length], date: '18 abr 2026 · 10:12', detail: `A ${prev}` });
+        history.push({ type: 'revert', title: 'Revertido', who: 'Doug Vargas · Gestor de incentivos', date: '19 abr 2026 · 09:40', detail: `Motivo: ${MOTIVOS[k % MOTIVOS.length]}. El código volvió al inventario.` });
+      }
+      if(row){
+        history.push({ type: 'assign', title: withPrevRevert ? 'Reasignado' : 'Asignado', who: row.op, date: `${row.fecha} · 2026`.replace(' · 2026', ''), detail: `A ${row.person} · ${row.region}` });
+        if(row.estado === 'rev'){
+          history.push({ type: 'revert', title: 'Revertido', who: 'Doug Vargas · Gestor de incentivos', date: row.fecha, detail: 'El código volvió al inventario.' });
+          estado = 'disp';
+        } else estado = withPrevRevert ? 'reasig' : 'asig';
+      }
+      const current = row && row.estado !== 'rev' ? row : null;
+      state.all.push({ code, incName: inc.name, estado, row: current, history, fecha: history[history.length - 1].date });
     }
-    out.push({ code, estado, benef, op, fecha, uploader, reversionHistory });
-  }
-  state.all = out;
+  });
+  renderCodIncFilter();
 }
-
+function renderCodIncFilter(){
+  const menu = document.getElementById('ddCodIncMenu');
+  if(!menu) return;
+  const names = [...new Set(state.all.map(r => r.incName))];
+  const opts = [['all', 'Todos los incentivos'], ...names.map(n => [n, n])];
+  menu.innerHTML = opts.map(([v, l]) => `<div class="toolbar-dd-item" role="option" aria-selected="${(state.inc || 'all') === v}" data-val="${v}" onclick="setCodIncFilter(this.dataset.val)">${l}</div>`).join('');
+}
+function setCodIncFilter(val){
+  state.inc = val; state.page = 1;
+  document.getElementById('ddCodIncLabel').textContent = val === 'all' ? 'Incentivo: Todos' : val;
+  document.querySelectorAll('#ddCodIncMenu .toolbar-dd-item').forEach(it => it.setAttribute('aria-selected', it.dataset.val === val ? 'true' : 'false'));
+  toggleDD('ddCodIncWrap');
+  renderCodigos();
+}
 function filteredCodigos(){
   return state.all.filter(r => {
     if(state.filter !== 'all' && r.estado !== state.filter) return false;
+    if(state.inc && state.inc !== 'all' && r.incName !== state.inc) return false;
     if(state.search){
       const q = state.search.toLowerCase();
-      if(!r.code.toLowerCase().includes(q)) return false;
+      if(!`${r.code} ${r.row ? r.row.person + ' ' + r.row.cc : ''}`.toLowerCase().includes(q)) return false;
     }
     return true;
   });
@@ -1433,12 +1388,12 @@ function renderCodigos(){
     rev:    '<span class="naowee-badge naowee-badge--negative naowee-badge--quiet naowee-badge--small">Revertido</span>'
   };
 
-  // Empty state especial: este programa no usa códigos (no es Bono)
+  // Empty state especial: este programa no usa códigos (ningún incentivo Bono)
   const primaryCat = CURRENT_PROGRAM?.incentives?.[0]?.category;
-  const isBonoProg = primaryCat === 'Bono';
+  const isBonoProg = (CURRENT_PROGRAM?.incentives || []).some(i => (i.categoryKey || String(i.category).toLowerCase()) === 'bono');
 
   if(!isBonoProg){
-    tbody.innerHTML = `<tr><td colspan="5" style="padding:0">
+    tbody.innerHTML = `<tr><td colspan="6" style="padding:0">
       <div class="naowee-message naowee-message--informative" style="margin:18px;border-radius:12px">
         <div class="naowee-message__header">
           <div class="naowee-message__icon">
@@ -1462,23 +1417,16 @@ function renderCodigos(){
   }
 
   tbody.innerHTML = slice.length ? slice.map(r => {
-    const muted = r.estado === 'disp' || r.estado === 'rev';
-    const mutedStyle = muted ? ' style="color:#9c9ebf"' : '';
-    const valStyle = r.estado === 'rev' ? 'text-align:right;color:#9c9ebf' : 'text-align:right;font-weight:700';
-    const hasHistory = r.reversionHistory && r.reversionHistory.length > 0;
-    const histBtn = hasHistory
-      ? `<button type="button" class="rev-history-btn" onclick="event.stopPropagation();openRevPopover('${r.code}', this)" aria-label="Historial de reversión" title="Ver historial de reversión">
-           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 109-9"/><polyline points="3 4 3 9 8 9"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg>
-         </button>`
-      : '';
-    return `<tr>
-      <td><span class="cod-cell"><code>${r.code}</code>${histBtn}</span></td>
-      <td>${badges[r.estado] || badges.disp}</td>
-      <td>${r.uploader || '—'}</td>
-      <td${mutedStyle}>${r.fecha || '—'}</td>
-      <td style="${valStyle}">$1.000.000</td>
+    const hadRevert = r.history.some(h => h.type === 'revert');
+    return `<tr class="cod-row" tabindex="0" role="button" onclick="openCodeDrawer('${r.code}')" onkeydown="if(event.key==='Enter')openCodeDrawer('${r.code}')" aria-label="Ver historial del código ${r.code}">
+      <td><code>${r.code}</code></td>
+      <td class="cod-inc">${r.incName}</td>
+      <td>${badges[r.estado] || badges.disp}${hadRevert && r.estado === 'disp' ? ' <span class="cod-note">con reversión</span>' : ''}</td>
+      <td>${r.row ? `<div class="cod-benef">${r.row.person}</div><div class="cod-benef__doc">${r.row.cc}</div>` : '<span class="cod-empty">—</span>'}</td>
+      <td class="cod-date">${r.fecha}</td>
+      <td class="cod-chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></td>
     </tr>`;
-  }).join('') : `<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--naowee-color-text-secondary,#646587)">Sin resultados para los filtros actuales.</td></tr>`;
+  }).join('') : `<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--naowee-color-text-secondary,#646587)">Sin resultados para los filtros actuales.</td></tr>`;
 
   document.getElementById('pagInfo').textContent = total === 0 ? 'Sin resultados' : `Mostrando ${start + 1}–${end} de ${total}`;
   document.getElementById('pagInput').value = state.page;
@@ -1530,29 +1478,69 @@ function seedAsign(){
   }
   const out = [];
   const avColors = ['purple','orange','green','blue','pink','teal'];
-  const total = (CURRENT_PROGRAM && CURRENT_PROGRAM.codes && CURRENT_PROGRAM.codes.asig) || 182;
-  for(let i = 1; i <= total; i++){
-    const code = `2026BEC-${String(i).padStart(5, '0')}`;
-    const person = PEOPLE[(i * 7) % PEOPLE.length];
-    const cc = `CC ${(1000000 + i * 131).toLocaleString('es-CO').replace(/,/g, '.')}`;
-    const op = OPERATORS[i % OPERATORS.length];
-    const region = REGIONS[i % REGIONS.length];
-    const day = 22 - Math.floor(i / 20);
-    const hour = String((6 + i) % 18 + 6).padStart(2, '0');
-    const min = String((i * 13) % 60).padStart(2, '0');
-    const fecha = `${day} abr · ${hour}:${min}`;
-    const estado = (i % 60 === 0) ? 'rev' : 'asig';
-    const initials = person.split(' ').map(p => p[0]).slice(0, 2).join('');
-    out.push({ person, cc, code, op, regKey: region[0], region: region[1], fecha, estado, avClass: avColors[i % avColors.length], initials });
-  }
+  const prefix = (CURRENT_PROGRAM && CURRENT_PROGRAM.codePrefix) || '2026BEC';
+  /* Una fila por entrega de cada incentivo (inc.delivered). Si el programa
+     no trae entregas por incentivo, se reparten las del programa en el primero. */
+  const incs = (CURRENT_PROGRAM && CURRENT_PROGRAM.incentives) || [];
+  let plan = incs.filter(inc => inc.delivered > 0).map(inc => ({ inc, n: inc.delivered }));
+  if(!plan.length && incs[0]) plan = [{ inc: incs[0], n: (CURRENT_PROGRAM.codes && CURRENT_PROGRAM.codes.asig) || 0 }];
+  let i = 0, codeN = 0;
+  plan.forEach(({ inc, n }) => {
+    const isBono = (inc.categoryKey || String(inc.category).toLowerCase()) === 'bono';
+    const isEntity = inc.beneficiary === 'institucion' || inc.beneficiary === 'organizacion';
+    for(let k = 0; k < n; k++){
+      i++;
+      const person = PEOPLE[(i * 7) % PEOPLE.length];
+      const cc = isEntity ? `DANE ${String(105001000000 + i * 97)}` : `${inc.beneficiary === 'deportista' || inc.beneficiary === 'paradeportista' ? 'TI' : 'CC'} ${(1000000 + i * 131).toLocaleString('es-CO').replace(/,/g, '.')}`;
+      const code = isBono ? `${prefix}-${String(++codeN).padStart(5, '0')}` : '';
+      const op = OPERATORS[i % OPERATORS.length];
+      const region = REGIONS[i % REGIONS.length];
+      const day = 22 - Math.floor(i / 20);
+      const hour = String((6 + i) % 18 + 6).padStart(2, '0');
+      const min = String((i * 13) % 60).padStart(2, '0');
+      const fecha = `${day} abr · ${hour}:${min}`;
+      const estado = (i % 60 === 0) ? 'rev' : 'asig';
+      const initials = person.split(' ').map(p => p[0]).slice(0, 2).join('');
+      out.push({ person, cc, code, op, regKey: region[0], region: region[1], fecha, estado, avClass: avColors[i % avColors.length], initials,
+        incName: inc.name, benefType: inc.beneficiary || 'deportista', benefLbl: BENEF_SHORT[inc.beneficiary] || 'Deportista', isEntity });
+    }
+  });
   asignState.all = out;
+  renderDeptoFilter();
+  renderIncFilter();
+}
+/* Filtro por incentivo: todos los del programa (los desactivados también,
+   sus entregas siguen en el historial). */
+function renderIncFilter(){
+  const menu = document.getElementById('ddIncMenu');
+  if(!menu) return;
+  const incs = (CURRENT_PROGRAM && CURRENT_PROGRAM.incentives) || [];
+  const opts = [['all', 'Todos los incentivos'], ...incs.map((inc, i) => [String(i), inc.name + (inc.active === false ? ' (desactivado)' : '')])];
+  menu.innerHTML = opts.map(([v, l]) => `<div class="toolbar-dd-item" role="option" aria-selected="${asignState.inc === v}" data-val="${v}" onclick="setIncFilter('${v}')">${l}</div>`).join('');
+}
+function setIncFilter(val){
+  asignState.inc = val; asignState.page = 1;
+  const incs = (CURRENT_PROGRAM && CURRENT_PROGRAM.incentives) || [];
+  document.getElementById('ddIncLabel').textContent = val === 'all' ? 'Incentivo: Todos' : incs[+val].name;
+  document.getElementById('ddIncWrap').querySelectorAll('.toolbar-dd-item').forEach(it => it.setAttribute('aria-selected', it.dataset.val === val ? 'true' : 'false'));
+  toggleDD('ddIncWrap');
+  renderAsign();
+}
+/* Filtro por departamento con los departamentos que aparecen en las entregas. */
+function renderDeptoFilter(){
+  const menu = document.getElementById('ddRegionMenu');
+  if(!menu) return;
+  const seen = new Map(asignState.all.map(r => [r.regKey, r.region]));
+  const opts = [['all', 'Todos los departamentos', 'Departamento: Todos'], ...[...seen.entries()].sort((a, b) => a[1].localeCompare(b[1], 'es')).map(([k, l]) => [k, l, l])];
+  menu.innerHTML = opts.map(([v, l, lbl]) => `<div class="toolbar-dd-item" role="option" aria-selected="${asignState.region === v}" data-val="${v}" onclick="setRegionFilter('${v}','${lbl}')">${l}</div>`).join('');
 }
 function filteredAsign(){
   return asignState.all.filter(r => {
     if(asignState.region !== 'all' && r.regKey !== asignState.region) return false;
+    if(asignState.inc !== 'all' && r.incName !== (CURRENT_PROGRAM.incentives[+asignState.inc] || {}).name) return false;
     if(asignState.search){
       const q = asignState.search.toLowerCase();
-      if(!`${r.person} ${r.cc} ${r.code}`.toLowerCase().includes(q)) return false;
+      if(!`${r.person} ${r.cc} ${r.code} ${r.incName}`.toLowerCase().includes(q)) return false;
     }
     return true;
   });
@@ -1573,20 +1561,27 @@ function renderAsign(){
   };
   tb.innerHTML = slice.length ? slice.map(r => {
     const evPayload = encodeURIComponent(JSON.stringify({
-      person:r.person, cc:r.cc, code:r.code, op:r.op, region:r.region, fecha:r.fecha, estado:r.estado
+      person:r.person, cc:r.cc, code:r.code, op:r.op, region:r.region, fecha:r.fecha, estado:r.estado, incName:r.incName, benefLbl:r.benefLbl
     }));
     return `
     <tr>
       <td><div style="display:flex;gap:10px;align-items:center;min-width:0">
         <div class="av-sm av-sm--${r.avClass}">${r.initials}</div>
-        <div style="min-width:0"><div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.person}</div><div style="font-size:11.5px;color:var(--naowee-color-text-secondary,#646587)">${r.cc}</div></div>
+        <div style="min-width:0"><div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.person}</div><div style="font-size:11.5px;color:var(--naowee-color-text-secondary,#646587)">${r.benefLbl} · ${r.cc}</div></div>
       </div></td>
-      <td><code>${r.code}</code></td>
+      <td class="asign-inc">${r.incName}</td>
+      <td>${r.code ? `<code>${r.code}</code>` : '<span class="asign-nocode">Sin código</span>'}</td>
       <td>${r.op}</td>
       <td>${r.region}</td>
       <td>${r.fecha}</td>
       <td>${badges[r.estado]}</td>
-      <td style="text-align:right">
+      <td style="text-align:right;white-space:nowrap">
+        ${r.isEntity ? '' : `<span class="naowee-tooltip">
+          <button class="naowee-btn naowee-btn--mute naowee-btn--small ev-btn" onclick="openSuidProfile('${evPayload}')" aria-label="Abrir perfil SUID de ${r.person}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M17 3h4v4"/><path d="M14 10l7-7"/></svg>
+          </button>
+          <span class="naowee-tooltip__content">Abrir perfil SUID</span>
+        </span>`}
         <span class="naowee-tooltip">
           <button class="naowee-btn naowee-btn--mute naowee-btn--small ev-btn" onclick="openEvidence('${evPayload}')" aria-label="Ver evidencia">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -1595,7 +1590,7 @@ function renderAsign(){
         </span>
       </td>
     </tr>`;
-  }).join('') : `<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--naowee-color-text-secondary,#646587)">Sin resultados.</td></tr>`;
+  }).join('') : `<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--naowee-color-text-secondary,#646587)">Sin resultados.</td></tr>`;
   document.getElementById('asignPagInfo').textContent = total === 0 ? 'Sin resultados' : `Mostrando ${start + 1}–${end} de ${total}`;
   document.getElementById('asignPagInput').value = asignState.page;
   document.getElementById('asignPagTotal').textContent = totalPages;
@@ -1609,42 +1604,52 @@ function changeAsignPage(delta){
   renderAsign();
 }
 
-/* ═══ Popover de historial de reversión ═══ */
-function openRevPopover(code, btn){
+/* ═══ Panel lateral: historial de un código ═══ */
+function openCodeDrawer(code){
   const r = state.all.find(x => x.code === code);
-  if(!r || !r.reversionHistory || !r.reversionHistory.length) return;
-  const entry = r.reversionHistory[r.reversionHistory.length - 1];
-  const pop = document.getElementById('revPopover');
-  if(!pop) return;
-  const stateLine = `<span class="rv-state rv-state--asig"><span class="rv-state__dot"></span>Asignado</span><span class="rv-arrow">→</span><span class="rv-state rv-state--rev"><span class="rv-state__dot"></span>Revertido</span><span class="rv-arrow">→</span><span class="rv-state rv-state--disp"><span class="rv-state__dot"></span>Disponible</span>`;
-  pop.querySelector('.rv-pop__title').textContent = 'Historial de reversión';
-  pop.querySelector('.rv-pop__sub').textContent = r.code;
-  pop.querySelector('.rv-pop__body').innerHTML = `
-    <div class="rv-row rv-row--full"><div class="rv-row__lbl">Estados</div><div class="rv-trail">${stateLine}</div></div>
-    <div class="rv-row"><div class="rv-row__lbl">Motivo</div><div class="rv-row__val"><strong>${entry.motivoLabel}</strong></div></div>
-    <div class="rv-row"><div class="rv-row__lbl">Solicitada por</div><div class="rv-row__val">${entry.solicitante}</div></div>
-    <div class="rv-row"><div class="rv-row__lbl">Revertida por</div><div class="rv-row__val">${entry.autor}</div></div>
-    <div class="rv-row"><div class="rv-row__lbl">Fecha y hora</div><div class="rv-row__val">${entry.fecha}</div></div>
-    <div class="rv-row rv-row--full"><div class="rv-row__lbl">Beneficiario previo</div><div class="rv-row__val">${entry.beneficiarioPrevio} <span style="color:#646587">(asignado por ${entry.operadorPrevio} · ${entry.fechaAsignacion})</span></div></div>
-    ${entry.justificacion ? `<div class="rv-row rv-row--full"><div class="rv-row__lbl">Justificación</div><div class="rv-row__val">${entry.justificacion}</div></div>` : ''}
-  `;
-  const rect = btn.getBoundingClientRect();
-  const popW = 560;
-  let left = rect.right + 8;
-  if(left + popW > window.innerWidth - 12) left = rect.left - popW - 8;
-  if(left < 12) left = 12;
-  let top = rect.top + rect.height/2 - 60;
-  if(top + 360 > window.innerHeight - 12) top = window.innerHeight - 372;
-  if(top < 12) top = 12;
-  pop.style.left = left + 'px';
-  pop.style.top = top + 'px';
-  pop.classList.add('is-open');
+  if(!r) return;
+  const badges = { disp:'Disponible', asig:'Asignado', reasig:'Reasignado' };
+  const cur = r.row;
+  const payload = cur ? encodeURIComponent(JSON.stringify({ person:cur.person, cc:cur.cc, code:cur.code, op:cur.op, region:cur.region, fecha:cur.fecha, estado:cur.estado, incName:cur.incName, benefLbl:cur.benefLbl })) : '';
+  const DOT = { load:'gray', assign:'green', revert:'red' };
+  document.getElementById('codeDrawerTitle').textContent = r.code;
+  document.getElementById('codeDrawerBody').innerHTML = `
+    <div class="cd-meta">
+      <span class="naowee-badge naowee-badge--${r.estado === 'disp' ? 'neutral' : 'positive'} naowee-badge--quiet naowee-badge--small">${badges[r.estado] || r.estado}</span>
+      <span class="cd-meta__inc">${r.incName}</span>
+    </div>
+    <div class="cd-sec">Asignado a</div>
+    ${cur ? `
+      <div class="cd-benef">
+        <div class="av-sm av-sm--${cur.avClass}">${cur.initials}</div>
+        <div class="cd-benef__body"><div class="cd-benef__name">${cur.person}</div><div class="cd-benef__sub">${cur.benefLbl} · ${cur.cc} · ${cur.region}</div><div class="cd-benef__sub">Entregado por ${cur.op} · ${cur.fecha}</div></div>
+      </div>
+      <div class="cd-actions">
+        ${cur.isEntity ? '' : `<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small" onclick="openSuidProfile('${payload}')">Abrir perfil SUID</button>`}
+        <button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small" onclick="openEvidence('${payload}')">Ver evidencia</button>
+      </div>` : '<div class="cd-empty">Disponible · no está asignado a nadie.</div>'}
+    <div class="cd-sec">Historial del código</div>
+    <ol class="cd-timeline">
+      ${r.history.slice().reverse().map(h => `
+        <li class="cd-ev cd-ev--${DOT[h.type] || 'gray'}">
+          <div class="cd-ev__title">${h.title}</div>
+          <div class="cd-ev__detail">${h.detail || ''}</div>
+          <div class="cd-ev__meta">${h.who} · ${h.date}</div>
+        </li>`).join('')}
+    </ol>`;
+  const dr = document.getElementById('codeDrawer');
+  dr.classList.add('is-open');
+  dr.setAttribute('aria-hidden', 'false');
+  dr.querySelector('.cd-drawer__close')?.focus();
 }
-function closeRevPopover(){ document.getElementById('revPopover')?.classList.remove('is-open'); }
-document.addEventListener('click', e => {
-  if(!e.target.closest('#revPopover') && !e.target.closest('.rev-history-btn')) closeRevPopover();
+function closeCodeDrawer(){
+  const dr = document.getElementById('codeDrawer');
+  dr.classList.remove('is-open');
+  dr.setAttribute('aria-hidden', 'true');
+}
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape' && !document.getElementById('evOverlay')?.classList.contains('is-open')) closeCodeDrawer();
 });
-document.addEventListener('keydown', e => { if(e.key === 'Escape') closeRevPopover(); });
 
 /* ═══ Lightbox de evidencia ═══ */
 const EV_PALETTES = [
@@ -1663,9 +1668,9 @@ function openEvidence(payload){
   const [c1, c2] = evPaletteFor(r.code);
   overlay.style.setProperty('--ev-c1', c1);
   overlay.style.setProperty('--ev-c2', c2);
-  document.getElementById('evCode').textContent = r.code;
-  document.getElementById('evBenef').innerHTML = `${r.person}<div style="font-size:11.5px;color:#646587;font-weight:500;margin-top:2px">${r.cc}</div>`;
-  document.getElementById('evCodeRow').innerHTML = `<code>${r.code}</code>`;
+  document.getElementById('evCode').textContent = r.code || r.incName || '';
+  document.getElementById('evBenef').innerHTML = `${r.person}<div style="font-size:11.5px;color:#646587;font-weight:500;margin-top:2px">${r.benefLbl ? r.benefLbl + ' · ' : ''}${r.cc}</div>`;
+  document.getElementById('evCodeRow').innerHTML = r.code ? `<code>${r.code}</code>` : `Sin código · ${r.incName || ''}`;
   document.getElementById('evOp').textContent = r.op;
   document.getElementById('evRegion').textContent = r.region;
   document.getElementById('evFecha').textContent = r.fecha;
@@ -1683,6 +1688,20 @@ document.addEventListener('keydown', e => {
   if(e.key === 'Escape' && document.getElementById('evOverlay')?.classList.contains('is-open')) closeEvidence();
 });
 </script>
+
+<!-- ═══ Panel lateral: historial de un código ═══ -->
+<div class="cd-drawer" id="codeDrawer" aria-hidden="true">
+  <div class="cd-drawer__backdrop" onclick="closeCodeDrawer()"></div>
+  <aside class="cd-drawer__panel" role="dialog" aria-modal="true" aria-labelledby="codeDrawerTitle">
+    <header class="cd-drawer__head">
+      <div><div class="cd-drawer__eyebrow">Código</div><h2 id="codeDrawerTitle">—</h2></div>
+      <button type="button" class="cd-drawer__close" onclick="closeCodeDrawer()" aria-label="Cerrar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </header>
+    <div class="cd-drawer__body" id="codeDrawerBody"></div>
+  </aside>
+</div>
 
 <!-- ═══ Lightbox: Evidencia de entrega ═══ -->
 <div class="ev-overlay" id="evOverlay" role="dialog" aria-modal="true" aria-labelledby="evTitle" onclick="if(event.target===this)closeEvidence()">
@@ -1716,7 +1735,7 @@ document.addEventListener('keydown', e => {
           <div class="ev-meta__val" id="evOp">—</div>
         </div>
         <div class="ev-meta__row">
-          <div class="ev-meta__lbl">Región</div>
+          <div class="ev-meta__lbl">Departamento</div>
           <div class="ev-meta__val" id="evRegion">—</div>
         </div>
         <div class="ev-meta__row">
@@ -1738,340 +1757,24 @@ document.addEventListener('keydown', e => {
   </div>
 </div>
 
-<!-- ═══ MODAL: Cargar códigos al programa ═══ -->
-<div class="cc-overlay" id="ccOverlay" role="dialog" aria-modal="true" aria-labelledby="ccTitle">
-  <div class="cc-modal">
-    <div class="cc-header">
-      <div>
-        <h2 class="cc-header__title" id="ccTitle">Cargar códigos al programa</h2>
-        <div class="cc-header__sub">Agrega códigos al inventario de <strong id="ccProgramName">—</strong>. Puedes subir un archivo o ingresarlos manualmente.</div>
-      </div>
-      <button type="button" class="cc-close" onclick="closeCargarCodigos()" aria-label="Cerrar">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
-
-    <div class="cc-body">
-      <!-- Step 1: tipo de incentivo -->
-      <div class="cc-type-block">
-        <label class="cc-type-block__lbl">Tipo de incentivo</label>
-        <p class="cc-type-block__hint">Solo los <strong>bonos</strong> manejan códigos canjeables. El resto de tipos se cargan como cantidad de cupos disponibles.</p>
-        <div class="cc-type-grid" id="ccTypeGrid">
-          <button type="button" class="cc-type-card" data-cat="Bono" onclick="selectCCType('Bono', this)">
-            <span class="cc-type-card__ico" style="background:#f3e8ff;color:#7c3aed"></span>
-            <span class="cc-type-card__lbl">Bono</span>
-            <span class="cc-type-card__hint">Código canjeable</span>
-          </button>
-          <button type="button" class="cc-type-card" data-cat="Beca" onclick="selectCCType('Beca', this)">
-            <span class="cc-type-card__ico" style="background:#fff3e6;color:#d74009"></span>
-            <span class="cc-type-card__lbl">Beca</span>
-            <span class="cc-type-card__hint">Sin código</span>
-          </button>
-          <button type="button" class="cc-type-card" data-cat="Kit" onclick="selectCCType('Kit', this)">
-            <span class="cc-type-card__ico" style="background:#eef5ff;color:#1f78d1"></span>
-            <span class="cc-type-card__lbl">Kit</span>
-            <span class="cc-type-card__hint">Sin código</span>
-          </button>
-          <button type="button" class="cc-type-card" data-cat="Inscripción" onclick="selectCCType('Inscripción', this)">
-            <span class="cc-type-card__ico" style="background:#e6f4e7;color:#15803d"></span>
-            <span class="cc-type-card__lbl">Inscripción</span>
-            <span class="cc-type-card__hint">Sin código</span>
-          </button>
-          <button type="button" class="cc-type-card" data-cat="Transporte" onclick="selectCCType('Transporte', this)">
-            <span class="cc-type-card__ico" style="background:#cffafe;color:#0891b2"></span>
-            <span class="cc-type-card__lbl">Transporte</span>
-            <span class="cc-type-card__hint">Sin código</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Step 2 — Bono: file/manual -->
-      <div id="ccBonoSection" hidden>
-        <div class="naowee-segment naowee-segment--small cc-segment" id="ccSeg">
-          <div class="naowee-segment__pill"></div>
-          <button type="button" class="naowee-segment__item naowee-segment__item--active" data-val="upload" onclick="switchCCMode('upload', this)">Cargar archivo</button>
-          <button type="button" class="naowee-segment__item" data-val="manual" onclick="switchCCMode('manual', this)">Manual</button>
-        </div>
-
-      <!-- Upload mode -->
-      <div class="cc-mode active" data-mode="upload">
-        <input type="file" id="ccFileInput" accept=".csv,.xlsx,.xls" hidden/>
-        <div class="cc-dropzone" id="ccDropzone" onclick="document.getElementById('ccFileInput').click()">
-          <div class="cc-dropzone__ico">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
-          </div>
-          <div class="cc-dropzone__title">Arrastra tu archivo aquí o haz clic para seleccionarlo</div>
-          <div class="cc-dropzone__sub">Columnas esperadas: <code>codigo</code>, <code>valor</code>, <code>vencimiento</code>.</div>
-          <div class="cc-dropzone__fmts"><span class="fmt">CSV</span><span class="fmt">XLSX</span></div>
-        </div>
-        <div class="cc-file-chip" id="ccFileChip">
-          <div class="cc-file-chip__ico">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          </div>
-          <div class="cc-file-chip__body">
-            <div class="cc-file-chip__name" id="ccFileName">—</div>
-            <div class="cc-file-chip__meta" id="ccFileMeta">—</div>
-          </div>
-          <button type="button" class="cc-close" onclick="resetCCFile()" aria-label="Quitar">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          </button>
-        </div>
-      </div>
-
-      <!-- Manual mode -->
-      <div class="cc-mode" data-mode="manual">
-        <div class="cc-manual__cols">
-          <span>Código</span><span>Valor (opcional)</span><span></span>
-        </div>
-        <div class="cc-manual__rows" id="ccManualRows"></div>
-        <button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small cc-manual__add" onclick="addCCRow()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Agregar código
-        </button>
-      </div>
-      </div><!-- /#ccBonoSection -->
-
-      <!-- Step 2 — No-Bono: cantidad + valor (sin código) -->
-      <div id="ccNonBonoSection" hidden>
-        <div class="cc-nb-grid">
-          <div class="naowee-textfield">
-            <label class="naowee-textfield__label">Cantidad de cupos a agregar</label>
-            <div class="naowee-textfield__input-wrap">
-              <input class="naowee-textfield__input" id="ccNbQty" type="number" min="1" value="10"/>
-            </div>
-          </div>
-          <div class="naowee-textfield">
-            <label class="naowee-textfield__label">Valor por unidad (COP)</label>
-            <div class="naowee-textfield__input-wrap">
-              <input class="naowee-textfield__input" id="ccNbValue" type="number" min="0" value="1000000"/>
-            </div>
-          </div>
-        </div>
-        <div class="cc-nb-total" id="ccNbTotal">Total: <strong>$10.000.000</strong></div>
-      </div>
-
-      <div class="naowee-message naowee-message--informative" id="ccSummaryMsg" style="margin-top:14px;display:none">
-        <div class="naowee-message__header">
-          <div class="naowee-message__icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-          </div>
-          <div class="naowee-message__text" id="ccSummaryText">Rubro disponible: <strong>$18.000.000</strong> (18 códigos × $1.000.000). Los nuevos códigos se agregarán al inventario actual.</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="cc-footer">
-      <button class="naowee-btn naowee-btn--mute naowee-btn--large" onclick="closeCargarCodigos()">Cancelar</button>
-      <button class="naowee-btn naowee-btn--loud naowee-btn--large" id="btnCcConfirm" onclick="confirmCargar()" disabled>Cargar códigos</button>
-    </div>
-  </div>
-</div>
-
 <script>
-/* ══ Modal Cargar inventario ══ */
-let ccSelectedType = null;
-
-function openCargarCodigos(){
-  const ov = document.getElementById('ccOverlay');
-  if(!ov) return;
-  // Inyecta iconos en las cards de tipo desde el catálogo central CAT_ICONS
-  const grid = document.getElementById('ccTypeGrid');
-  if(grid && !grid.dataset.ready){
-    grid.querySelectorAll('.cc-type-card').forEach(card => {
-      const cat = card.dataset.cat;
-      const icoBox = card.querySelector('.cc-type-card__ico');
-      if(icoBox && window.CAT_ICONS && window.CAT_ICONS[cat]){
-        icoBox.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${window.CAT_ICONS[cat]}</svg>`;
-      }
-    });
-    grid.dataset.ready = '1';
-  }
-  // Reset estado: ninguna sección visible, ningún tipo seleccionado
-  ccSelectedType = null;
-  grid.querySelectorAll('.cc-type-card').forEach(c => c.classList.remove('is-selected'));
-  document.getElementById('ccBonoSection').hidden = true;
-  document.getElementById('ccNonBonoSection').hidden = true;
-  document.getElementById('ccSummaryMsg').style.display = 'none';
-  // Reset estado upload (file chip oculto)
-  document.getElementById('ccFileChip')?.classList.remove('visible');
-  if(document.getElementById('ccDropzone')) document.getElementById('ccDropzone').style.display = '';
-  if(document.getElementById('ccFileInput')) document.getElementById('ccFileInput').value = '';
-  // Limpiar y agregar 3 filas vacías iniciales
-  const rows = document.getElementById('ccManualRows');
-  if(rows){ rows.innerHTML = ''; for(let i = 0; i < 3; i++) addCCRow(); }
-  ov.classList.add('open');
-  updateCCConfirmState();
+/* ══ Perfil SUID del beneficiario ══
+   En el producto la acción ABRE el Perfil SUID (pantalla completa: Perfil,
+   Trayectoria, Análisis cualitativo), que es un microfrontend (mf) que se
+   inyecta con el documento del beneficiario. Nota devs: respetar permisos
+   del rol (hay menores de edad). La demo solo muestra un aviso. */
+function openSuidProfile(payload){
+  let r;
+  try { r = JSON.parse(decodeURIComponent(payload)); } catch(e){ return; }
+  document.querySelector('.suid-toast')?.remove();
+  const t = document.createElement('div');
+  t.className = 'suid-toast';
+  t.setAttribute('role', 'status');
+  t.innerHTML = `<span class="naowee-badge naowee-badge--caution naowee-badge--small">Solo demo</span>
+    <div>Aquí se abre el <strong>Perfil SUID</strong> (microfrontend) de <strong>${r.person}</strong> · <code>${r.cc}</code>.</div>`;
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 250); }, 4000);
 }
-
-function selectCCType(cat, btn){
-  ccSelectedType = cat;
-  document.querySelectorAll('#ccTypeGrid .cc-type-card').forEach(c => c.classList.toggle('is-selected', c === btn));
-  const isBono = cat === 'Bono';
-  document.getElementById('ccBonoSection').hidden = !isBono;
-  document.getElementById('ccNonBonoSection').hidden = isBono;
-  updateCCConfirmState();
-  // Summary message contextual
-  const msg = document.getElementById('ccSummaryMsg');
-  const text = document.getElementById('ccSummaryText');
-  msg.style.display = 'flex';
-  if(isBono){
-    text.innerHTML = `Rubro disponible: <strong>$18.000.000</strong> (18 códigos × $1.000.000). Los nuevos códigos se agregarán al inventario actual.`;
-    setTimeout(positionCCPill, 50);
-  } else {
-    text.innerHTML = `Los <strong>${cat.toLowerCase()}s</strong> no manejan código canjeable. Indica la cantidad de cupos y el valor por unidad — quedarán disponibles para asignar directamente al beneficiario.`;
-    updateCCNbTotal();
-  }
-}
-
-function updateCCNbTotal(){
-  const qty = parseInt(document.getElementById('ccNbQty')?.value || '0', 10) || 0;
-  const val = parseInt(document.getElementById('ccNbValue')?.value || '0', 10) || 0;
-  const total = qty * val;
-  const el = document.getElementById('ccNbTotal');
-  if(el) el.innerHTML = `Total: <strong>$${Number(total).toLocaleString('es-CO')}</strong>`;
-}
-document.addEventListener('input', e => {
-  if(e.target && (e.target.id === 'ccNbQty' || e.target.id === 'ccNbValue')){
-    updateCCNbTotal(); updateCCConfirmState();
-  }
-});
-
-/* Habilita el botón "Cargar códigos" sólo cuando hay input válido:
-   - Tipo seleccionado obligatoriamente
-   - Bono upload: archivo cargado (ccFileChip visible)
-   - Bono manual: al menos 1 fila con código no-vacío
-   - No-Bono: cantidad > 0 y valor > 0 */
-function updateCCConfirmState(){
-  const btn = document.getElementById('btnCcConfirm');
-  if(!btn) return;
-  let valid = false;
-  if(ccSelectedType === 'Bono'){
-    const activeMode = document.querySelector('.cc-mode.active')?.dataset.mode;
-    if(activeMode === 'upload'){
-      const chip = document.getElementById('ccFileChip');
-      valid = chip && chip.classList.contains('visible');
-    } else if(activeMode === 'manual'){
-      const inputs = document.querySelectorAll('#ccManualRows .cc-manual__code-input');
-      valid = Array.from(inputs).some(inp => inp.value.trim().length > 0);
-    }
-  } else if(ccSelectedType){
-    const qty = parseInt(document.getElementById('ccNbQty')?.value || '0', 10) || 0;
-    const val = parseInt(document.getElementById('ccNbValue')?.value || '0', 10) || 0;
-    valid = qty > 0 && val > 0;
-  }
-  btn.disabled = !valid;
-}
-
-function closeCargarCodigos(){
-  document.getElementById('ccOverlay').classList.remove('open');
-}
-function switchCCMode(mode, btn){
-  document.querySelectorAll('#ccSeg .naowee-segment__item').forEach(it => it.classList.toggle('naowee-segment__item--active', it === btn));
-  document.querySelectorAll('.cc-mode').forEach(p => p.classList.toggle('active', p.dataset.mode === mode));
-  positionCCPill();
-  updateCCConfirmState();
-}
-function positionCCPill(){
-  const seg = document.getElementById('ccSeg');
-  if(!seg) return;
-  const pill = seg.querySelector('.naowee-segment__pill');
-  const active = seg.querySelector('.naowee-segment__item--active');
-  if(!pill || !active) return;
-  const segR = seg.getBoundingClientRect();
-  const aR = active.getBoundingClientRect();
-  if(aR.width === 0) return;
-  const offset = aR.left - segR.left - 4;
-  pill.style.width = aR.width + 'px';
-  pill.style.setProperty('--segment-pill-x', offset + 'px');
-}
-function addCCRow(){
-  const rows = document.getElementById('ccManualRows');
-  if(!rows) return;
-  const idx = rows.children.length + 1;
-  const row = document.createElement('div');
-  row.className = 'cc-manual__row';
-  row.innerHTML = `
-    <div class="naowee-textfield cc-manual__code">
-      <div class="naowee-textfield__input-wrap">
-        <input class="naowee-textfield__input cc-manual__code-input" type="text" placeholder="2026BEC-${String(idx).padStart(5, '0')}" oninput="updateCCConfirmState()"/>
-      </div>
-    </div>
-    <div class="naowee-textfield cc-manual__value">
-      <div class="naowee-textfield__input-wrap">
-        <span class="naowee-textfield__prefix">$</span>
-        <input class="naowee-textfield__input" type="text" inputmode="numeric" placeholder="1.000.000"/>
-      </div>
-    </div>
-    <button type="button" class="cc-manual__x" onclick="removeCCRow(this)" aria-label="Eliminar">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-    </button>`;
-  rows.appendChild(row);
-  wireCCDropdown(row.querySelector('[data-cc-dropdown]'));
-}
-
-/* Wire-up simple del .naowee-dropdown en las filas manuales */
-function wireCCDropdown(dd){
-  if(!dd || dd.dataset.wired) return;
-  dd.dataset.wired = '1';
-  const trigger = dd.querySelector('.naowee-dropdown__trigger');
-  const menu    = dd.querySelector('.naowee-dropdown__menu');
-  const valEl   = dd.querySelector('.naowee-dropdown__placeholder');
-
-  trigger.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const isOpen = dd.classList.contains('naowee-dropdown--open');
-    document.querySelectorAll('.naowee-dropdown--open').forEach(d => d.classList.remove('naowee-dropdown--open'));
-    if(!isOpen) dd.classList.add('naowee-dropdown--open');
-  });
-  dd.querySelectorAll('.naowee-dropdown__option').forEach(opt => {
-    opt.addEventListener('click', () => {
-      dd.querySelectorAll('.naowee-dropdown__option').forEach(o => o.classList.remove('naowee-dropdown__option--selected'));
-      opt.classList.add('naowee-dropdown__option--selected');
-      dd.dataset.val = opt.dataset.val;
-      // Reemplaza placeholder por value
-      if(valEl){
-        valEl.className = 'naowee-dropdown__value';
-        valEl.textContent = opt.textContent;
-      }
-      dd.classList.remove('naowee-dropdown--open');
-    });
-  });
-}
-
-// Cierra dropdowns al clickear fuera
-document.addEventListener('click', (e) => {
-  if(!e.target.closest('.naowee-dropdown')){
-    document.querySelectorAll('.naowee-dropdown--open').forEach(d => d.classList.remove('naowee-dropdown--open'));
-  }
-});
-function removeCCRow(btn){
-  const row = btn.closest('.cc-manual__row');
-  const rows = document.getElementById('ccManualRows');
-  if(rows && rows.children.length <= 1) return;
-  row.remove();
-}
-function resetCCFile(){
-  document.getElementById('ccFileChip').classList.remove('visible');
-  document.getElementById('ccDropzone').style.display = '';
-  document.getElementById('ccFileInput').value = '';
-  updateCCConfirmState();
-}
-document.getElementById('ccFileInput')?.addEventListener('change', e => {
-  const f = e.target.files && e.target.files[0];
-  if(!f) return;
-  document.getElementById('ccFileName').textContent = f.name;
-  document.getElementById('ccFileMeta').textContent = `${(f.size/1024).toFixed(1)} KB · listo para procesar`;
-  document.getElementById('ccFileChip').classList.add('visible');
-  document.getElementById('ccDropzone').style.display = 'none';
-  updateCCConfirmState();
-});
-function confirmCargar(){
-  closeCargarCodigos();
-}
-// Click outside to close
-document.getElementById('ccOverlay')?.addEventListener('click', e => {
-  if(e.target.id === 'ccOverlay') closeCargarCodigos();
-});
 
 /* ══ Clear search ══ */
 function clearSearch(inputId){
@@ -2083,9 +1786,9 @@ function clearSearch(inputId){
 }
 </script>
 
-<script src="shared/programa-wizard.js" defer></script>
+<script src="shared/programa-wizard.js?v=20260922192023" defer></script>
 
-<script src="shared/profile-switcher.js?v=role-6" defer></script>
+<script src="shared/profile-switcher.js?v=role-7" defer></script>
 
 <script src="shared/footer-scroll.js" defer></script>
 <script src="shared/tour.js" defer></script>
@@ -2095,20 +1798,6 @@ function clearSearch(inputId){
   <img src="shared/logos/naowee.svg" alt="Naowee" class="naowee-floating-footer__logo"/>
   <div class="naowee-floating-footer__sep"></div>
   <span class="naowee-floating-footer__text">Todos los derechos reservados <strong>&copy; 2026</strong></span>
-</div>
-
-<!-- Popover de historial de reversión -->
-<div class="rev-popover" id="revPopover" role="dialog" aria-modal="false" aria-labelledby="revPopTitle">
-  <div class="rv-pop__head">
-    <div>
-      <div class="rv-pop__title" id="revPopTitle">Historial de reversión</div>
-      <div class="rv-pop__sub">—</div>
-    </div>
-    <button type="button" class="rv-pop__close" onclick="closeRevPopover()" aria-label="Cerrar">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </button>
-  </div>
-  <div class="rv-pop__body"></div>
 </div>
 
 </body>

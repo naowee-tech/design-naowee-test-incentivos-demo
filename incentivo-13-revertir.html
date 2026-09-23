@@ -133,7 +133,7 @@
       </button>
       <svg class="naowee-logo" viewBox="0 0 180 34" fill="none"><text x="0" y="24" font-family="Inter" font-weight="800" font-size="22" fill="#002B5B">Naowee</text></svg>
     </div>
-    <nav class="sidebar-nav">
+    <nav class="sidebar-nav" id="sideNav">
       <div class="nav-section">INCENTIVOS · GESTOR</div>
       <div class="nav-row" onclick="fadeAndGo('incentivo-02-dashboard.html')">
         <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="11" rx="1.5"/><rect x="13" y="3" width="8" height="6" rx="1.5"/><rect x="3" y="16" width="8" height="5" rx="1.5"/><rect x="13" y="11" width="8" height="10" rx="1.5"/></svg></div>
@@ -166,7 +166,8 @@
 
       <div class="success-wrap">
 
-        <div class="breadcrumb">
+        <!-- PENDIENTE: el permiso "revertir asignación" para el rol OPERADOR está por confirmar en la matriz de roles y permisos (Danna, reunión 22-09, 00:30:59: "El operador sí, todo debe quedar en el historial"). Con ?from=mis-asignaciones esta pantalla se muestra en modo operador. -->
+        <div class="breadcrumb" id="crumb">
           <a onclick="fadeAndGo('incentivo-12-asignaciones.html')">Historial</a>
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>Reversión registrada</span>
@@ -177,7 +178,7 @@
             <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 013.51 15"/></svg>
           </div>
           <h1>Reversión registrada con éxito</h1>
-          <p>La asignación fue revertida. El código vuelve al inventario como disponible y el valor regresa al rubro del programa. El cambio queda en el historial de auditoría.</p>
+          <p id="heroText">La asignación fue revertida. El código vuelve al inventario como disponible y el valor regresa al rubro del programa. El cambio queda en el historial de auditoría.</p>
           <div class="success-stamp" id="stamp">ID · #REV-2026-—</div>
         </div>
 
@@ -188,7 +189,7 @@
           </div>
           <div class="status-banner__body">
             <div class="status-banner__title">Estado del incentivo actualizado</div>
-            <div class="status-banner__sub">Transición registrada con timestamp, motivo y datos del gestor.</div>
+            <div class="status-banner__sub" id="bannerSub">Transición registrada con timestamp, motivo y datos del gestor.</div>
           </div>
           <div class="status-transition">
             <span class="status-chip prev">Asignado</span>
@@ -212,13 +213,13 @@
           </div>
           <dl class="receipt__details">
             <!-- "Código revertido" retirado del comprobante por seguridad (feedback Danna): es el código redimible. -->
-            <div class="detail">
+            <div class="detail" id="rValueRow">
               <dt>Valor devuelto al rubro</dt>
               <dd id="rValue" style="color:var(--green)">+ $1.000.000</dd>
             </div>
             <div class="detail">
-              <dt>Gestor que revertió</dt>
-              <dd>Doug Vargas</dd>
+              <dt id="rByLbl">Gestor que revertió</dt>
+              <dd id="rBy">Doug Vargas</dd>
             </div>
             <div class="detail">
               <dt>Fecha y hora</dt>
@@ -236,7 +237,7 @@
         </div>
 
         <!-- What happens next -->
-        <div class="next-steps">
+        <div class="next-steps" id="nextSteps">
           <h4>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
             Qué pasa ahora
@@ -251,7 +252,7 @@
           </div>
           <div class="next-step">
             <span class="next-step__ico">3</span>
-            <div>La asignación original queda marcada como <strong>"Revertida"</strong> en el historial con el motivo que ingresaste — visible en auditoría y exportes.</div>
+            <div>La asignación original queda marcada como <strong>"Revertida"</strong> en el historial con el motivo que ingresaste — visible en auditoría.</div>
           </div>
           <div class="next-step">
             <span class="next-step__ico">4</span>
@@ -260,7 +261,7 @@
         </div>
 
         <!-- Actions -->
-        <div class="actions">
+        <div class="actions" id="actions">
           <button class="btn btn-primary" onclick="fadeAndGo('incentivo-12-asignaciones.html')">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="1.5"/><circle cx="6" cy="12" r="1.5"/><circle cx="6" cy="18" r="1.5"/><line x1="6" y1="7.5" x2="6" y2="10.5"/><line x1="6" y1="13.5" x2="6" y2="16.5"/><line x1="11" y1="6" x2="20" y2="6"/><line x1="11" y1="12" x2="18" y2="12"/><line x1="11" y1="18" x2="16" y2="18"/></svg>
             Volver al historial
@@ -299,9 +300,47 @@ try{
   if(s.region) document.getElementById('rRegion').textContent = s.region;
 }catch(e){}
 
+/* ═════ Modo operador: reversión hecha desde "Mis asignaciones" (reunión 22-09, 00:30:59) ═════
+   PENDIENTE: confirmar en la matriz de roles y permisos que el OPERADOR puede revertir.
+   El operador no ve valores monetarios → se oculta "Valor devuelto al rubro". */
+(function operatorMode(){
+  let s = {};
+  try{ s = JSON.parse(sessionStorage.getItem('revert-complete') || '{}'); }catch(e){}
+  const fromOp = new URLSearchParams(location.search).get('from') === 'mis-asignaciones';
+  if(!fromOp) return;
+  try{ sessionStorage.removeItem('inc-profile'); }catch(e){}
+  document.title = 'SUID – Incentivos · Reversión registrada';
+  const ico = (d, c) => `<div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${d}</svg></div>`;
+  document.getElementById('sideNav').innerHTML = `
+    <div class="nav-section">INCENTIVOS</div>
+    <div class="nav-row" onclick="fadeAndGo('incentivo-08-asignar-buscar.html')">${ico('<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/>', '#646587')}<span class="lbl">Asignar incentivo</span></div>
+    <div class="nav-row active"><div class="active-bar"></div>${ico('<path d="M8 7h13M8 12h13M8 17h13"/><circle cx="4" cy="7" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="17" r="1"/>', '#d74009')}<span class="lbl">Mis asignaciones</span></div>`;
+  const crumbLink = document.querySelector('#crumb a');
+  crumbLink.textContent = 'Mis asignaciones';
+  crumbLink.setAttribute('onclick', "fadeAndGo('incentivo-14-mis-asignaciones.html')");
+  crumbLink.setAttribute('href', 'incentivo-14-mis-asignaciones.html');
+  document.getElementById('heroText').textContent = s.hasCode
+    ? 'La asignación fue revertida. El código vuelve al inventario como disponible y el incentivo queda otra vez disponible para el beneficiario. El cambio queda en el historial.'
+    : 'La asignación fue revertida. El incentivo queda otra vez disponible para el beneficiario. El cambio queda en el historial.';
+  document.getElementById('bannerSub').textContent = 'Transición registrada con fecha, hora, motivo y datos del operador.';
+  document.getElementById('rValueRow').remove();
+  document.getElementById('rByLbl').textContent = 'Revertido por';
+  document.getElementById('rBy').textContent = s.revertedBy || 'Doug Vargas · Operador';
+  const footer = document.querySelector('.receipt__footer');
+  if(footer) footer.innerHTML = `<span>Incentivo: <strong>${s.prog || '—'}</strong></span><span>Departamento: <strong>${s.region || '—'}</strong></span>`;
+  document.getElementById('nextSteps').innerHTML = `
+    <h4><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>Qué pasa ahora</h4>
+    <div class="next-step"><span class="next-step__ico">1</span><div>La asignación queda como <strong>"Revertida"</strong> en Mis asignaciones, con el motivo que ingresaste, tu nombre y la fecha (en la integración real también llega al historial del gestor).</div></div>
+    <div class="next-step"><span class="next-step__ico">2</span><div>Al buscar de nuevo al beneficiario, el incentivo aparece como <strong>Disponible</strong> y se puede volver a asignar.</div></div>
+    ${s.hasCode ? '<div class="next-step"><span class="next-step__ico">3</span><div>El código vuelve al inventario del Bono Deportivo como <strong>disponible</strong>.</div></div>' : ''}`;
+  document.getElementById('actions').innerHTML = `
+    <button class="btn btn-primary" onclick="fadeAndGo('incentivo-14-mis-asignaciones.html')">Volver a Mis asignaciones</button>
+    <button class="btn btn-outline" onclick="fadeAndGo('incentivo-08-asignar-buscar.html')">Asignar incentivo</button>`;
+})();
+
 function fadeAndGo(url){window.location.href=url}
 </script>
-<script src="shared/profile-switcher.js?v=role-6" defer></script>
+<script src="shared/profile-switcher.js?v=role-7" defer></script>
 
 <script src="shared/footer-scroll.js" defer></script>
 <script src="shared/tour.js" defer></script>

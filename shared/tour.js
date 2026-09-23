@@ -134,10 +134,9 @@
     'HU-OP-05': { ph: 'Operador en campo', page: 'incentivo-14-mis-asignaciones.html', role: 'operador',
       title: 'Mis asignaciones', purpose: 'Ver únicamente las entregas que el operador ha realizado: su gestión personal del día / evento.',
       steps: [
-        { sel: '#kpiTotal', body: 'Tus <b>métricas personales</b>: entregas, valor total, deportistas únicos.' },
+        { sel: '#kpiTotal', body: 'Tus <b>métricas personales</b>: entregas, evidencias pendientes y beneficiarios.' },
         { sel: '[data-period="today"], .period-segment', body: '<b>Filtra por periodo</b>: hoy, 7 días, 30 días o todo.' },
-        { sel: '#asigBody', body: 'Tabla scoped <b>solo a tus entregas</b> (no ves las de otros operadores; sin acción de revertir).' },
-        { sel: '#btnExport', body: '<b>Exporta</b> tus entregas.' }
+        { sel: '#asigBody', body: 'Tabla con <b>solo tus entregas</b>: sube la evidencia pendiente o revierte una entrega con su motivo.' }
       ] },
 
     /* ═══ TRANSVERSAL ═══ */
