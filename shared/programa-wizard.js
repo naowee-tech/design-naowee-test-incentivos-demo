@@ -63,11 +63,12 @@
     wireChipPicker();
     wireSegments();
     wireCodesMode();
+    wireManualCodes();
     wireInputMasks();
     wireBudgetInputs();
-    seedManualRows();
     seedFirstCondition();
     wireDirtyTracking();
+    renderDevValidations();
     // ESC
     document.addEventListener('keydown', e => {
       if(e.key === 'Escape' && document.getElementById('wzOverlay').classList.contains('open')){
@@ -108,7 +109,20 @@
     spacer && (spacer.style.flex = '1');
 
     const btnNext = document.getElementById('wzBtnNext');
-    if(currentStep === lastStep){
+    const draftBtn = document.getElementById('wzBtnDraft');
+    const stepperWrap = document.querySelector('#wzOverlay .wz-stepper-wrap');
+    if(stepperWrap) stepperWrap.hidden = !!sectionMode;
+    if(draftBtn) draftBtn.style.display = sectionMode ? 'none' : '';
+    if(sectionMode){
+      const back = sectionMode === 'incentivos' && currentStep === 3;
+      btnPrev.style.display = back ? 'inline-flex' : 'none';
+      if(spacer) spacer.style.display = back ? 'none' : 'block';
+      const goCond = sectionMode === 'incentivos' && currentStep === 2 &&
+        [...document.querySelectorAll('.wz-pane[data-pane="2"] .wz-inc-card')].some(c => !c._orig);
+      btnNext.innerHTML = goCond
+        ? `Continuar a condiciones <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>`
+        : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Guardar cambios`;
+    } else if(currentStep === lastStep){
       btnNext.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Activar programa`;
     }else{
       btnNext.innerHTML = `Continuar <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>`;
@@ -120,6 +134,7 @@
     setTimeout(refreshSegmentPills, 80);
     // Al entrar al paso 3 (Condiciones), re-evaluar paneles según incentivos.
     if(currentStep === 3) renderCondPanels();
+    if(currentStep === 4){ renderManualCodes(); renderCodesScope(); }
   }
 
   function goStep(s){ currentStep = s; renderStep(); }
@@ -129,6 +144,7 @@
      - Permite quedarse en el actual
      - Bloquea saltar hacia adelante — forzar uso del botón "Continuar" */
   function tryGoStep(s){
+    if(sectionMode) return;
     // Si el paso 4 está oculto (no hay bono), no permitir saltar a él.
     if(s === 4 && !hasBonoIncentive()) return;
     if(s <= currentStep){ goStep(s); return; }
@@ -138,51 +154,24 @@
   }
 
   function nextStep(){
+    if(sectionMode) return sectionNext();
     if(!validateStep(currentStep)) return;
     const lastStep = totalStepsNow();
     if(currentStep < lastStep){ currentStep++; renderStep(); }
     else activateProgram();
   }
-  function prevStep(){ if(currentStep > 1){ currentStep--; renderStep(); } }
+  function prevStep(){
+    if(sectionMode){ if(sectionMode === 'incentivos' && currentStep === 3){ condOnlyNew = null; currentStep = 2; renderStep(); } return; }
+    if(currentStep > 1){ currentStep--; renderStep(); }
+  }
 
   /* ══ Validation ══ */
   function validateStep(step){
     const pane = document.querySelector(`.wz-pane[data-pane="${step}"]`);
     if(!pane) return true;
-    // Regla de negocio step-2: si el modo es "Varios tipos" se requieren
-    // al menos 2 incentivos. Con solo 1 no hay razón para estar en multi —
-    // el usuario debería volver a "Un solo tipo". Se bloquea Continuar y
-    // se orienta con toast caution.
-    if(step === 2 && incTypesMode === 'multi'){
-      const cards = pane.querySelectorAll('.wz-inc-card');
-      if(cards.length < 2){
-        // Flash del hint + shake del botón "Agregar otro tipo" — sin toast,
-        // el mensaje caution inline ya comunica el requisito.
-        const hint = document.getElementById('wzTypesHint');
-        if(hint){
-          hint.classList.remove('wz-flash-caution');
-          void hint.offsetWidth;
-          hint.classList.add('wz-flash-caution');
-          setTimeout(() => hint.classList.remove('wz-flash-caution'), 1200);
-        }
-        const addBtn = document.getElementById('wzAddInc');
-        if(addBtn){
-          addBtn.classList.remove('wz-shake');
-          void addBtn.offsetWidth;
-          addBtn.classList.add('wz-shake');
-          setTimeout(() => addBtn.classList.remove('wz-shake'), 500);
-        }
-        return false;
-      }
-    }
     let ok = true;
     let firstInvalid = null;
-    // Recolectar campos required: siempre los `data-wz-required` y, sólo en multi
-    // mode (paso 2), también los `data-wz-required-multi`.
-    const reqFields = [...pane.querySelectorAll('[data-wz-required]')];
-    if(step === 2 && incTypesMode === 'multi'){
-      reqFields.push(...pane.querySelectorAll('[data-wz-required-multi]'));
-    }
+    const reqFields = [...pane.querySelectorAll('[data-wz-required]')].filter(f => !f.closest('.wz-inc-card--inactive'));
     reqFields.forEach(field => {
       const input = field.querySelector('input, textarea');
       const isDropdown = field.classList.contains('naowee-dropdown');
@@ -204,24 +193,48 @@
         clearError(field);
       }
     });
-    // Paso 2 modo multi: validar que la sumatoria de rubros per-card == rubro total.
-    if(step === 2 && incTypesMode === 'multi' && ok){
+    /* Paso 2: el rubro es opcional en esta fase (reunión 22-09). Solo se
+       bloquea si la suma de rubros por incentivo supera el rubro total. */
+    if(step === 2 && ok){
       const total = parseMoney(document.getElementById('wzRubroTotal'));
       const cards = [...pane.querySelectorAll('.wz-inc-card')];
       const sum = cards.reduce((acc, c) => acc + parseMoney(c.querySelector('.wz-inc-card__rubro input')), 0);
-      if(total && sum !== total){
+      if(total && sum > total){
         ok = false;
         updateRubroAllocation();
-        const bx = document.getElementById('wzMultiBudget');
-        if(bx && !firstInvalid) firstInvalid = bx;
-        // Shake del bloque para llamar la atención
-        if(bx){
-          bx.classList.remove('wz-shake');
-          void bx.offsetWidth;
-          bx.classList.add('wz-shake');
-          setTimeout(() => bx.classList.remove('wz-shake'), 500);
-        }
+        /* Marcar los rubros por incentivo que suman y llevar al primero
+           (el resumen de abajo queda como apoyo). */
+        const fmt = n => `$${n.toLocaleString('es-CO')}`;
+        cards.forEach(c => {
+          const f = c.querySelector('.wz-inc-card__rubro');
+          if(!f || !parseMoney(f.querySelector('input'))) return;
+          markError(f, `La suma de rubros (${fmt(sum)}) supera el rubro total (${fmt(total)}).`);
+          f.classList.add('wz-rubro-err');
+          if(!firstInvalid) firstInvalid = f;
+        });
       }
+    }
+    if(step === 3){
+      const bad = validateCondPanels();
+      if(bad){ ok = false; if(!firstInvalid) firstInvalid = bad; }
+    }
+    /* Paso 2: si el incentivo tiene rubro y valor unitario, el valor unitario
+       no puede superar su rubro (no alcanzaría ni para uno). */
+    if(step === 2){
+      pane.querySelectorAll('.wz-inc-card').forEach(card => {
+        const rField = card.querySelector('.wz-inc-card__rubro');
+        const uField = card.querySelector('.wz-inc-card__unit');
+        const r = parseMoney(rField?.querySelector('input'));
+        const u = parseMoney(uField?.querySelector('input'));
+        if(r && u && u > r){
+          ok = false;
+          markError(uField, `No puede superar el rubro del incentivo ($${r.toLocaleString('es-CO')}).`);
+          if(!firstInvalid) firstInvalid = uField;
+        } else if(uField && uField.classList.contains('naowee-textfield--error')){
+          clearError(uField);
+          restoreUnitHint(uField);
+        }
+      });
     }
     if(!ok && firstInvalid){
       // Scroll suave dentro del body del modal al primer campo inválido
@@ -229,7 +242,8 @@
       if(body){
         const bodyRect = body.getBoundingClientRect();
         const fieldRect = firstInvalid.getBoundingClientRect();
-        const targetTop = body.scrollTop + (fieldRect.top - bodyRect.top) - 24;
+        // Margen para que se vea también el contexto (título de la tarjeta)
+        const targetTop = body.scrollTop + (fieldRect.top - bodyRect.top) - 110;
         body.scrollTo({ top: Math.max(0, targetTop), behavior: 'smooth' });
       }else{
         firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -247,7 +261,7 @@
     return ok;
   }
 
-  function markError(field){
+  function markError(field, msg = 'Este campo es obligatorio'){
     field.classList.add('wz-shake');
     setTimeout(() => field.classList.remove('wz-shake'), 500);
     const isDropdown = field.classList.contains('naowee-dropdown');
@@ -265,7 +279,7 @@
       <div class="naowee-helper__badge">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
       </div>
-      <div class="naowee-helper__text">Este campo es obligatorio</div>`;
+      <div class="naowee-helper__text">${msg}</div>`;
     if(!helper){
       helper = document.createElement('div');
       helper.className = 'naowee-helper naowee-helper--negative';
@@ -291,6 +305,9 @@
       mount().then(() => { if(pendingOpen){ pendingOpen = false; openWizard(); } });
       return;
     }
+    editingProgramId = null;
+    leaveSectionMode();
+    setWizardTexts();
     resetWizardForm();
     document.getElementById('wzOverlay').classList.add('open');
     currentStep = 1;
@@ -308,6 +325,9 @@
     }
     const prog = (window.PROGRAMS_DATA || []).find(p => p.id === programId);
     if(!prog){ openWizard(); return; }
+    editingProgramId = prog.id;
+    leaveSectionMode();
+    setWizardTexts();
     resetWizardForm();
     populateWizardFromProgram(prog);
     document.getElementById('wzOverlay').classList.add('open');
@@ -326,46 +346,22 @@
     if(desc) desc.value = '';
     document.querySelectorAll('.wz-pane[data-pane="1"] [data-wz-datepicker] input').forEach(i => { i.value = ''; });
     const cobField = document.querySelector('[data-wz-name="cobertura"]');
-    if(cobField){
-      cobField.dataset.wzValue = '';
-      const chips = cobField.querySelector('[data-chips]');
-      if(chips) chips.innerHTML = '<span class="wz-tag-multi__placeholder">Selecciona departamentos o nacional</span>';
-      cobField.querySelectorAll('.wz-tag-multi__option.is-selected').forEach(o => o.classList.remove('is-selected'));
-    }
-    // Step 2
+    if(cobField && cobField._setValues) cobField._setValues([]);
+    ['evento','gestor-programa','operadores'].forEach(n => setDropdownValue(document.querySelector(`.wz-pane[data-pane="1"] [data-wz-name="${n}"]`), []));
+    // Step 2 — una sola tarjeta vacía
     const rt = document.getElementById('wzRubroTotal');
     if(rt) rt.value = '';
     const list = document.getElementById('wzIncList');
-    if(list){
-      // Mantener sólo la primera card y limpiarla
-      [...list.querySelectorAll('.wz-inc-card')].slice(1).forEach(c => c.remove());
-      const first = list.querySelector('.wz-inc-card');
-      if(first){
-        first.querySelectorAll('input').forEach(i => { i.value = ''; });
-        const dd = first.querySelector('[data-wz-name="categoria"]');
-        if(dd){
-          dd.dataset.wzValue = '';
-          const valEl = dd.querySelector('.naowee-dropdown__value');
-          if(valEl){ valEl.textContent = ''; valEl.style.display = 'none'; }
-          const ph = dd.querySelector('.naowee-dropdown__placeholder');
-          if(ph) ph.style.display = '';
-          dd.querySelectorAll('.naowee-dropdown__option--selected').forEach(o => o.classList.remove('naowee-dropdown__option--selected'));
-        }
-      }
-    }
-    incCounter = 1;
-    // Resetear modo a single
-    const singleCard = document.querySelector('.toggle-card[data-val="single"]');
-    if(singleCard) setIncTypesMode(singleCard, 'single');
+    if(list) list.innerHTML = '';
+    incCounter = 0;
+    addIncentive({ focus: false });
+    updateRubroAllocation();
     // Step 3 — paneles se regeneran al entrar al paso 3
-    benefTypeMode = 'deportista';
     const condPanels = document.getElementById('wzCondPanels');
     if(condPanels){ condPanels.innerHTML = ''; condPanels.dataset.wzKey = ''; }
-    // Step 4 — limpiar archivo y filas manuales
+    // Step 4 — limpiar archivo y filas manuales; volver a "Subir plantilla"
     resetWzFile && resetWzFile();
-    const manualRows = document.getElementById('wzManualRows');
-    if(manualRows) manualRows.innerHTML = '';
-    seedManualRows();
+    setCodesMode('upload');
     // Anexos del paso 1
     if(typeof resetAnexos === 'function') resetAnexos();
   }
@@ -381,6 +377,17 @@
     const toInput   = document.querySelector('[data-wz-range="to"][data-wz-range-name="vigencia"] input');
     if(fromInput && p.from && p.from !== '—') fromInput.value = p.from;
     if(toInput && p.to && p.to !== '—') toInput.value = p.to;
+    const cobF = document.querySelector('[data-wz-name="cobertura"]');
+    if(cobF && cobF._setValues){
+      let keys = Array.isArray(p.coverageKeys) ? p.coverageKeys : [];
+      if(!keys.length && p.coverage && p.coverage !== '—'){
+        const labels = String(p.coverage).split(',').map(x => x.trim().toLowerCase());
+        keys = [...cobF.querySelectorAll('.wz-tag-multi__option')]
+          .filter(o => labels.includes((o.dataset.label || '').toLowerCase()))
+          .map(o => o.dataset.val);
+      }
+      cobF._setValues(keys);
+    }
 
     // === Step 2 ===
     const rt = document.getElementById('wzRubroTotal');
@@ -388,14 +395,12 @@
       rt.value = Number(p.rubro).toLocaleString('es-CO');
     }
     const incs = Array.isArray(p.incentives) ? p.incentives : [];
-    const isMulti = incs.length > 1;
-    if(isMulti){
-      const multiCard = document.querySelector('.toggle-card[data-val="multi"]');
-      if(multiCard) setIncTypesMode(multiCard, 'multi');
-      // setIncTypesMode con 'multi' agrega una segunda card si solo hay 1.
-      // Asegurar que haya el número correcto de cards.
-      const list = document.getElementById('wzIncList');
-      while(list && list.querySelectorAll('.wz-inc-card').length < incs.length) addIncentive();
+    const list = document.getElementById('wzIncList');
+    while(list && list.querySelectorAll('.wz-inc-card').length < incs.length) addIncentive({ focus: false });
+    setDropdownValue(document.querySelector('[data-wz-name="evento"]'), p.eventKey ? [p.eventKey] : []);
+    if(p.team){
+      setDropdownValue(document.querySelector('[data-wz-name="gestor-programa"]'), p.team.gestorKey ? [p.team.gestorKey] : []);
+      setDropdownValue(document.querySelector('[data-wz-name="operadores"]'), p.team.operatorKeys || []);
     }
     const cards = [...document.querySelectorAll('.wz-pane[data-pane="2"] .wz-inc-card')];
     incs.forEach((inc, idx) => {
@@ -403,27 +408,9 @@
       if(!card) return;
       const nameInput = card.querySelector('input[type="text"]');
       if(nameInput) nameInput.value = inc.name || '';
-      // Categoría: setear wzValue y replicar el visual del dropdown
-      const dd = card.querySelector('[data-wz-name="categoria"]');
-      const catKey = String(inc.category || '').toLowerCase();
-      if(dd && catKey){
-        const opt = dd.querySelector(`.naowee-dropdown__option[data-val="${catKey}"]`);
-        if(opt){
-          dd.querySelectorAll('.naowee-dropdown__option--selected').forEach(o => o.classList.remove('naowee-dropdown__option--selected'));
-          opt.classList.add('naowee-dropdown__option--selected');
-          dd.dataset.wzValue = catKey;
-          const trigger = dd.querySelector('.naowee-dropdown__trigger');
-          let valEl = dd.querySelector('.naowee-dropdown__value');
-          if(!valEl && trigger){
-            valEl = document.createElement('span');
-            valEl.className = 'naowee-dropdown__value';
-            trigger.insertBefore(valEl, trigger.firstChild);
-          }
-          if(valEl){ valEl.textContent = opt.textContent.trim(); valEl.style.display = ''; }
-          const ph = dd.querySelector('.naowee-dropdown__placeholder');
-          if(ph) ph.style.display = 'none';
-        }
-      }
+      const catKey = inc.categoryKey || CAT_KEY_BY_LABEL[String(inc.category || '').toLowerCase()] || String(inc.category || '').toLowerCase();
+      setDropdownValue(card.querySelector('[data-wz-name="categoria"]'), catKey ? [catKey] : []);
+      setDropdownValue(card.querySelector('[data-wz-name="beneficiario"]'), inc.beneficiary ? [inc.beneficiary] : []);
       // Rubro per-card (sólo en multi visualmente)
       const rubroInput = card.querySelector('.wz-inc-card__rubro input');
       if(rubroInput && inc.detail){
@@ -437,31 +424,30 @@
     refreshIncCardHints();
     updateRubroAllocation();
 
-    // === Step 4 — modo de códigos manuales si existen ===
-    if(Array.isArray(p.manualCodes) && p.manualCodes.length){
-      const seg = document.querySelector('[data-wz-name="codes-mode"]');
-      if(seg){
-        const manualBtn = seg.querySelector('[data-val="manual"]');
-        if(manualBtn) manualBtn.click();
+    /* Estado original de cada incentivo: entregas y códigos ya cargados
+       (definen si se puede borrar o solo desactivar) y sus condiciones. */
+    const byName = Object.fromEntries((p.codesByIncentive || []).map(c => [c.name, c.count]));
+    cards.forEach((card, idx) => {
+      const inc = incs[idx];
+      if(!inc) return;
+      card._orig = { name: inc.name, delivered: inc.delivered || 0, codes: byName[inc.name] || 0 };
+      card._existingCodes = byName[inc.name] || 0;
+      if(inc.active === false){ card.dataset.inactive = '1'; }
+      refreshIncCardState(card);
+      const rules = inc.conditions?.groups?.[0]?.rules || [];
+      const stored = rules.filter(r => r.fieldKey && FIELD_CATALOG[r.fieldKey])
+        .map(r => ({ field: r.fieldKey, op: r.opKey || 'eq', values: [...(r.values || [])] }));
+      if(stored.length){
+        const sig = `${inc.beneficiary || ''}:${inc.categoryKey || ''}`;
+        card._cond = { sig, rules: stored, editing: false, error: '' };
       }
-      const rowsEl = document.getElementById('wzManualRows');
-      if(rowsEl){
-        rowsEl.innerHTML = '';
-        p.manualCodes.forEach((code, i) => {
-          const row = makeManualRow(i + 1);
-          const inp = row.querySelector('.manual-row__code input');
-          if(inp) inp.value = code;
-          rowsEl.appendChild(row);
-        });
-        upgradeDropdowns();
-        wireInputMasks();
-      }
-    }
+    });
   }
 
   function closeWizard(){
     const overlay = document.getElementById('wzOverlay');
     if(!overlay) return;
+    if(sectionMode){ overlay.classList.remove('open'); isDirty = false; leaveSectionMode(); return; }
     // Solo pregunta si el usuario realmente editó algo
     if(!isDirty){
       overlay.classList.remove('open');
@@ -803,6 +789,11 @@
         }
       });
       field.addEventListener('wz-tag-multi:close', unfloatMenu);
+      /* Fija el valor desde código (reset, edición, plantilla demo). */
+      field._setValues = vals => {
+        confirmedVals = [...vals]; tempVals = [...vals];
+        renderChips(); renderOptionsState(); clearTagMultiError(field);
+      };
 
       confirmBtn.addEventListener('click', e => {
         e.stopPropagation();
@@ -1120,19 +1111,93 @@
   }
 
   /* ══ Step-5 codes mode (upload vs manual) ══ */
-  function wireCodesMode(){
-    const seg = document.querySelector('[data-wz-name="codes-mode"]');
-    if(!seg || seg.dataset.wzCodesWired) return;
-    seg.dataset.wzCodesWired = '1';
-    seg.querySelectorAll('.naowee-segment__item').forEach(it => {
-      it.addEventListener('click', () => {
-        const mode = it.dataset.val;
-        document.querySelectorAll('.wz-codes-mode').forEach(pane => {
-          pane.hidden = pane.dataset.mode !== mode;
-        });
-        updateBudget();
-      });
+  /* Forma de carga de códigos: plantilla Excel O uno por uno (excluyentes).
+     Si la opción actual ya tiene códigos, se pide confirmación y se descartan. */
+  let pendingCodesMode = null;
+  function codesModeHasData(mode){
+    if(mode === 'upload') return !!document.getElementById('wzFileChip')?.innerHTML.trim();
+    return allManualCodes().length > 0;
+  }
+  function clearCodesMode(mode){
+    if(mode === 'upload'){ resetWzFile(); return; }
+    codeIncentives().forEach(m => { m.card._codes = []; m.card._codesMsg = null; });
+    renderManualCodes();
+  }
+  function setCodesMode(mode){
+    const choice = document.querySelector('[data-wz-name="codes-mode"]');
+    if(!choice) return;
+    choice.dataset.wzValue = mode;
+    choice.querySelectorAll('.toggle-card').forEach(c => {
+      const on = c.dataset.val === mode;
+      c.classList.toggle('active', on);
+      c.setAttribute('aria-checked', on);
+      c.tabIndex = on ? 0 : -1;
+      c.querySelector('.naowee-radio')?.classList.toggle('naowee-radio--selected', on);
     });
+    document.querySelectorAll('.wz-codes-mode').forEach(pane => { pane.hidden = pane.dataset.mode !== mode; });
+    if(mode === 'manual') renderManualCodes();
+    const bx = document.getElementById('wzBudget');
+    if(bx && bx.querySelector('.naowee-message--negative')){ bx.hidden = true; bx.innerHTML = ''; }
+    updateBudget();
+  }
+  function requestCodesMode(mode){
+    const current = document.querySelector('[data-wz-name="codes-mode"]')?.dataset?.wzValue || 'upload';
+    if(mode === current) return;
+    if(!codesModeHasData(current)){ setCodesMode(mode); return; }
+    pendingCodesMode = mode;
+    const sub = document.getElementById('wzCodesSwitchSub');
+    if(sub) sub.textContent = current === 'upload'
+      ? 'Se descartará el archivo que subiste y sus códigos. Tendrás que agregarlos uno por uno.'
+      : 'Se descartarán los códigos que agregaste uno por uno. Tendrás que subirlos en la plantilla.';
+    document.getElementById('wzCodesSwitchOverlay')?.classList.add('open');
+  }
+  function confirmCodesSwitch(){
+    const current = document.querySelector('[data-wz-name="codes-mode"]')?.dataset?.wzValue || 'upload';
+    document.getElementById('wzCodesSwitchOverlay')?.classList.remove('open');
+    if(!pendingCodesMode) return;
+    clearCodesMode(current);
+    setCodesMode(pendingCodesMode);
+    pendingCodesMode = null;
+    isDirty = true;
+  }
+  function cancelCodesSwitch(){
+    pendingCodesMode = null;
+    document.getElementById('wzCodesSwitchOverlay')?.classList.remove('open');
+  }
+  function wireCodesMode(){
+    const choice = document.querySelector('[data-wz-name="codes-mode"]');
+    if(!choice || choice.dataset.wzCodesWired) return;
+    choice.dataset.wzCodesWired = '1';
+    choice.addEventListener('click', e => {
+      const card = e.target.closest('.toggle-card');
+      if(card) requestCodesMode(card.dataset.val);
+    });
+    choice.addEventListener('keydown', e => {
+      const card = e.target.closest('.toggle-card');
+      if(!card) return;
+      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); requestCodesMode(card.dataset.val); }
+      if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)){
+        e.preventDefault();
+        const other = [...choice.querySelectorAll('.toggle-card')].find(c => c !== card);
+        other?.focus();
+      }
+    });
+  }
+
+  /* Qué incentivos llevan códigos (hoy solo categoría Bono). */
+  function renderCodesScope(){
+    const box = document.getElementById('wzCodesScope');
+    if(!box) return;
+    const cards = [...document.querySelectorAll('.wz-pane[data-pane="2"] .wz-inc-card')]
+      .filter(c => !c.dataset.inactive).map((c, i) => readIncCard(c, i));
+    const withCodes = cards.filter(m => m.catKey === 'bono');
+    const without = cards.filter(m => m.catKey !== 'bono');
+    box.innerHTML = `<div class="naowee-message__header"><div class="naowee-message__icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
+      <div class="naowee-message__text">Solo los incentivos <strong>Bono</strong> llevan códigos: <strong>${withCodes.length} de ${cards.length}</strong>
+        (${withCodes.map(m => escapeHtml(m.name)).join(', ')}).
+        ${without.length ? `Los demás (${[...new Set(without.map(m => escapeHtml(m.catLbl)))].join(', ')}) se entregan sin código.` : ''}
+        ${editingProgram()?.codes?.total ? `<br/>Este programa ya tiene <strong>${editingProgram().codes.total} códigos</strong>; carga más solo si hace falta.` : ''}</div></div>`;
   }
 
   function wireBudgetInputs(){
@@ -1167,6 +1232,14 @@
   function updateRubroAllocation(){
     const bx = document.getElementById('wzMultiBudget');
     if(!bx) return;
+    {
+      const t = parseMoney(document.getElementById('wzRubroTotal'));
+      const all = [...document.querySelectorAll('.wz-pane[data-pane="2"] .wz-inc-card')];
+      const sm = all.reduce((acc, c) => acc + parseMoney(c.querySelector('.wz-inc-card__rubro input')), 0);
+      if(!t || sm <= t){
+        document.querySelectorAll('.wz-inc-card__rubro.wz-rubro-err').forEach(f => { clearError(f); f.classList.remove('wz-rubro-err'); });
+      }
+    }
     if(incTypesMode !== 'multi'){
       bx.hidden = true; bx.innerHTML = '';
       return;
@@ -1204,122 +1277,320 @@
       </div>`;
   }
 
-  function seedManualRows(){
-    const rows = document.getElementById('wzManualRows');
-    if(!rows || rows.children.length > 0) return;
-    for(let i = 1; i <= 3; i++){
-      const row = makeManualRow(i);
-      rows.appendChild(row);
-    }
-    upgradeDropdowns();
-    wireInputMasks();
-    rows.addEventListener('input', updateBudget);
+  /* ══ Códigos uno por uno ══
+     Un bloque por incentivo Bono con un campo de etiquetas: se escribe el
+     código y Enter (o coma) lo agrega; pegar una lista agrega varios.
+     Reglas: solo letras sin tilde, números, guion medio (-) y bajo (_);
+     únicos en todo el programa (sin distinguir mayúsculas); si el incentivo
+     tiene rubro y valor unitario, no más de los esperados.
+     Los códigos viven en la tarjeta del incentivo (card._codes). */
+  /* Incentivos que llevan códigos (hoy solo categoría Bono — ver pendientes). */
+  function codeIncentives(){
+    return [...document.querySelectorAll('.wz-pane[data-pane="2"] .wz-inc-card')]
+      .map((c, i) => ({ card: c, ...readIncCard(c, i) }))
+      .filter(m => m.catKey === 'bono' && !m.card.dataset.inactive);
   }
-
-  function makeManualRow(defaultIdx){
-    const row = document.createElement('div');
-    row.className = 'manual-row manual-row--code-only';
-    row.innerHTML = `
-      <div class="naowee-textfield manual-row__code">
-        <div class="naowee-textfield__input-wrap">
-          <input class="naowee-textfield__input" type="text" placeholder="2026BON-${String(defaultIdx || 1).padStart(5, '0')}"/>
+  const CODE_BAD = /[^A-Za-z0-9_-]/g;
+  const CODE_SPLIT = /[\s,;]+/;
+  const DEMO_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  function manualCodesOf(card){ return card._codes || (card._codes = []); }
+  function allManualCodes(){ return codeIncentives().flatMap(m => manualCodesOf(m.card).map(code => ({ code, m }))); }
+  function expectedFor(card){
+    const r = parseMoney(card.querySelector('.wz-inc-card__rubro input'));
+    const u = parseMoney(card.querySelector('.wz-inc-card__unit input'));
+    return r && u ? Math.floor(r / u) : 0;
+  }
+  function addCodesTo(card, tokens){
+    const codes = manualCodesOf(card);
+    const exp = expectedFor(card);
+    const taken = new Map(allManualCodes().map(x => [x.code.toUpperCase(), x.m.name]));
+    (editingProgram()?.manualCodes || []).forEach(c => taken.set(String(c).toUpperCase(), 'el inventario del programa'));
+    const existing = card._existingCodes || 0;
+    const res = { added: 0, dup: [], invalid: [], over: 0 };
+    tokens.map(t => t.trim()).filter(Boolean).forEach(t => {
+      if(t.replace(CODE_BAD, '') !== t){ res.invalid.push(t); return; }
+      const k = t.toUpperCase();
+      if(taken.has(k)){ res.dup.push({ code: t, where: taken.get(k) }); return; }
+      if(exp && existing + codes.length >= exp){ res.over++; return; }
+      codes.push(t); taken.set(k, ''); res.added++;
+    });
+    const msgs = [];
+    const list = arr => arr.slice(0, 3).map(escapeHtml).join(', ') + (arr.length > 3 ? '…' : '');
+    if(res.dup.length) msgs.push(`${res.dup.length === 1 ? `<strong>${escapeHtml(res.dup[0].code)}</strong> ya está cargado` : `${res.dup.length} códigos repetidos omitidos (${list(res.dup.map(d => d.code))})`}${res.dup.length === 1 && res.dup[0].where ? ` en ${escapeHtml(res.dup[0].where)}` : ''}.`);
+    if(res.invalid.length) msgs.push(`${res.invalid.length} con caracteres no permitidos omitidos (${list(res.invalid)}). Solo letras sin tilde, números, - y _.`);
+    if(res.over) msgs.push(`${res.over} omitidos: el rubro de este incentivo alcanza para ${exp} códigos.`);
+    card._codesMsg = msgs.length ? { type: 'negative', html: (res.added ? `Se agregaron ${res.added}. ` : '') + msgs.join(' ') } : null;
+    return res;
+  }
+  function demoCodes(card){
+    const codes = manualCodesOf(card);
+    const exp = expectedFor(card);
+    const n = exp ? Math.min(5, exp - (card._existingCodes || 0) - codes.length) : 5;
+    if(n <= 0){ card._codesMsg = { type: 'negative', html: `El rubro de este incentivo alcanza para ${exp} códigos; ya están todos.` }; return; }
+    const taken = new Set(allManualCodes().map(x => x.code.toUpperCase()));
+    const out = [];
+    while(out.length < n){
+      let c = 'DEMO-';
+      for(let i = 0; i < 6; i++) c += DEMO_CHARS[Math.floor(Math.random() * DEMO_CHARS.length)];
+      if(!taken.has(c)){ taken.add(c); out.push(c); }
+    }
+    addCodesTo(card, out);
+  }
+  function manualBlockHTML(m){
+    const codes = manualCodesOf(m.card);
+    const exp = expectedFor(m.card);
+    const n = codes.length;
+    const status = !exp
+      ? `<span class="naowee-badge naowee-badge--neutral naowee-badge--quiet naowee-badge--small">Sin rubro · sin límite</span>`
+      : n + (m.card._existingCodes || 0) >= exp ? `<span class="naowee-badge naowee-badge--positive naowee-badge--quiet naowee-badge--small">Completo</span>`
+      : `<span class="naowee-badge naowee-badge--caution naowee-badge--quiet naowee-badge--small">Faltan ${exp - n - (m.card._existingCodes || 0)}</span>`;
+    const msg = m.card._codesMsg;
+    return `
+      <div class="wz-mc" data-mc-idx="${m.idx}">
+        <div class="wz-mc__head">
+          <span class="wz-mc__name">${escapeHtml(m.name)}</span>
+          <span class="wz-mc__count"><strong>${n}</strong> ${n === 1 ? 'nuevo' : 'nuevos'}${m.card._existingCodes ? ` · ${m.card._existingCodes} ya cargados` : ''}${exp ? ` · caben ${exp}` : ''}</span>
+          ${status}
         </div>
-      </div>
-      <button type="button" class="x-btn" onclick="removeManualRow(this)" aria-label="Eliminar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>`;
-    return row;
+        <div class="wz-mc__field${msg ? ' wz-mc__field--error' : ''}">
+          ${codes.map((c, ci) => `<span class="naowee-tag naowee-tag--small wz-mc__chip">${escapeHtml(c)}<button type="button" class="wz-mc__rm" data-mc-remove="${ci}" aria-label="Quitar ${escapeHtml(c)}">×</button></span>`).join('')}
+          <input class="wz-mc__input" type="text" maxlength="40" autocomplete="off" spellcheck="false"
+            placeholder="${n ? 'Otro código…' : 'Escribe un código y presiona Enter, o pega una lista'}" aria-label="Códigos de ${escapeHtml(m.name)}"/>
+        </div>
+        <div class="wz-mc__foot">
+          <span class="wz-mc__msg${msg ? ' wz-mc__msg--' + msg.type : ''}" role="status">${msg ? msg.html : 'Letras sin tilde, números, guion medio (-) y bajo (_). Sin espacios.'}</span>
+          <button type="button" class="wz-mc__demo" data-mc-demo title="Solo demo: en el producto los códigos los entrega el ministerio">
+            <span class="naowee-badge naowee-badge--caution naowee-badge--small">Solo demo</span> Generar 5 al azar
+          </button>
+        </div>
+      </div>`;
+  }
+  function renderManualCodes(focusIdx){
+    const box = document.getElementById('wzManualCodes');
+    if(!box) return;
+    const bonos = codeIncentives();
+    box.innerHTML = bonos.map(manualBlockHTML).join('');
+    if(focusIdx !== undefined){
+      box.querySelector(`.wz-mc[data-mc-idx="${focusIdx}"] .wz-mc__input`)?.focus();
+    }
+    updateBudget();
+  }
+  function wireManualCodes(){
+    const box = document.getElementById('wzManualCodes');
+    if(!box || box.dataset.mcWired) return;
+    box.dataset.mcWired = '1';
+    const blockOf = el => {
+      const b = el.closest('.wz-mc');
+      const idx = +b.dataset.mcIdx;
+      const m = codeIncentives().find(x => x.idx === idx);
+      return { idx, card: m?.card };
+    };
+    const commit = (input, extra) => {
+      const { idx, card } = blockOf(input);
+      if(!card) return;
+      const tokens = [...(extra || []), input.value];
+      if(!tokens.some(t => t.trim())) return;
+      addCodesTo(card, tokens);
+      isDirty = true;
+      renderManualCodes(idx);
+    };
+    box.addEventListener('keydown', e => {
+      const input = e.target.closest('.wz-mc__input');
+      if(!input) return;
+      if(e.key === 'Enter' || e.key === ','){ e.preventDefault(); commit(input); }
+      else if(e.key === 'Backspace' && !input.value){
+        const { idx, card } = blockOf(input);
+        const codes = manualCodesOf(card);
+        if(codes.length){ codes.pop(); card._codesMsg = null; isDirty = true; renderManualCodes(idx); }
+      }
+    });
+    // Escribir: se quitan en vivo los caracteres no permitidos
+    box.addEventListener('input', e => {
+      const input = e.target.closest('.wz-mc__input');
+      if(!input) return;
+      const clean = input.value.replace(CODE_BAD, '');
+      const msgEl = input.closest('.wz-mc').querySelector('.wz-mc__msg');
+      if(clean !== input.value){
+        input.value = clean;
+        msgEl.className = 'wz-mc__msg wz-mc__msg--negative';
+        msgEl.textContent = 'Ese carácter no se permite: solo letras sin tilde, números, - y _.';
+      }
+    });
+    // Pegar: una lista (líneas, comas, espacios o tabulaciones) agrega varios
+    box.addEventListener('paste', e => {
+      const input = e.target.closest('.wz-mc__input');
+      if(!input) return;
+      const text = (e.clipboardData || window.clipboardData)?.getData('text') || '';
+      e.preventDefault();
+      const tokens = text.split(CODE_SPLIT);
+      const current = input.value; input.value = '';
+      commit(input, [current, ...tokens]);
+    });
+    box.addEventListener('focusout', e => {
+      const input = e.target.closest('.wz-mc__input');
+      if(input && input.value.trim() && !e.relatedTarget?.closest?.('[data-mc-demo],[data-mc-remove]')) commit(input);
+    });
+    box.addEventListener('click', e => {
+      const rm = e.target.closest('[data-mc-remove]');
+      const demo = e.target.closest('[data-mc-demo]');
+      const field = e.target.closest('.wz-mc__field');
+      if(rm){
+        const { idx, card } = blockOf(rm);
+        manualCodesOf(card).splice(+rm.dataset.mcRemove, 1);
+        card._codesMsg = null; isDirty = true; renderManualCodes(idx);
+      } else if(demo){
+        const { idx, card } = blockOf(demo);
+        demoCodes(card); isDirty = true; renderManualCodes(idx);
+      } else if(field){
+        field.querySelector('.wz-mc__input')?.focus();
+      }
+    });
   }
 
   /* La primera condición ahora se siembra dentro de renderCondPanels(),
      que se encarga de generar los paneles del paso 3 al entrar a ese paso. */
   function seedFirstCondition(){ /* no-op — manejado por renderCondPanels */ }
 
-  function addManualRow(){
-    const rows = document.getElementById('wzManualRows');
-    if(!rows) return;
-    const defaultIdx = rows.children.length + 1;
-    const row = makeManualRow(defaultIdx);
-    rows.appendChild(row);
-    upgradeDropdowns();
-    wireInputMasks();
-    updateBudget();
-    const firstInput = row.querySelector('input');
-    if(firstInput) firstInput.focus();
+  /* Tipos de beneficiario — salen de los parámetros 2026 de Juegos
+     Intercolegiados (xlsx). El tipo se elige en cada incentivo (reunión 22-09,
+     00:13:55) y las condiciones del paso 3 dependen de él. */
+  const BENEF_TYPES = [
+    { key:'deportista',     label:'Deportista' },
+    { key:'paradeportista', label:'Paradeportista' },
+    { key:'entrenador',     label:'Docente / Entrenador' },
+    { key:'asistente',      label:'Docente / Asistente (deportes de conjunto)' },
+    { key:'institucion',    label:'Institución educativa' },
+    { key:'organizacion',   label:'Organización para personas con discapacidad' }
+  ];
+  const BENEF_LABEL = Object.fromEntries(BENEF_TYPES.map(b => [b.key, b.label]));
+  const CATEGORIES = [
+    ['bono','Bono'], ['credito','Crédito condonable'], ['kit','Kit'], ['beca','Beca'],
+    ['transporte','Transporte'], ['inscripcion','Inscripción'], ['pase','Pase / acceso'], ['dinero','Dinero']
+  ];
+  const CAT_KEY_BY_LABEL = Object.fromEntries(CATEGORIES.map(([k, l]) => [l.toLowerCase(), k]));
+
+  /* Tooltip del DS (naowee-tooltip) con un ícono de ayuda junto al label. */
+  const TIP_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 015.8 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+  function tipHTML(text, alignEnd = false){
+    return `<span class="naowee-tooltip naowee-tooltip--bottom wz-tip${alignEnd ? ' wz-tip--end' : ''}" tabindex="0" role="button" aria-label="Ayuda">${TIP_ICON}<span class="naowee-tooltip__content" role="tooltip">${text}</span></span>`;
   }
-
-  function removeManualRow(btn){
-    const row = btn.closest('.manual-row');
-    const rows = document.getElementById('wzManualRows');
-    if(rows && rows.children.length <= 1) return;
-    row.remove();
-    updateBudget();
-  }
-
-  /* ══ Step-3 — toggle single vs multi + add/remove incentivos ══ */
-  let incTypesMode = 'single';
-  let incCounter = 1;
-
-  // Iconos en estilo DS: mismo patrón del info (AlertCircle), swap de
-  // path interno — círculo con "i" vs. círculo con "!".
-  const TYPES_HINT_ICONS = {
-    info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>',
-    warn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>'
+  const TIPS = {
+    rubroInc: 'Parte del <strong>rubro total</strong> que se destina a este incentivo. Ej.: de $20.000.000 del programa, $10.000.000 para bonos. La suma de todos los incentivos no puede superar el rubro total.',
+    unit: 'Lo que vale <strong>cada</strong> incentivo entregado. Ej.: cada bono $100.000. Con el rubro del incentivo define cuántos códigos se esperan: rubro ÷ valor unitario.'
   };
 
-  function setIncTypesMode(el, mode){
-    incTypesMode = mode;
-    el.parentElement.querySelectorAll('.toggle-card').forEach(c => {
-      c.classList.remove('active');
-      const r = c.querySelector('.naowee-radio');
-      if(r) r.classList.remove('naowee-radio--selected');
+  /* SOLO DEMO · Nota para devs con las validaciones de cada paso.
+     Una sola fuente; [data-dev-validations="N"] pinta las del paso N. */
+  const DEV_VALIDATIONS = [
+    ['Paso 1 · Datos', [
+      'Obligatorios: nombre y cobertura territorial.',
+      'Vigencia opcional. Si se llenan ambas fechas, "hasta" debe ser posterior a "desde". Sin fechas: sin cierre.',
+      'Gestor de programa y operadores: opcionales.',
+      'Código del programa: PRG-AAAA-NNN (año de creación + consecutivo del año). Lo asigna el backend y no cambia al editar.'
+    ]],
+    ['Paso 2 · Incentivos y rubro', [
+      'Por incentivo son obligatorios: nombre, tipo de beneficiario y categoría. Mínimo 1 incentivo.',
+      'Solo la categoría Bono lleva códigos. Si ningún incentivo es Bono, el paso 4 (Códigos) no aparece y se activa desde el paso 3. Crédito condonable, Kit y demás se entregan sin código (pendiente de confirmar).',
+      'Editar un programa existente: un incentivo con entregas NO se borra, se desactiva (no se entrega más, queda en el historial; se puede reactivar). Con códigos y sin entregas: se confirma y sus códigos disponibles se descartan del inventario. Sin nada: se borra. Siempre queda al menos un incentivo activo.',
+      'Incentivo nuevo al editar: al guardar pasa a definir sus condiciones; sus códigos se cargan después desde la pestaña Códigos.',
+      'Rubro total, rubro del incentivo y valor unitario son opcionales.',
+      'Con rubro total: la suma de los rubros por incentivo no puede superarlo (bloquea). Si es menor, solo informa lo restante.',
+      'Con rubro del incentivo y valor unitario: el valor unitario no puede superar el rubro del incentivo (bloquea).',
+      'División no exacta (ej.: 10M ÷ 300k): se permite; códigos esperados = piso(rubro ÷ valor unitario). Regla pendiente de definir.'
+    ]],
+    ['Paso 3 · Condiciones', [
+      'Armador simple: todas las condiciones de un incentivo se cumplen a la vez (Y). No hay grupos O.',
+      'Toda condición necesita campo y al menos un valor; cada incentivo necesita al menos una condición (bloquea).',
+      'Regla = { campo, operador, valores[] }. Campos según tipo de beneficiario; valores de listas cerradas (sin texto libre). Un campo no se repite en el mismo incentivo.',
+      'Tipo de beneficiario siempre es la primera regla (no se edita aquí; sale del paso 2).',
+      'Vista compacta de solo lectura; "Personalizar" abre la edición y "Listo" la cierra (valida el incentivo).',
+      'En edición los valores se muestran como botones con todas las opciones visibles: "es uno de" permite varios; "=", "≤" y "≥" permiten uno.',
+      'Solo demo: la plantilla de Intercolegiados precarga condiciones para las combinaciones del xlsx de parámetros; un incentivo sin condiciones arranca en edición.',
+      'Cambiar tipo de beneficiario o categoría en el paso 2 reinicia las condiciones de ese incentivo.',
+      'Paradeportista usa las reglas de Deportista (pendiente de confirmar).'
+    ]],
+    ['Paso 4 · Códigos (solo incentivos Bono)', [
+      'Solo los incentivos de categoría Bono llevan códigos; el paso solo aparece si hay al menos uno. La plantilla, la carga manual y el conteo incluyen únicamente los Bono.',
+      'Crédito condonable, Kit y demás categorías se entregan sin código (regla de la demo, pendiente de confirmar con Danna).',
+      'Para activar se necesita al menos un código (o un archivo cargado).',
+      'Uno por uno: un bloque por incentivo Bono con campo de etiquetas. Enter o coma agrega; pegar una lista (líneas, comas, espacios o tabulaciones) agrega varios; Backspace en vacío quita el último.',
+      'Caracteres: solo letras sin tilde, números, guion medio (-) y bajo (_). Al escribir se quitan en vivo; al pegar se omiten los inválidos y se informa. Archivo con inválidos: bloquea.',
+      'Unicidad en vivo en todo el programa (sin distinguir mayúsculas): un repetido no entra y se dice en qué incentivo está.',
+      'Solo demo: "Generar 5 al azar" crea códigos DEMO-XXXXXX. En el producto los códigos los entrega el ministerio (RN-05.1).',
+      'Códigos únicos: repetidos en el archivo bloquean la activación.',
+      'Con rubro y valor unitario: no más códigos de los esperados por incentivo (bloquea). Menos: se permite y muestra "Faltan N".',
+      'Sin rubro: se aceptan todos los códigos cargados.',
+      'Forma de carga: plantilla Excel O uno por uno (excluyentes). Al cambiar con códigos ya cargados, pide confirmación y descarta los de la otra forma.',
+      'Plantilla .xlsx generada en el front: hoja Códigos (tipo_incentivo como lista desplegable con los incentivos Bono + codigo como texto), hoja Instrucciones con códigos esperados por incentivo.',
+      'Archivo subido (.xlsx o .csv) se lee en el front y se valida igual que la carga manual.'
+    ]]
+  ];
+  function renderDevValidations(){
+    document.querySelectorAll('[data-dev-validations]').forEach(el => {
+      const [title, items] = DEV_VALIDATIONS[(+el.dataset.devValidations || 1) - 1] || ['', []];
+      el.innerHTML = `
+        <span class="naowee-badge naowee-badge--caution naowee-badge--small">Solo demo</span>
+        Validaciones para devs
+        <span class="wz-devnote__pop" role="tooltip">
+          <span class="wz-devnote__head">${title} <em>· nota para devs, no es parte del producto</em></span>
+          <ul>${items.map(i => `<li>${i}</li>`).join('')}</ul>
+        </span>`;
     });
-    el.classList.add('active');
-    const elRadio = el.querySelector('.naowee-radio');
-    if(elRadio) elRadio.classList.add('naowee-radio--selected');
-    // El botón "Agregar otro tipo" sólo tiene sentido en modo multi.
-    const addBtn = document.getElementById('wzAddInc');
-    if(addBtn) addBtn.hidden = (mode !== 'multi');
-    // Hint contextual — swap variante DS (informative ↔ caution), icono y texto.
-    const hint = document.getElementById('wzTypesHint');
-    const hintIcon = document.getElementById('wzTypesHintIcon');
-    const hintText = document.getElementById('wzTypesHintText');
-    if(hint){
-      hint.classList.toggle('naowee-message--informative', mode === 'single');
-      hint.classList.toggle('naowee-message--caution', mode === 'multi');
-    }
-    if(hintIcon){
-      hintIcon.innerHTML = mode === 'multi' ? TYPES_HINT_ICONS.warn : TYPES_HINT_ICONS.info;
-    }
-    if(hintText){
-      hintText.innerHTML = mode === 'multi'
-        ? 'En modo <strong>Varios tipos</strong> debes agregar al menos <strong>2 incentivos</strong>. Usa el botón <em>Agregar otro tipo de incentivo</em> para sumar categorías.'
-        : 'Todo el rubro se destinará a este único tipo de incentivo. Si necesitas más de uno, cambia a <strong>Varios tipos</strong>.';
-    }
-    // Toggle clase en la lista → CSS oculta badge/remove en single
-    const list = document.getElementById('wzIncList');
-    if(list){
-      list.classList.toggle('wz-inc-list--single', mode === 'single');
-      list.classList.toggle('wz-inc-list--multi', mode === 'multi');
-      // Si cambió a single: dejar sólo la primera tarjeta
-      if(mode === 'single'){
-        [...list.querySelectorAll('.wz-inc-card')].slice(1).forEach(c => c.remove());
-        incCounter = 1;
-      } else if(mode === 'multi'){
-        // Multi requiere mínimo 2 incentivos: si sólo hay 1, agregar el segundo
-        // automáticamente — sin él no tendría sentido elegir "Varios tipos".
-        const cards = list.querySelectorAll('.wz-inc-card');
-        if(cards.length < 2) addIncentive();
-      }
-    }
-    // Cambiar de modo puede alterar la composición de incentivos → re-evaluar paso 4.
-    refreshIncCardHints();
-    updateRubroAllocation();
-    renderStep();
   }
 
-  function addIncentive(){
-    if(incTypesMode !== 'multi') return;
+  function ddHTML({ name, label, placeholder, options, required }){
+    return `
+        <div class="naowee-dropdown" data-wz-dropdown data-wz-name="${name}"${required ? ' data-wz-required' : ''}>
+          <label class="naowee-dropdown__label${required ? ' naowee-dropdown__label--required' : ''}">${label}</label>
+          <div class="naowee-dropdown__trigger" tabindex="0">
+            <span class="naowee-dropdown__placeholder">${placeholder}</span>
+            <div class="naowee-dropdown__controls">
+              <span class="naowee-dropdown__chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+            </div>
+          </div>
+          <div class="naowee-dropdown__menu" role="listbox">
+            ${options.map(([v, l]) => `<div class="naowee-dropdown__option" data-val="${v}">${escapeHtml(l)}</div>`).join('')}
+          </div>
+        </div>`;
+  }
+
+  /* Setea programáticamente un naowee-dropdown (single o multi) replicando
+     el visual que deja upgradeDropdowns al hacer clic. */
+  function setDropdownValue(dd, vals){
+    if(!dd) return;
+    const opts = [...dd.querySelectorAll('.naowee-dropdown__option')];
+    opts.forEach(o => o.classList.toggle('naowee-dropdown__option--selected', vals.includes(o.dataset.val)));
+    const selected = opts.filter(o => vals.includes(o.dataset.val));
+    const trigger = dd.querySelector('.naowee-dropdown__trigger');
+    let valEl = dd.querySelector('.naowee-dropdown__value');
+    if(!valEl && trigger){
+      valEl = document.createElement('span');
+      valEl.className = 'naowee-dropdown__value';
+      trigger.insertBefore(valEl, trigger.firstChild);
+    }
+    const ph = dd.querySelector('.naowee-dropdown__placeholder');
+    dd.dataset.wzValue = selected.map(o => o.dataset.val).join(',');
+    if(!selected.length){
+      if(valEl){ valEl.textContent = ''; valEl.style.display = 'none'; }
+      if(ph) ph.style.display = '';
+      return;
+    }
+    if(ph) ph.style.display = 'none';
+    if(valEl){
+      valEl.style.display = '';
+      valEl.textContent = selected.length <= 3
+        ? selected.map(o => o.textContent.trim()).join(', ')
+        : `${selected.length} seleccionados`;
+    }
+    clearError(dd);
+  }
+
+  let incTypesMode = 'multi'; // siempre lista de 1..N incentivos
+  let incCounter = 0;
+
+  function addIncentive(opts = {}){
     const list = document.getElementById('wzIncList');
-    if(!list) return;
+    if(!list) return null;
     incCounter++;
     const idx = incCounter;
     const card = document.createElement('div');
@@ -1327,7 +1598,7 @@
     card.dataset.idx = idx;
     card.innerHTML = `
       <div class="wz-inc-card__head">
-        <span class="wz-inc-card__badge naowee-badge naowee-badge--neutral naowee-badge--quiet naowee-badge--small">Incentivo #${idx}</span>
+        <span class="wz-inc-card__badge naowee-badge naowee-badge--neutral naowee-badge--quiet naowee-badge--small">Incentivo #${list.children.length + 1}</span>
         <button type="button" class="wz-inc-card__remove" onclick="removeIncentive(this)" aria-label="Eliminar incentivo">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
@@ -1336,37 +1607,20 @@
         <div class="naowee-textfield" data-wz-required>
           <label class="naowee-textfield__label naowee-textfield__label--required">Nombre del incentivo</label>
           <div class="naowee-textfield__input-wrap">
-            <input class="naowee-textfield__input" type="text" placeholder="Ej. Kit deportivo" data-wz-input="text" maxlength="100"/>
+            <input class="naowee-textfield__input" type="text" placeholder="Ej. Bono deportivo · Deportistas" data-wz-input="text" maxlength="100"/>
           </div>
         </div>
-        <div class="naowee-dropdown" data-wz-dropdown data-wz-name="categoria" data-wz-required>
-          <label class="naowee-dropdown__label naowee-dropdown__label--required">Categoría</label>
-          <div class="naowee-dropdown__trigger" tabindex="0">
-            <span class="naowee-dropdown__placeholder">Selecciona categoría</span>
-            <div class="naowee-dropdown__controls">
-              <span class="naowee-dropdown__chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></span>
-            </div>
-          </div>
-          <div class="naowee-dropdown__menu" role="listbox">
-            <div class="naowee-dropdown__option" data-val="bono">Bono</div>
-            <div class="naowee-dropdown__option" data-val="beca">Beca</div>
-            <div class="naowee-dropdown__option" data-val="kit">Kit</div>
-            <div class="naowee-dropdown__option" data-val="transporte">Transporte</div>
-            <div class="naowee-dropdown__option" data-val="inscripcion">Inscripción</div>
-            <div class="naowee-dropdown__option" data-val="descuento">Descuento</div>
-            <div class="naowee-dropdown__option" data-val="pase">Pase / acceso</div>
-            <div class="naowee-dropdown__option" data-val="dinero">Dinero</div>
-          </div>
-        </div>
-        <div class="naowee-textfield wz-inc-card__rubro" data-wz-required-multi data-wz-name="rubro">
-          <label class="naowee-textfield__label naowee-textfield__label--required">Rubro del incentivo (COP)</label>
+        ${ddHTML({ name:'beneficiario', label:'Tipo de beneficiario', placeholder:'¿A quién va dirigido?', options: BENEF_TYPES.map(b => [b.key, b.label]), required: true })}
+        ${ddHTML({ name:'categoria', label:'Categoría', placeholder:'Selecciona categoría', options: CATEGORIES, required: true })}
+        <div class="naowee-textfield wz-inc-card__rubro" data-wz-name="rubro">
+          <label class="naowee-textfield__label">Rubro del incentivo <span class="wz-inc-card__optional">(opcional)</span> ${tipHTML(TIPS.rubroInc, true)}</label>
           <div class="naowee-textfield__input-wrap">
             <span class="naowee-textfield__prefix" style="padding:0 10px;color:var(--naowee-color-text-secondary)">$</span>
             <input class="naowee-textfield__input" type="text" inputmode="numeric" placeholder="0" data-wz-input="money"/>
           </div>
         </div>
         <div class="naowee-textfield wz-inc-card__unit" data-wz-name="unitario">
-          <label class="naowee-textfield__label">Valor unitario <span class="wz-inc-card__optional">(opcional)</span></label>
+          <label class="naowee-textfield__label">Valor unitario <span class="wz-inc-card__optional">(opcional)</span> ${tipHTML(TIPS.unit)}</label>
           <div class="naowee-textfield__input-wrap">
             <span class="naowee-textfield__prefix" style="padding:0 10px;color:var(--naowee-color-text-secondary)">$</span>
             <input class="naowee-textfield__input" type="text" inputmode="numeric" placeholder="0" data-wz-input="money"/>
@@ -1377,10 +1631,24 @@
     list.appendChild(card);
     upgradeDropdowns();
     wireInputMasks();
-    wireRubroAllocationInputs();
+    wireBudgetInputs();
     refreshIncCardHints();
-    const firstInput = card.querySelector('input');
-    if(firstInput) firstInput.focus();
+    renumberIncCards();
+    if(opts.focus !== false){
+      const firstInput = card.querySelector('input');
+      if(firstInput) firstInput.focus();
+    }
+    return card;
+  }
+
+  function renumberIncCards(){
+    const cards = [...document.querySelectorAll('#wzIncList .wz-inc-card')];
+    cards.forEach((c, i) => {
+      const b = c.querySelector('.wz-inc-card__badge');
+      if(b) b.textContent = `Incentivo #${i + 1}`;
+    });
+    const list = document.getElementById('wzIncList');
+    if(list) list.classList.toggle('wz-inc-list--single', cards.length <= 1);
   }
 
   /* Cuando un incentivo cambia de categoría (especialmente a/desde "bono"),
@@ -1400,12 +1668,21 @@
     document.addEventListener('click', e => {
       const opt = e.target.closest('.naowee-dropdown__option');
       if(!opt) return;
-      const dd = opt.closest('[data-wz-name="categoria"]');
+      const dd = opt.closest('[data-wz-name="categoria"], [data-wz-name="beneficiario"]');
       if(!dd) return;
       // El handler de upgradeDropdowns corre primero (mismo bubbling) y setea
       // dd.dataset.wzValue. Esperamos al siguiente tick para leerlo ya actualizado.
       setTimeout(onCategoriaChange, 0);
     }, true);
+  }
+
+  function restoreUnitHint(uField){
+    if(uField.querySelector('.naowee-helper')) return;
+    const h = document.createElement('div');
+    h.className = 'naowee-helper';
+    h.innerHTML = '<div class="naowee-helper__text wz-inc-card__unit-hint">Monto por beneficiario.</div>';
+    uField.appendChild(h);
+    refreshIncCardHints();
   }
 
   function refreshIncCardHints(){
@@ -1419,14 +1696,81 @@
     });
   }
 
+  /* Borrar un incentivo:
+     - con entregas: no se borra, se desactiva (no se entrega más, queda en el historial);
+     - con códigos y sin entregas: se confirma y se descartan sus códigos disponibles;
+     - sin nada: se borra. */
+  let pendingIncDelete = null;
   function removeIncentive(btn){
     const card = btn.closest('.wz-inc-card');
     if(!card) return;
     const list = document.getElementById('wzIncList');
-    if(list && list.children.length <= 1) return; // siempre al menos uno
+    const active = [...list.querySelectorAll('.wz-inc-card')].filter(c => !c.dataset.inactive);
+    const o = card._orig;
+    if(o && o.delivered > 0){
+      if(active.length <= 1){ showToast('El programa debe tener al menos un incentivo activo.', 'informative'); return; }
+      card.dataset.inactive = '1';
+      refreshIncCardState(card);
+      isDirty = true; onCategoriaChange();
+      showToast(`"${o.name}" tiene ${o.delivered} entregas: se desactivó en lugar de borrarse.`, 'informative');
+      return;
+    }
+    if(active.length <= 1 && !card.dataset.inactive) return; // siempre al menos uno activo
+    if(o && o.codes > 0){
+      pendingIncDelete = card;
+      const sub = document.getElementById('wzIncDeleteSub');
+      if(sub) sub.textContent = `"${o.name}" no tiene entregas, pero tiene ${o.codes} códigos disponibles que se descartarán del inventario.`;
+      document.getElementById('wzIncDeleteOverlay')?.classList.add('open');
+      return;
+    }
+    doRemoveIncentive(card);
+  }
+  function doRemoveIncentive(card){
     card.remove();
+    renumberIncCards();
+    isDirty = true;
     onCategoriaChange();
     updateRubroAllocation();
+  }
+  function confirmIncDelete(){
+    document.getElementById('wzIncDeleteOverlay')?.classList.remove('open');
+    if(pendingIncDelete) doRemoveIncentive(pendingIncDelete);
+    pendingIncDelete = null;
+  }
+  function cancelIncDelete(){
+    pendingIncDelete = null;
+    document.getElementById('wzIncDeleteOverlay')?.classList.remove('open');
+  }
+  function reactivateIncentive(btn){
+    const card = btn.closest('.wz-inc-card');
+    if(!card) return;
+    delete card.dataset.inactive;
+    refreshIncCardState(card);
+    isDirty = true; onCategoriaChange();
+  }
+  /* Pinta el estado de la tarjeta: desactivado (con sus entregas) o normal. */
+  function refreshIncCardState(card){
+    const head = card.querySelector('.wz-inc-card__head');
+    if(!head) return;
+    head.querySelector('.wz-inc-card__state')?.remove();
+    const off = !!card.dataset.inactive;
+    card.classList.toggle('wz-inc-card--inactive', off);
+    card.querySelectorAll('input, .naowee-dropdown__trigger').forEach(el => {
+      if(off){ el.setAttribute('tabindex', '-1'); if(el.tagName === 'INPUT') el.disabled = true; }
+      else { el.removeAttribute('tabindex'); if(el.tagName === 'INPUT') el.disabled = false; if(!el.tagName || el.tagName !== 'INPUT') el.setAttribute('tabindex', '0'); }
+    });
+    const rm = head.querySelector('.wz-inc-card__remove');
+    if(off){
+      const st = document.createElement('span');
+      st.className = 'wz-inc-card__state';
+      st.innerHTML = `<span class="naowee-badge naowee-badge--neutral naowee-badge--small">Desactivado · ${card._orig?.delivered || 0} entregas</span>
+        <button type="button" class="naowee-btn naowee-btn--link naowee-btn--small" onclick="reactivateIncentive(this)">Reactivar</button>`;
+      head.insertBefore(st, rm);
+      if(rm) rm.hidden = true;
+    } else if(rm){
+      rm.hidden = false;
+      rm.title = card._orig?.delivered ? `Tiene ${card._orig.delivered} entregas: se desactivará` : 'Eliminar incentivo';
+    }
   }
 
   /* ══ Step-3 — condiciones dinámicas (Edad, Género, Categoría, Logros, Tipo de usuario) ══
@@ -1511,357 +1855,327 @@
     });
   }
 
-  /* ══ Tipo de beneficiario (feedback Danna/Elkin) ══
-     Selección única a nivel de programa. 'institucion' reemplaza el builder de
-     condiciones individuales por la parametrización del ranking institucional:
-     ranking por cantidad total de medallas (deportes convencionales), desempate
-     por deportistas llevados a la final, y solo el/los primeros lugares reciben. */
-  let benefTypeMode = 'deportista';
-  const BENEF_TYPES = [
-    { key:'deportista',     title:'Deportista',            desc:'Atletas registrados en el SUID.' },
-    { key:'paradeportista', title:'Paradeportista',        desc:'Atletas de paradeportes — grupo aparte de convencionales.' },
-    { key:'apoyo',          title:'Personal de apoyo',     desc:'Entrenadores, coach y preparadores del deportista.' },
-    { key:'institucion',    title:'Institución educativa', desc:'Colegios — por ranking de medallero institucional.' }
-  ];
+  /* ══ Condiciones de elegibilidad (reunión 22-09, 00:35:45 y 00:36:00) ══
+     Armador SIMPLE, solo con lo que necesita Juegos Intercolegiados (JIN):
+       - Todas las reglas se cumplen a la vez (Y). No hay grupos O.
+       - Los campos dependen del tipo de beneficiario y los valores salen de
+         listas cerradas (sin texto libre).
+       - Regla = { campo, operador, valores[] }.
+     Las combinaciones que define el reglamento (xlsx de parámetros 2026)
+     vienen precargadas y bloqueadas; se pueden "Personalizar" (ej.: un bono
+     para plata). Una combinación nueva arranca con el armador vacío.
+     El armador AND/OR de la demo original (addConditionGroup/Row, COND_FIELDS)
+     ya no se usa. */
+  const FASES = ['Fase municipal', 'Fase final departamental', 'Fase final nacional'];
+  const FIELD_CATALOG = {
+    // Deportista / paradeportista
+    logro:         { label: 'Logro en la final nacional', ops: ['in'], options: ['Primer puesto (oro)', 'Segundo puesto (plata)', 'Tercer puesto (bronce)'] },
+    fase:          { label: 'Fase', ops: ['eq'], options: FASES },
+    grado:         { label: 'Grado escolar al inscribirse', ops: ['lte', 'gte', 'in'], options: ['6°', '7°', '8°', '9°', '10°', '11°', '12° (escuela normal superior)'] },
+    tipoDeporte:   { label: 'Tipo de deporte', ops: ['eq'], options: ['Individual', 'De conjunto'] },
+    limite:        { label: 'Límite en deportes individuales', ops: ['eq'], options: ['1 incentivo por deportista (aunque gane varias pruebas)'] },
+    // Docente entrenador / asistente
+    resultado:     { label: 'Resultado del deportista o equipo', ops: ['in'], options: ['Oro en la final nacional', 'Plata en la final nacional', 'Bronce en la final nacional'] },
+    inscritoDesde: { label: 'Inscrito con el deportista desde', ops: ['eq'], options: FASES },
+    acompanoHasta: { label: 'Lo acompañó hasta', ops: ['eq'], options: FASES },
+    relacion:      { label: 'Relación con el deportista', ops: ['eq'], options: ['Registrado con el deportista en la inscripción'] },
+    // Institución / organización
+    tipoEntidad:   { label: 'Tipo de entidad', ops: ['in'], options: ['Establecimiento educativo público', 'Establecimiento educativo privado', 'Organización que atiende personas con discapacidad'] },
+    grupoDeportes: { label: 'Grupo de deportes', ops: ['eq'], options: ['Deportes convencionales', 'Para deportes'] },
+    ranking:       { label: 'Criterio del ranking', ops: ['eq'], options: ['Más medallas de oro', 'Más medallas en total', 'Más deportistas clasificados a la final nacional'] },
+    desempate:     { label: 'Desempate', ops: ['eq'], options: ['Plata → bronce → más deportistas clasificados'] },
+    puestos:       { label: 'Puestos que reciben', ops: ['eq'], options: ['Solo el 1er lugar', '1er y 2º lugar', '1º a 3er lugar'] }
+  };
+  const BENEF_GROUP = { deportista: 'athlete', paradeportista: 'athlete', entrenador: 'docente', asistente: 'docente', institucion: 'entity', organizacion: 'entity' };
+  const FIELDS_BY_GROUP = {
+    athlete: ['logro', 'fase', 'grado', 'tipoDeporte', 'limite'],
+    docente: ['resultado', 'tipoDeporte', 'inscritoDesde', 'acompanoHasta', 'relacion'],
+    entity:  ['tipoEntidad', 'grupoDeportes', 'ranking', 'desempate', 'puestos']
+  };
+  const OP_LABEL = { eq: '=', in: 'es uno de', lte: '≤', gte: '≥' };
+  const OP_TEXT  = { eq: 'es', in: 'es', lte: 'hasta', gte: 'desde' };
+  const R = (field, op, values) => ({ field, op, values: [].concat(values) });
 
-  function setBenefType(el, type){
-    if(benefTypeMode === type) return;
-    benefTypeMode = type;
-    isDirty = true;
-    const container = document.getElementById('wzCondPanels');
-    if(container) container.dataset.wzKey = ''; // forzar re-render con el tipo nuevo
-    renderCondPanels();
-    // Devolver el foco al radio recién seleccionado tras el re-render
-    const sel = container?.querySelector(`.toggle-card[data-val="${type}"]`);
-    if(sel) sel.focus();
+  /* Combinaciones que define el reglamento (tipo de beneficiario : categoría). */
+  const INDIV = R('limite', 'eq', '1 incentivo por deportista (aunque gane varias pruebas)');
+  const DOCENTE = [R('inscritoDesde', 'eq', 'Fase municipal'), R('acompanoHasta', 'eq', 'Fase final departamental'), R('relacion', 'eq', 'Registrado con el deportista en la inscripción')];
+  const RANKING = [R('ranking', 'eq', 'Más medallas de oro'), R('desempate', 'eq', 'Plata → bronce → más deportistas clasificados'), R('puestos', 'eq', 'Solo el 1er lugar')];
+  const PRESET_RULES = {
+    'deportista:bono':    [R('logro', 'in', 'Primer puesto (oro)'), R('fase', 'eq', 'Fase final nacional'), R('grado', 'lte', '11°'), INDIV],
+    'deportista:credito': [R('logro', 'in', 'Primer puesto (oro)'), R('fase', 'eq', 'Fase final nacional'), R('grado', 'in', ['11°', '12° (escuela normal superior)']), INDIV],
+    'entrenador:bono':    [R('resultado', 'in', 'Oro en la final nacional'), ...DOCENTE],
+    'entrenador:credito': [R('resultado', 'in', 'Oro en la final nacional'), ...DOCENTE],
+    'asistente:bono':     [R('tipoDeporte', 'eq', 'De conjunto'), R('resultado', 'in', 'Oro en la final nacional'), ...DOCENTE],
+    'institucion:kit':    [R('tipoEntidad', 'in', ['Establecimiento educativo público', 'Establecimiento educativo privado']), R('grupoDeportes', 'eq', 'Deportes convencionales'), ...RANKING],
+    'organizacion:kit':   [R('tipoEntidad', 'in', 'Organización que atiende personas con discapacidad'), R('grupoDeportes', 'eq', 'Para deportes'), ...RANKING]
+  };
+  /* Paradeportista: el xlsx no lo separa; mismas reglas que Deportista (pendiente de confirmar). */
+  PRESET_RULES['paradeportista:bono'] = PRESET_RULES['deportista:bono'];
+  PRESET_RULES['paradeportista:credito'] = PRESET_RULES['deportista:credito'];
+  const cloneRules = rules => rules.map(r => ({ field: r.field, op: r.op, values: [...r.values] }));
+
+  function readIncCard(c, i){
+    const name = (c.querySelector('input[type="text"]')?.value || '').trim() || `Incentivo #${i + 1}`;
+    const catDd = c.querySelector('[data-wz-name="categoria"]');
+    const benDd = c.querySelector('[data-wz-name="beneficiario"]');
+    const catKey = (catDd?.dataset?.wzValue || '').toLowerCase();
+    const benef = benDd?.dataset?.wzValue || '';
+    return {
+      idx: i, name, catKey, benef,
+      catLbl: catDd?.querySelector('.naowee-dropdown__value')?.textContent?.trim() || '—',
+      benefLbl: BENEF_LABEL[benef] || ''
+    };
   }
 
-  function benefSelectorHTML(){
-    return `
-      <div style="margin:0 0 18px">
-        <span id="wzBenefLbl" style="display:block;font-size:12.5px;font-weight:600;color:var(--naowee-color-text-primary,#282834);margin-bottom:8px">Tipo de beneficiario</span>
-        <div class="toggle-cards" data-wz-benef-toggle role="radiogroup" aria-labelledby="wzBenefLbl" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          ${BENEF_TYPES.map(b => {
-            const on = benefTypeMode === b.key;
-            return `
-            <div class="toggle-card${on ? ' active' : ''}" data-val="${b.key}" role="radio" aria-checked="${on}" tabindex="${on ? '0' : '-1'}" onclick="setBenefType(this,'${b.key}')">
-              <div class="naowee-radio${on ? ' naowee-radio--selected' : ''}"><div class="naowee-radio__circle"></div></div>
-              <div class="toggle-card__body"><div class="toggle-card__title">${b.title}</div><div class="toggle-card__desc">${b.desc}</div></div>
-            </div>`;
-          }).join('')}
+  /* Estado de condiciones guardado en la tarjeta del incentivo (sobrevive a
+     ir y volver entre pasos). Si cambia tipo de beneficiario o categoría, se
+     reinicia: precargado del reglamento si existe, vacío si no. */
+  function condState(card){
+    const m = readIncCard(card, 0);
+    const sig = `${m.benef}:${m.catKey}`;
+    if(!card._cond || card._cond.sig !== sig){
+      const preset = PRESET_RULES[sig];
+      card._cond = { sig, rules: preset ? cloneRules(preset) : [], editing: !preset, error: '' };
+    }
+    return card._cond;
+  }
+  function cardRules(card){ return condState(card).rules; }
+  function ruleSentence(r){
+    const f = FIELD_CATALOG[r.field];
+    const vals = r.values.map(v => `<strong>${escapeHtml(v)}</strong>`);
+    return `${escapeHtml((f?.label || r.field).toLowerCase())} ${OP_TEXT[r.op] || r.op} ${r.op === 'in' ? vals.join(' o ') : vals.join(', ')}`;
+  }
+  function condSummary(card, m){
+    const rules = cardRules(card).filter(r => r.values.length);
+    if(!m.benef || !rules.length) return '';
+    return `Recibe <strong>${escapeHtml(m.name)}</strong> cada ${escapeHtml(m.benefLbl.toLowerCase())} que cumpla <strong>todas</strong> estas condiciones: ${rules.map(ruleSentence).join('; ')}.`;
+  }
+
+  const LOCK_SVG = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>';
+  const X_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>';
+
+  function valuesHTML(r){
+    return r.values.map(v => `<span class="naowee-tag naowee-tag--small">${escapeHtml(v)}</span>`).join('');
+  }
+  /* Fila bloqueada (reglamento o tipo de beneficiario). */
+  function lockedRowHTML(label, op, valsHTML){
+    return `<div class="cond-row cond-row--locked">
+        <div class="cond-locked__cell cond-locked__field">${escapeHtml(label)}</div>
+        <div class="cond-locked__cell cond-locked__op">${escapeHtml(op)}</div>
+        <div class="cond-locked__cell cond-locked__val">${valsHTML}</div>
+      </div>`;
+  }
+  /* Desplegable del DS para el armador (se cablea con upgradeDropdowns). */
+  const CHEV = '<span class="naowee-dropdown__chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></span>';
+  function crDropdown({ kind, ri, options, selected, placeholder, multi }){
+    const sel = options.filter(([v]) => selected.includes(v));
+    const shown = sel.length ? escapeHtml(sel.map(([, l]) => l).join(', ')) : '';
+    return `<div class="naowee-dropdown cond-dd" data-wz-dropdown ${multi ? 'data-wz-multi' : ''} data-cr-dd="${kind}" data-ri="${ri}" data-wz-value="${escapeHtml(selected.join(','))}">
+        <div class="naowee-dropdown__trigger" tabindex="0">
+          ${shown ? `<span class="naowee-dropdown__value">${shown}</span>` : `<span class="naowee-dropdown__placeholder">${placeholder}</span>`}
+          <div class="naowee-dropdown__controls">${CHEV}</div>
+        </div>
+        <div class="naowee-dropdown__menu" role="listbox">
+          ${options.map(([v, l]) => `<div class="naowee-dropdown__option${selected.includes(v) ? ' naowee-dropdown__option--selected' : ''}" data-val="${escapeHtml(v)}">${escapeHtml(l)}</div>`).join('')}
         </div>
       </div>`;
   }
-
-  /* Navegación con flechas + Enter/Espacio en el radiogroup (los toggle-card son divs). */
-  function wireBenefKeyboard(container){
-    const grp = container.querySelector('[data-wz-benef-toggle]');
-    if(!grp || grp.dataset.wzKeys) return;
-    grp.dataset.wzKeys = '1';
-    grp.addEventListener('keydown', e => {
-      const radios = [...grp.querySelectorAll('.toggle-card')];
-      const cur = radios.findIndex(r => r === document.activeElement);
-      if(e.key === 'Enter' || e.key === ' '){
-        e.preventDefault();
-        if(cur >= 0) setBenefType(radios[cur], radios[cur].dataset.val);
-        return;
-      }
-      if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'].includes(e.key)) return;
-      e.preventDefault();
-      let next = cur;
-      if(e.key === 'Home') next = 0;
-      else if(e.key === 'End') next = radios.length - 1;
-      else if(e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (cur - 1 + radios.length) % radios.length;
-      else next = (cur + 1) % radios.length;
-      const t = radios[next];
-      if(t) setBenefType(t, t.dataset.val);
-    });
+  /* Fila editable: campo / operador / valor(es). Los campos ya usados no se repiten.
+     Los valores se identifican por su posición en la lista (data-val = índice). */
+  function editRowHTML(r, ri, group, used){
+    const fields = (FIELDS_BY_GROUP[group] || []).filter(k => k === r.field || !used.includes(k));
+    const f = FIELD_CATALOG[r.field];
+    const fieldDd = crDropdown({ kind: 'field', ri, placeholder: 'Campo…', selected: r.field ? [r.field] : [],
+      options: fields.map(k => [k, FIELD_CATALOG[k].label]) });
+    const opCtl = !f
+      ? `<div class="cond-locked__cell cond-locked__op">—</div>`
+      : f.ops.length > 1
+        ? crDropdown({ kind: 'op', ri, placeholder: 'Op.', selected: [r.op], options: f.ops.map(o => [o, OP_LABEL[o]]) })
+        : `<div class="cond-locked__cell cond-locked__op">${OP_LABEL[r.op]}</div>`;
+    const valCtl = !f
+      ? '<div class="cond-locked__cell cond-simple__hint">Elige un campo</div>'
+      : crDropdown({ kind: 'val', ri, multi: r.op === 'in',
+          placeholder: r.op === 'in' ? 'Uno o varios…' : 'Valor…',
+          selected: r.values.map(v => String(f.options.indexOf(v))).filter(x => x !== '-1'),
+          options: f.options.map((o, oi) => [String(oi), o]) });
+    return `<div class="cond-row cond-row--simple">
+        ${fieldDd}${opCtl}${valCtl}
+        <button type="button" class="x-btn" data-cr="remove" data-ri="${ri}" aria-label="Quitar condición">${X_SVG}</button>
+      </div>`;
   }
 
-  /* Vista previa en lenguaje natural de la regla institucional.
-     Single: una regla única con "puestos que reciben".
-     Multi: una oración por incentivo (puesto asignado) + aviso de duplicados. */
-  function refreshInstPreview(){
-    const container = document.getElementById('wzCondPanels');
-    if(!container) return;
-    const panels = [...container.querySelectorAll('.wz-cond-panel[data-benef="institucion"]')];
-    if(!panels.length) return;
-    const grupo = container.querySelector('[data-wz-name="benef-grupo"]')?.dataset?.wzValue || 'convencionales';
-    const grupoLbl = grupo === 'paradeportes' ? 'paradeportes' : 'deportes convencionales';
-
-    const singleDd = container.querySelector('[data-wz-name="benef-puestos"]');
-    if(singleDd){
-      const puestos = singleDd.dataset?.wzValue || 'p1';
-      const puestosLbl = puestos === 'p3' ? 'los tres primeros lugares' : puestos === 'p2' ? 'el 1er y 2º lugar' : 'únicamente el 1er lugar';
-      const body = panels[0].querySelector('.wz-cond-preview__body');
-      if(body){
-        /* Distribución del monto entre puestos: con un solo tipo de incentivo
-           cada puesto recibe el MISMO monto (valor unitario del paso 2). */
-        const nPlaces = puestos === 'p3' ? 3 : puestos === 'p2' ? 2 : 1;
-        const unit = parseMoney(document.querySelector('.wz-pane[data-pane="2"] .wz-inc-card__unit input'));
-        const fmt = n => `$${n.toLocaleString('es-CO')}`;
-        let dist = '';
-        if(nPlaces > 1){
-          dist = unit > 0
-            ? `<br/><br/><strong>Distribución:</strong> con un solo tipo de incentivo, <strong>cada puesto recibe el mismo monto</strong> — ${fmt(unit)} por institución (valor unitario del paso 2). Total comprometido: <strong>${nPlaces} × ${fmt(unit)} = ${fmt(nPlaces * unit)}</strong>, descontado del rubro.`
-            : `<br/><br/><strong style="color:var(--naowee-color-text-accent,#d74009)">⚠ Falta el Valor unitario:</strong> con un solo tipo de incentivo cada puesto recibe el <strong>mismo monto</strong> — define el <strong>Valor unitario</strong> en el paso 2 para calcular cuánto recibe cada uno de los ${nPlaces} puestos.`;
-          dist += ` <em>¿Montos diferentes por puesto? Cambia a <strong>Varios tipos</strong> en el paso 2 y asigna un incentivo por puesto.</em>`;
-        } else if(unit > 0){
-          dist = `<br/><br/><strong>Distribución:</strong> el 1er lugar recibe <strong>${fmt(unit)}</strong> (valor unitario del paso 2), descontado del rubro.`;
-        }
-        body.innerHTML = `Se calcula el <strong>ranking de instituciones educativas</strong> en <strong>${grupoLbl}</strong> por <strong>cantidad total de medallas</strong> obtenidas en la final nacional (dato de la plataforma); en caso de empate, gana la institución con <strong>más deportistas llevados a la final</strong>. Recibe el incentivo <strong>${puestosLbl}</strong> del ranking.` + dist;
-        const prev = panels[0].querySelector('.wz-cond-preview');
-        if(prev) prev.dataset.empty = 'false';
-      }
-      return;
+  function panelHTML(card, i){
+    const m = readIncCard(card, i);
+    const head = `
+      <div class="wz-cond-panel__head">
+        <span class="wz-cond-panel__num">#${i + 1}</span>
+        <span class="wz-cond-panel__title">${escapeHtml(m.name)}</span>
+        ${m.benefLbl ? `<span class="naowee-badge naowee-badge--informative naowee-badge--quiet naowee-badge--small">${escapeHtml(m.benefLbl)}</span>` : ''}
+        <span class="naowee-badge naowee-badge--neutral naowee-badge--quiet naowee-badge--small">${escapeHtml(m.catLbl)}</span>
+      </div>`;
+    if(!m.benef || !m.catKey){
+      return head + `<div class="naowee-message naowee-message--caution"><div class="naowee-message__header"><div class="naowee-message__text">Elige el <strong>tipo de beneficiario</strong> y la <strong>categoría</strong> de este incentivo en el paso 2 para definir sus condiciones.</div></div></div>`;
     }
-
-    const PLACE_TXT = { '1':'el 1er lugar', '2':'el 2º lugar', '3':'el 3er lugar' };
-    const used = {};
-    panels.forEach(panel => {
-      const place = panel.querySelector('[data-wz-name="benef-puesto"]')?.dataset?.wzValue || '1';
-      used[place] = (used[place] || 0) + 1;
-    });
-    panels.forEach(panel => {
-      const place = panel.querySelector('[data-wz-name="benef-puesto"]')?.dataset?.wzValue || '1';
-      const body = panel.querySelector('.wz-cond-preview__body');
-      if(!body) return;
-      let html = `Recibe este incentivo la institución que ocupe <strong>${PLACE_TXT[place] || place}</strong> del ranking de <strong>${grupoLbl}</strong> (cantidad total de medallas · final nacional; desempate: más deportistas llevados a la final).`;
-      if(used[place] > 1){
-        html += ` <strong style="color:var(--naowee-color-text-accent,#d74009)">⚠ Otro incentivo también premia ${PLACE_TXT[place] || place} — revisa los puestos.</strong>`;
-      }
-      body.innerHTML = html;
-      const prev = panel.querySelector('.wz-cond-preview');
-      if(prev) prev.dataset.empty = 'false';
-    });
-  }
-
-  /* Construye los paneles del paso 3 — uno por incentivo en multi mode,
-     uno solo en single mode. Detecta cambios en la lista de incentivos
-     comparando una clave; si cambia, regenera todo (los rules anteriores se
-     pierden — comportamiento aceptable para demo). */
-  function renderCondPanels(){
-    const container = document.getElementById('wzCondPanels');
-    const sub = document.getElementById('wzCondSub');
-    if(!container) return;
-    const cards = [...document.querySelectorAll('.wz-pane[data-pane="2"] .wz-inc-card')];
-    const isMulti = incTypesMode === 'multi' && cards.length > 1;
-    const meta = cards.map((c, i) => {
-      const name = (c.querySelector('input[type="text"]')?.value || '').trim() || `Incentivo #${i+1}`;
-      const catKey = (c.querySelector('[data-wz-name="categoria"]')?.dataset?.wzValue || '').toLowerCase();
-      const catLbl = c.querySelector('[data-wz-name="categoria"] .naowee-dropdown__value')?.textContent?.trim() || '—';
-      return { idx: i, name, catKey, catLbl };
-    });
-    const expectedKey = benefTypeMode + '::' + (isMulti ? 'multi' : 'single') + ':' + meta.map(m => `${m.idx}|${m.name}|${m.catKey}`).join('//');
-    if(container.dataset.wzKey === expectedKey){
-      /* Sin cambios estructurales — pero el usuario pudo editar montos en el
-         paso 2: refrescar la distribución de la vista previa institucional. */
-      refreshInstPreview();
-      return;
-    }
-    container.dataset.wzKey = expectedKey;
-
-    const benefSelector = benefSelectorHTML();
-
-    /* ── Institución educativa: parametrización del ranking (sin builder individual) ── */
-    if(benefTypeMode === 'institucion'){
-      if(sub){
-        sub.innerHTML = isMulti
-          ? 'Cada tipo de incentivo del paso 2 se asigna a un <strong>puesto del ranking institucional</strong> — así puedes premiar 1º, 2º y 3º con <strong>montos diferentes</strong> (el monto de cada puesto es el valor de su incentivo). El criterio y el desempate los define el reglamento.'
-          : 'La elegibilidad institucional <strong>no usa condiciones individuales</strong>: se calcula por <strong>ranking de medallero por colegio</strong> con datos de la plataforma. La regla aplica a todos los incentivos del programa.';
-      }
-
-      /* Dropdown compartido de grupo de deportes (mismo markup en single y multi). */
-      const grupoDdHTML = `
-            <div class="naowee-dropdown" data-wz-dropdown data-wz-name="benef-grupo" data-wz-value="convencionales">
-              <label class="naowee-dropdown__label">Grupo de deportes</label>
-              <div class="naowee-dropdown__trigger" tabindex="0">
-                <span class="naowee-dropdown__value">Deportes convencionales</span>
-                <div class="naowee-dropdown__controls">
-                  <span class="naowee-dropdown__chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></span>
-                </div>
-              </div>
-              <div class="naowee-dropdown__menu" role="listbox">
-                <div class="naowee-dropdown__option naowee-dropdown__option--selected" data-val="convencionales">Deportes convencionales</div>
-                <div class="naowee-dropdown__option" data-val="paradeportes">Paradeportes</div>
-              </div>
-              <div class="naowee-helper"><div class="naowee-helper__text">Convencionales = todos los deportes excepto paradeportes. Cada grupo tiene su propio ranking.</div></div>
-            </div>`;
-
-      if(isMulti){
-        /* ── Multi + institución: un puesto del ranking por incentivo (montos diferenciados) ── */
-        const PLACE_LBL = { '1':'1er lugar', '2':'2º lugar', '3':'3er lugar' };
-        container.innerHTML = benefSelector + `
-          <div class="naowee-message naowee-message--informative" style="margin:0 0 16px">
-            <div class="naowee-message__header">
-              <div class="naowee-message__icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-              </div>
-              <div class="naowee-message__text">El <strong>criterio del ranking</strong> (cantidad total de medallas · final nacional) y el <strong>desempate</strong> (más deportistas llevados a la final) los define el reglamento y se calculan desde la plataforma. Aquí solo asignas <strong>qué puesto premia cada incentivo</strong>.</div>
-            </div>
-          </div>
-          <div class="wz-grid" style="margin-bottom:16px">${grupoDdHTML}</div>` +
-          meta.map((m, i) => {
-            const def = String(Math.min(i + 1, 3));
-            const valTxt = (cards[m.idx]?.querySelector('.wz-inc-card__rubro input')?.value || '').trim();
-            return `
-          <div class="wz-cond-panel" data-benef="institucion" data-inc-idx="${m.idx}">
-            <div class="wz-cond-panel__head">
-              <span class="wz-cond-panel__num">#${m.idx + 1}</span>
-              <span class="wz-cond-panel__title">${escapeHtml(m.name)}</span>
-              <span class="naowee-badge naowee-badge--neutral naowee-badge--quiet naowee-badge--small">${escapeHtml(m.catLbl)}</span>
-              ${valTxt ? `<span class="naowee-badge naowee-badge--caution naowee-badge--quiet naowee-badge--small">$ ${escapeHtml(valTxt)}</span>` : ''}
-            </div>
-            <div class="wz-grid" style="margin-bottom:12px">
-              <div class="naowee-dropdown" data-wz-dropdown data-wz-name="benef-puesto" data-wz-value="${def}">
-                <label class="naowee-dropdown__label">Puesto del ranking que premia</label>
-                <div class="naowee-dropdown__trigger" tabindex="0">
-                  <span class="naowee-dropdown__value">${PLACE_LBL[def]}</span>
-                  <div class="naowee-dropdown__controls">
-                    <span class="naowee-dropdown__chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></span>
-                  </div>
-                </div>
-                <div class="naowee-dropdown__menu" role="listbox">
-                  <div class="naowee-dropdown__option${def==='1' ? ' naowee-dropdown__option--selected' : ''}" data-val="1">1er lugar</div>
-                  <div class="naowee-dropdown__option${def==='2' ? ' naowee-dropdown__option--selected' : ''}" data-val="2">2º lugar</div>
-                  <div class="naowee-dropdown__option${def==='3' ? ' naowee-dropdown__option--selected' : ''}" data-val="3">3er lugar</div>
-                </div>
-              </div>
-            </div>
-            <div class="wz-cond-preview" data-empty="true">
-              <div class="wz-cond-preview__head">
-                <div class="wz-cond-preview__icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                </div>
-                <div>
-                  <div class="wz-cond-preview__title">Así se leerá la regla — ${escapeHtml(m.name)}</div>
-                  <div class="wz-cond-preview__sub">Vista previa en vivo — lenguaje natural</div>
-                </div>
-              </div>
-              <div class="wz-cond-preview__body"><em>Configura la regla para ver la vista previa.</em></div>
-            </div>
-          </div>`;
-          }).join('');
-        upgradeDropdowns();
-        container.querySelectorAll('[data-wz-name="benef-grupo"] .naowee-dropdown__option, [data-wz-name="benef-puesto"] .naowee-dropdown__option').forEach(opt => {
-          opt.addEventListener('click', () => setTimeout(refreshInstPreview, 0));
-        });
-        wireBenefKeyboard(container);
-        refreshInstPreview();
-        return;
-      }
-
-      container.innerHTML = benefSelector + `
-        <div class="wz-cond-panel" data-inc-idx="0" data-benef="institucion">
-          <div class="naowee-message naowee-message--informative" style="margin:0 0 16px">
-            <div class="naowee-message__header">
-              <div class="naowee-message__icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-              </div>
-              <div class="naowee-message__text">El <strong>criterio del ranking</strong> (cantidad total de medallas · final nacional) y el <strong>desempate</strong> (más deportistas llevados a la final) los define el reglamento y se calculan automáticamente desde la plataforma — no se editan aquí.</div>
-            </div>
-          </div>
-          <div class="wz-grid" style="margin-bottom:16px">${grupoDdHTML}
-            <div class="naowee-dropdown" data-wz-dropdown data-wz-name="benef-puestos" data-wz-value="p1">
-              <label class="naowee-dropdown__label">Puestos que reciben el incentivo</label>
-              <div class="naowee-dropdown__trigger" tabindex="0">
-                <span class="naowee-dropdown__value">Solo 1er lugar (recomendado)</span>
-                <div class="naowee-dropdown__controls">
-                  <span class="naowee-dropdown__chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></span>
-                </div>
-              </div>
-              <div class="naowee-dropdown__menu" role="listbox">
-                <div class="naowee-dropdown__option naowee-dropdown__option--selected" data-val="p1">Solo 1er lugar (recomendado)</div>
-                <div class="naowee-dropdown__option" data-val="p2">1er y 2º lugar</div>
-                <div class="naowee-dropdown__option" data-val="p3">1º a 3er lugar</div>
-              </div>
-              <div class="naowee-helper"><div class="naowee-helper__text">El ranking calcula 1º, 2º y 3º; el reglamento actual premia solo al 1º.</div></div>
-            </div>
-          </div>
-          <div class="wz-cond-preview" data-empty="true">
-            <div class="wz-cond-preview__head">
-              <div class="wz-cond-preview__icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              </div>
-              <div>
-                <div class="wz-cond-preview__title">Así se leerá la regla</div>
-                <div class="wz-cond-preview__sub">Vista previa en vivo — lenguaje natural</div>
-              </div>
-            </div>
-            <div class="wz-cond-preview__body"><em>Configura la regla para ver la vista previa.</em></div>
-          </div>
-        </div>`;
-      upgradeDropdowns();
-      // Refrescar la vista previa cuando cambie cualquiera de los dos parámetros
-      container.querySelectorAll('.wz-cond-panel[data-benef="institucion"] .naowee-dropdown__option').forEach(opt => {
-        opt.addEventListener('click', () => setTimeout(refreshInstPreview, 0));
-      });
-      wireBenefKeyboard(container);
-      refreshInstPreview();
-      return;
-    }
-
-    if(sub){
-      sub.innerHTML = isMulti
-        ? 'Define condiciones <strong>por cada tipo de incentivo</strong>. Dentro de un grupo todas las condiciones se cumplen simultáneamente (<strong>Y</strong>). Agrega otro grupo si aceptas reglas alternativas (<strong>O</strong> entre grupos).'
-        : 'Dentro de un grupo todas las condiciones se cumplen simultáneamente (<strong>Y</strong>). Agrega otro grupo si aceptas reglas alternativas (<strong>O</strong> entre grupos).';
-    }
-
-    if(!isMulti){
-      container.innerHTML = benefSelector + `
-        <div class="wz-cond-panel" data-inc-idx="0">
-          <div class="cond-builder"></div>
-          <button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--small wz-add-group" onclick="addConditionGroup(this)">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Añadir grupo alternativo (O)
-          </button>
-          <div class="wz-cond-preview" data-empty="true">
-            <div class="wz-cond-preview__head">
-              <div class="wz-cond-preview__icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              </div>
-              <div>
-                <div class="wz-cond-preview__title">Así se leerá la regla</div>
-                <div class="wz-cond-preview__sub">Vista previa en vivo — lenguaje natural</div>
-              </div>
-            </div>
-            <div class="wz-cond-preview__body"><em>Agrega al menos una condición para ver la vista previa.</em></div>
-          </div>
-        </div>`;
+    const st = condState(card);
+    const group = BENEF_GROUP[m.benef];
+    const benefRow = lockedRowHTML('Tipo de beneficiario', '=', `<span class="naowee-tag naowee-tag--small">${escapeHtml(m.benefLbl)}</span>`);
+    const used = st.rules.map(r => r.field);
+    let notice, rowsHTML, actions;
+    if(!st.editing){
+      notice = `<div class="cond-locked__notice"><span>Condiciones del incentivo · todas deben cumplirse</span>
+        <button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small" data-cr="edit">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+          Personalizar</button></div>`;
+      rowsHTML = st.rules.map(r => lockedRowHTML(FIELD_CATALOG[r.field]?.label || r.field, OP_LABEL[r.op] || r.op, valuesHTML(r))).join('');
+      actions = '';
     } else {
-      container.innerHTML = benefSelector + meta.map(m => `
-        <div class="wz-cond-panel" data-inc-idx="${m.idx}">
-          <div class="wz-cond-panel__head">
-            <span class="wz-cond-panel__num">#${m.idx + 1}</span>
-            <span class="wz-cond-panel__title">${escapeHtml(m.name)}</span>
-            <span class="naowee-badge naowee-badge--neutral naowee-badge--quiet naowee-badge--small">${escapeHtml(m.catLbl)}</span>
+      notice = st.rules.length
+        ? `<div class="cond-locked__notice"><span>Editando · elige el campo y marca sus valores. Todas deben cumplirse.</span>
+            <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--small" data-cr="done">Listo</button></div>`
+        : `<div class="naowee-message naowee-message--informative cond-simple__intro"><div class="naowee-message__header"><div class="naowee-message__text">Este incentivo aún no tiene condiciones. Usa <strong>Añadir condición</strong>, elige un campo y marca sus valores. Todas deben cumplirse.</div></div></div>`;
+      rowsHTML = st.rules.map((r, ri) => editRowHTML(r, ri, group, used)).join('');
+      const canAdd = used.length < (FIELDS_BY_GROUP[group] || []).length;
+      actions = canAdd ? `<button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--small wz-add-cond" data-cr="add">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Añadir condición</button>` : `<div class="cond-simple__hint-inline">Ya usaste todos los campos disponibles para este tipo de beneficiario.</div>`;
+    }
+    const err = st.error ? `<div class="naowee-helper naowee-helper--negative cond-simple__error"><div class="naowee-helper__text">${st.error}</div></div>` : '';
+    const summary = condSummary(card, m);
+    return head + notice + `
+      <div class="cond-builder cond-builder--locked"><div class="cond-group">
+        <div class="cond-group__head"><span class="cond-group__badge">Todas se cumplen · Y</span></div>
+        <div class="cond-rows">${benefRow}${rowsHTML}</div>
+        ${actions}${err}
+      </div></div>
+      <div class="wz-cond-preview" data-empty="false"${summary ? '' : ' hidden'}>
+        <div class="wz-cond-preview__head">
+          <div class="wz-cond-preview__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           </div>
-          <div class="cond-builder"></div>
-          <button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--small wz-add-group" onclick="addConditionGroup(this)">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Añadir grupo alternativo (O)
-          </button>
-          <div class="wz-cond-preview" data-empty="true">
-            <div class="wz-cond-preview__head">
-              <div class="wz-cond-preview__icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              </div>
-              <div>
-                <div class="wz-cond-preview__title">Así se leerá la regla — ${escapeHtml(m.name)}</div>
-                <div class="wz-cond-preview__sub">Vista previa en vivo — lenguaje natural</div>
-              </div>
-            </div>
-            <div class="wz-cond-preview__body"><em>Agrega al menos una condición para ver la vista previa.</em></div>
+          <div>
+            <div class="wz-cond-preview__title">Así lo verá el operador</div>
+            <div class="wz-cond-preview__sub">Solo aparecen en la búsqueda quienes cumplen estas condiciones</div>
           </div>
         </div>
-      `).join('');
-    }
-    // Sembrar primera condición de cada panel
-    container.querySelectorAll('.wz-cond-panel').forEach(p => {
-      const addBtn = p.querySelector('.wz-add-group');
-      if(addBtn) addConditionGroup(addBtn);
+        <div class="wz-cond-preview__body">${summary}</div>
+      </div>`;
+  }
+
+  function renderCondPanels(){
+    const container = document.getElementById('wzCondPanels');
+    if(!container) return;
+    const cards = [...document.querySelectorAll('.wz-pane[data-pane="2"] .wz-inc-card')];
+    container.innerHTML = cards.map((c, i) =>
+      (condOnlyNew && !condOnlyNew.has(c)) || c.dataset.inactive ? '' :
+      `<div class="wz-cond-panel${c._cond?.error ? ' wz-cond-panel--error' : ''}" data-inc-idx="${i}">${panelHTML(c, i)}</div>`).join('');
+    upgradeDropdowns();
+    wireCondPanels(container);
+  }
+  function rerenderPanel(i){
+    const panel = document.querySelector(`#wzCondPanels .wz-cond-panel[data-inc-idx="${i}"]`);
+    const card = document.querySelectorAll('.wz-pane[data-pane="2"] .wz-inc-card')[i];
+    if(!panel || !card) return;
+    panel.innerHTML = panelHTML(card, i);
+    panel.classList.toggle('wz-cond-panel--error', !!card._cond?.error);
+    upgradeDropdowns();
+  }
+
+  /* Un solo listener delegado para todas las acciones del armador simple. */
+  function wireCondPanels(container){
+    if(container.dataset.crWired) return;
+    container.dataset.crWired = '1';
+    const ctx = el => {
+      const panel = el.closest('.wz-cond-panel');
+      const i = +panel.dataset.incIdx;
+      const card = document.querySelectorAll('.wz-pane[data-pane="2"] .wz-inc-card')[i];
+      return { i, card, st: condState(card), ri: +el.dataset.ri };
+    };
+    const done = (i, card) => { card._cond.error = ''; isDirty = true; rerenderPanel(i); };
+    /* Desplegables del armador. En captura: el desplegable múltiple del DS
+       detiene la propagación del clic en la opción. */
+    container.addEventListener('click', e => {
+      const opt = e.target.closest('.naowee-dropdown__option');
+      const dd = opt && opt.closest('[data-cr-dd]');
+      if(dd){
+        // upgradeDropdowns ya actualizó dd.dataset.wzValue; leerlo en el siguiente tick
+        setTimeout(() => {
+          const { i, card, st, ri } = ctx(dd);
+          const r = st.rules[ri];
+          const vals = (dd.dataset.wzValue || '').split(',').filter(v => v !== '');
+          const kind = dd.dataset.crDd;
+          st.error = ''; isDirty = true;
+          if(kind === 'field'){ r.field = vals[0] || ''; r.values = []; r.op = FIELD_CATALOG[r.field]?.ops[0] || 'eq'; rerenderPanel(i); }
+          else if(kind === 'op'){ r.op = vals[0] || r.op; if(r.op !== 'in') r.values = r.values.slice(0, 1); rerenderPanel(i); }
+          else if(kind === 'val'){
+            const f = FIELD_CATALOG[r.field];
+            r.values = vals.map(v => f.options[+v]).filter(Boolean);
+            if(r.op === 'in'){
+              // multi: no re-render para no cerrar el desplegable; solo refrescar el resumen
+              const panel = dd.closest('.wz-cond-panel');
+              const m = readIncCard(card, i);
+              const sum = condSummary(card, m);
+              const prev = panel.querySelector('.wz-cond-preview');
+              if(prev){ prev.hidden = !sum; prev.querySelector('.wz-cond-preview__body').innerHTML = sum; }
+            } else rerenderPanel(i);
+          }
+        }, 0);
+      }
+    }, true);
+    container.addEventListener('click', e => {
+      if(e.target.closest('[data-cr-dd]')) return;
+      const el = e.target.closest('[data-cr]');
+      if(!el || el.tagName === 'SELECT') return;
+      const { i, card, st, ri } = ctx(el);
+      const act = el.dataset.cr;
+      if(act === 'edit'){ st.editing = true; }
+      else if(act === 'done'){
+        st.error = !st.rules.length ? 'Agrega al menos una condición para este incentivo.'
+          : st.rules.some(r => !r.field || !r.values.length) ? 'Completa el campo y el valor de cada condición, o quita las filas vacías.' : '';
+        if(!st.error) st.editing = false;
+        isDirty = true; rerenderPanel(i); return;
+      }
+      else if(act === 'add'){ st.rules.push({ field: '', op: 'eq', values: [] }); }
+      else if(act === 'remove'){ st.rules.splice(ri, 1); }
+      else return;
+      done(i, card);
     });
-    wireBenefKeyboard(container);
+  }
+
+  /* Paso 3: cada incentivo necesita al menos una condición y cada condición
+     debe tener campo y valor. Devuelve el primer panel con error (o null). */
+  function validateCondPanels(){
+    const cards = [...document.querySelectorAll('.wz-pane[data-pane="2"] .wz-inc-card')];
+    let firstBad = null;
+    cards.forEach((card, i) => {
+      if(card.dataset.inactive || (condOnlyNew && !condOnlyNew.has(card))) return;
+      const m = readIncCard(card, i);
+      if(!m.benef || !m.catKey) return;
+      const st = condState(card);
+      st.error = '';
+      if(!st.rules.length) st.error = 'Agrega al menos una condición para este incentivo.';
+      else if(st.rules.some(r => !r.field || !r.values.length)) st.error = 'Completa el campo y el valor de cada condición, o quita las filas vacías.';
+      if(!st.error) st.editing = false;
+      if(st.error && firstBad === null) firstBad = i;
+    });
+    renderCondPanels();
+    return firstBad === null ? null : document.querySelector(`#wzCondPanels .wz-cond-panel[data-inc-idx="${firstBad}"]`);
+  }
+
+  /* Condiciones listas para persistir: tipo de beneficiario + reglas (todas Y). */
+  function conditionsForCard(card, m){
+    const rules = [R('tipoBeneficiario', 'eq', m.benefLbl), ...cardRules(card).filter(r => r.field && r.values.length)];
+    return {
+      groups: [{
+        logic: 'AND',
+        rules: rules.map(r => ({
+          fieldKey: r.field, opKey: r.op, values: [...r.values],
+          field: r.field === 'tipoBeneficiario' ? 'Tipo de beneficiario' : (FIELD_CATALOG[r.field]?.label || r.field),
+          op: OP_LABEL[r.op] || r.op,
+          value: r.values.join(r.op === 'in' ? ' o ' : ', ')
+        }))
+      }],
+      summary: condSummary(card, m)
+    };
   }
 
   function addConditionRow(btnOrNothing){
@@ -2238,11 +2552,23 @@
         </div>
         <div class="wz-file-chip__body">
           <div class="wz-file-chip__name">${escapeHtml(f.name)}</div>
-          <div class="wz-file-chip__meta">${(f.size/1024).toFixed(1)} KB · listo para procesar</div>
+          <div class="wz-file-chip__meta" id="wzFileMeta">${(f.size/1024).toFixed(1)} KB · listo para procesar</div>
         </div>
         <button type="button" class="wz-file-chip__remove" onclick="resetWzFile()" aria-label="Quitar archivo">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>`;
+      uploadedCodes = null;
+      const meta = () => document.getElementById('wzFileMeta');
+      if(meta()) meta().textContent = `${(f.size/1024).toFixed(1)} KB · leyendo códigos…`;
+      readCodesFile(f).then(codes => {
+        uploadedCodes = codes;
+        if(meta()) meta().textContent = `${(f.size/1024).toFixed(1)} KB · ${codes.length} códigos leídos`;
+        updateBudget();
+      }).catch(err => {
+        console.error('[wizard] lectura de archivo', err);
+        if(meta()) meta().textContent = 'No se pudo leer el archivo. Usa la plantilla (.xlsx) o un .csv.';
+      });
+      updateBudget();
     });
   }
   function resetWzFile(){
@@ -2252,6 +2578,7 @@
     if(chip){ chip.hidden = true; chip.innerHTML = ''; }
     if(dz) dz.style.display = '';
     if(input) input.value = '';
+    uploadedCodes = null;
     updateBudget();
   }
   function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -2404,54 +2731,181 @@
     }
     return null;
   }
+  /* Conteo de códigos por tipo de incentivo (reunión 22-09, 00:16:25).
+     - Manual: cuenta las filas con código por incentivo.
+     - Archivo CSV: cuenta las filas leídas por tipo_incentivo.
+     - Si el incentivo tiene rubro y valor unitario, muestra los esperados;
+       si no, se aceptan los códigos que haya (el rubro es opcional). */
+  let uploadedCodes = null; // [{ type, code }] leído del CSV; null si no hay o es xlsx
+  function codeCountsByIncentive(){
+    const mode = (document.querySelector('[data-wz-name="codes-mode"]')?.dataset?.wzValue) || 'upload';
+    const bonos = codeIncentives();
+    const counts = Object.fromEntries(bonos.map(m => [m.idx, 0]));
+    let unmatched = 0;
+    if(mode === 'manual'){
+      bonos.forEach(m => { counts[m.idx] = manualCodesOf(m.card).length; });
+    } else if(uploadedCodes){
+      uploadedCodes.forEach(({ type }) => {
+        const m = bonos.find(b => b.name.toLowerCase() === type.toLowerCase());
+        if(m) counts[m.idx]++; else unmatched++;
+      });
+    }
+    return { mode, bonos, counts, unmatched };
+  }
   function updateBudget(){
     const bx = document.getElementById('wzBudget');
     if(!bx) return;
-    const rubro = parseMoney(document.getElementById('wzRubroTotal'));
-    const unit = parseMoney(getBonoUnitInput());
-    const mode = (document.querySelector('[data-wz-name="codes-mode"]')?.dataset?.wzValue) || 'upload';
-    if(!rubro || !unit){
-      bx.hidden = true; bx.innerHTML = '';
-      return;
-    }
-    const expected = Math.floor(rubro / unit);
-    const fmt = n => `$${n.toLocaleString('es-CO')}`;
-    let variant, iconSvg, text;
-    if(mode === 'manual'){
-      const rows = [...document.querySelectorAll('#wzManualRows .manual-row')];
-      const count = rows.length;
-      const sum = rows.reduce((acc, r) => {
-        const inputs = r.querySelectorAll('input[data-wz-input="money"], input[inputmode="numeric"]');
-        const v = parseMoney(inputs[inputs.length - 1]);
-        return acc + (v || unit);
-      }, 0);
-      if(sum > rubro){
-        variant = 'negative';
-        iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
-        text = `Los <strong>${count} códigos</strong> suman <strong>${fmt(sum)}</strong>, que excede el rubro disponible de <strong>${fmt(rubro)}</strong>. Ajusta valores o elimina códigos.`;
-      }else if(sum === rubro){
-        variant = 'positive';
-        iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
-        text = `<strong>${count} códigos</strong> por un total de <strong>${fmt(sum)}</strong>. Rubro consumido al 100%.`;
-      }else{
-        variant = 'informative';
-        iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>`;
-        const restante = rubro - sum;
-        text = `<strong>${count} de ${expected} códigos</strong> registrados (<strong>${fmt(sum)}</strong> de ${fmt(rubro)}). Faltan <strong>${fmt(restante)}</strong> por asignar.`;
-      }
-    }else{
-      variant = 'informative';
-      iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>`;
-      text = `Rubro <strong>${fmt(rubro)}</strong> ÷ valor unitario <strong>${fmt(unit)}</strong> = <strong>${expected} códigos</strong> esperados en el archivo.`;
-    }
+    const { mode, bonos, counts, unmatched } = codeCountsByIncentive();
+    if(!bonos.length){ bx.hidden = true; bx.innerHTML = ''; return; }
+    const hasFile = !!document.getElementById('wzFileChip')?.innerHTML.trim();
+    if(mode === 'manual' || (mode === 'upload' && !hasFile)){ bx.hidden = true; bx.innerHTML = ''; return; }
+    const unknownXlsx = mode === 'upload' && !uploadedCodes;
+    const rows = bonos.map(m => {
+      const rubroInc = parseMoney(m.card.querySelector('.wz-inc-card__rubro input'));
+      const unit = parseMoney(m.card.querySelector('.wz-inc-card__unit input'));
+      const expected = rubroInc && unit ? Math.floor(rubroInc / unit) : 0;
+      const n = counts[m.idx] || 0;
+      let status;
+      if(unknownXlsx) status = '<span class="naowee-badge naowee-badge--neutral naowee-badge--quiet naowee-badge--small">Leyendo archivo…</span>';
+      else if(!expected) status = `<span class="naowee-badge naowee-badge--neutral naowee-badge--quiet naowee-badge--small">Sin rubro · se aceptan los cargados</span>`;
+      else if(n > expected) status = `<span class="naowee-badge naowee-badge--negative naowee-badge--quiet naowee-badge--small">Excede por ${n - expected}</span>`;
+      else if(n === expected) status = `<span class="naowee-badge naowee-badge--positive naowee-badge--quiet naowee-badge--small">Completo</span>`;
+      else status = `<span class="naowee-badge naowee-badge--caution naowee-badge--quiet naowee-badge--small">Faltan ${expected - n}</span>`;
+      return `<tr><td>${escapeHtml(m.name)}</td><td class="num">${unknownXlsx ? '—' : n}</td><td class="num">${expected || '—'}</td><td>${status}</td></tr>`;
+    }).join('');
+    const fileCodes = (uploadedCodes || []).map(c => c.code);
+    const seenF = new Set(); let dupF = 0; fileCodes.forEach(c => { const k = c.toUpperCase(); if(seenF.has(k)) dupF++; seenF.add(k); });
+    const badF = fileCodes.filter(c => c.replace(CODE_BAD, '') !== c).length;
+    const fileWarn = (dupF || badF)
+      ? `<div class="naowee-message naowee-message--negative" style="margin-top:10px"><div class="naowee-message__header"><div class="naowee-message__text">El archivo tiene ${[dupF ? `<strong>${dupF} códigos repetidos</strong>` : '', badF ? `<strong>${badF} con caracteres no permitidos</strong> (solo letras sin tilde, números, - y _)` : ''].filter(Boolean).join(' y ')}. Corrígelo y vuelve a subirlo.</div></div></div>`
+      : '';
+    const warn = unmatched
+      ? `<div class="naowee-message naowee-message--caution" style="margin-top:10px"><div class="naowee-message__header"><div class="naowee-message__text"><strong>${unmatched} código(s)</strong> sin un incentivo válido. Revisa la columna <code>tipo_incentivo</code> o el incentivo de cada fila.</div></div></div>`
+      : '';
     bx.hidden = false;
     bx.innerHTML = `
-      <div class="naowee-message naowee-message--${variant}">
-        <div class="naowee-message__header">
-          <div class="naowee-message__icon">${iconSvg}</div>
-          <div class="naowee-message__text">${text}</div>
-        </div>
-      </div>`;
+      <table class="wz-codes-table">
+        <thead><tr><th>Incentivo</th><th class="num">Cargados</th><th class="num">Esperados</th><th>Estado</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>${warn}${fileWarn}`;
+  }
+
+  /* ══ Plantilla Excel (se genera en el front) ══
+     ExcelJS se carga desde CDN solo al descargar o al leer un .xlsx.
+     Hoja "Códigos": tipo_incentivo (lista desplegable) + codigo.
+     Hoja "Listas" (oculta): los incentivos Bono del programa, fuente de la lista.
+     Hoja "Instrucciones": qué llenar y cuántos códigos se esperan por incentivo. */
+  const EXCELJS_URL = 'https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js';
+  let excelJsPromise = null;
+  function loadExcelJs(){
+    if(window.ExcelJS) return Promise.resolve(window.ExcelJS);
+    if(!excelJsPromise){
+      excelJsPromise = new Promise((resolve, reject) => {
+        const sc = document.createElement('script');
+        sc.src = EXCELJS_URL;
+        sc.onload = () => resolve(window.ExcelJS);
+        sc.onerror = () => { excelJsPromise = null; reject(new Error('No se pudo cargar ExcelJS')); };
+        document.head.appendChild(sc);
+      });
+    }
+    return excelJsPromise;
+  }
+  async function downloadCodesTemplate(){
+    const btn = document.getElementById('wzTemplateBtn');
+    const bonos = codeIncentives();
+    if(!bonos.length){ showToast('No hay incentivos tipo Bono: ningún incentivo lleva códigos.', 'informative'); return; }
+    if(btn){ btn.disabled = true; btn.dataset.label = btn.innerHTML; btn.innerHTML = 'Generando…'; }
+    try {
+      const ExcelJS = await loadExcelJs();
+      const wb = new ExcelJS.Workbook();
+      const progName = (document.getElementById('fName')?.value || '').trim() || 'Programa';
+      const ORANGE = 'FFD74009';
+
+      const ws = wb.addWorksheet('Códigos', { views: [{ state: 'frozen', ySplit: 1 }] });
+      ws.columns = [
+        { header: 'tipo_incentivo', key: 'tipo', width: Math.max(28, ...bonos.map(b => b.name.length + 4)) },
+        { header: 'codigo', key: 'codigo', width: 24 }
+      ];
+      const head = ws.getRow(1);
+      head.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+      head.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: ORANGE } };
+      head.alignment = { vertical: 'middle' };
+      head.height = 22;
+
+      const lists = wb.addWorksheet('Listas', { state: 'hidden' });
+      bonos.forEach((b, i) => { lists.getCell(`A${i + 1}`).value = b.name; });
+
+      const ROWS = 2000;
+      for(let r = 2; r <= ROWS + 1; r++){
+        ws.getCell(`A${r}`).dataValidation = {
+          type: 'list', allowBlank: true, formulae: [`Listas!$A$1:$A$${bonos.length}`],
+          showErrorMessage: true, errorStyle: 'stop',
+          errorTitle: 'Tipo de incentivo no válido', error: 'Elige un tipo de incentivo de la lista.'
+        };
+        ws.getCell(`B${r}`).numFmt = '@';
+      }
+
+      const info = wb.addWorksheet('Instrucciones');
+      info.columns = [{ width: 46 }, { width: 18 }];
+      const rows = [
+        [`Plantilla de códigos · ${progName}`],
+        [],
+        ['Cómo llenarla'],
+        ['1. En la hoja "Códigos", un código por fila.'],
+        ['2. En tipo_incentivo elige el incentivo de la lista desplegable.'],
+        ['3. Cada código debe ser único (no se repite en el archivo).'],
+        ['4. Guarda como .xlsx y súbelo en el paso "Códigos".'],
+        [],
+        ['Incentivo', 'Códigos esperados']
+      ];
+      bonos.forEach(b => {
+        const r = parseMoney(b.card.querySelector('.wz-inc-card__rubro input'));
+        const u = parseMoney(b.card.querySelector('.wz-inc-card__unit input'));
+        rows.push([b.name, r && u ? Math.floor(r / u) : 'Sin límite (sin rubro)']);
+      });
+      rows.forEach(rw => info.addRow(rw));
+      info.getCell('A1').font = { bold: true, size: 14 };
+      info.getCell('A3').font = { bold: true };
+      info.getRow(9).font = { bold: true };
+
+      const buf = await wb.xlsx.writeBuffer();
+      const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const slug = progName.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `plantilla-codigos-${slug || 'programa'}.xlsx`;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    } catch(err){
+      console.error('[wizard] plantilla', err);
+      showToast('No se pudo generar la plantilla. Revisa tu conexión e inténtalo de nuevo.', 'negative');
+    } finally {
+      if(btn){ btn.disabled = false; btn.innerHTML = btn.dataset.label; }
+    }
+  }
+
+  /* Lee los códigos del archivo subido: .xlsx (hoja "Códigos" o la primera) o .csv. */
+  async function readCodesFile(f){
+    if(/\.xlsx$/i.test(f.name)){
+      const ExcelJS = await loadExcelJs();
+      const wb = new ExcelJS.Workbook();
+      await wb.xlsx.load(await f.arrayBuffer());
+      const ws = wb.getWorksheet('Códigos') || wb.worksheets[0];
+      const out = [];
+      ws.eachRow((row, n) => {
+        if(n === 1) return;
+        const cell = v => String((v && typeof v === 'object' && 'text' in v) ? v.text : (v ?? '')).trim();
+        const type = cell(row.getCell(1).value), code = cell(row.getCell(2).value);
+        if(code) out.push({ type, code });
+      });
+      return out;
+    }
+    const text = await f.text();
+    const lines = text.replace(/^\ufeff/, '').split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    const sep = (lines[0] || '').includes(';') ? ';' : ',';
+    const body = /tipo_incentivo/i.test(lines[0] || '') ? lines.slice(1) : lines;
+    return body.map(l => l.split(sep)).filter(c => c.length >= 2 && c[1].trim())
+      .map(c => ({ type: c[0].trim(), code: c[1].trim() }));
   }
 
   /* ══ Success modal ══ */
@@ -2460,13 +2914,14 @@
     if(!overlay) return;
     // Poblar stats
     const rubro = parseMoney(document.getElementById('wzRubroTotal'));
-    const unit = parseMoney(getBonoUnitInput());
-    const expected = rubro && unit ? Math.floor(rubro / unit) : 0;
-    const from = document.querySelector('.wz-pane[data-pane="1"] [data-wz-datepicker]:nth-of-type(1) input')?.value || '—';
-    const to = document.querySelector('.wz-pane[data-pane="1"] [data-wz-datepicker]:nth-of-type(2) input')?.value || '—';
-    overlay.querySelector('[data-key="rubro"]').textContent = rubro ? `$${rubro.toLocaleString('es-CO')}` : '—';
-    overlay.querySelector('[data-key="codigos"]').textContent = expected || '—';
-    overlay.querySelector('[data-key="vigencia"]').textContent = (from !== '—' && to !== '—') ? `${from} → ${to}` : (from !== '—' ? from : '—');
+    const prog = (window.PROGRAMS_DATA || []).find(p => p.id === lastCreatedProgramId);
+    const from = document.querySelector('[data-wz-range="from"][data-wz-range-name="vigencia"] input')?.value || '';
+    const to = document.querySelector('[data-wz-range="to"][data-wz-range-name="vigencia"] input')?.value || '';
+    overlay.querySelector('[data-key="rubro"]').textContent = rubro ? `$${rubro.toLocaleString('es-CO')}` : 'Sin rubro';
+    overlay.querySelector('[data-key="codigos"]').textContent = prog?.codes?.total || '—';
+    overlay.querySelector('[data-key="vigencia"]').textContent = from && to ? `${from} → ${to}` : from ? `Desde ${from}` : to ? `Hasta ${to}` : 'Sin fecha de cierre';
+    const st = document.getElementById('wzSuccessTitle');
+    if(st) st.textContent = editingProgramId ? '¡Cambios guardados!' : '¡Programa creado con éxito!';
     seedConfetti();
     overlay.classList.add('open');
   }
@@ -2495,9 +2950,7 @@
   }
   function closeSuccessAndNew(){
     hideSuccessModal();
-    currentStep = 1;
-    renderStep();
-    document.getElementById('wzOverlay').classList.add('open');
+    openWizard(); // formulario limpio, en modo crear
   }
   function goToProgramDetail(){
     hideSuccessModal();
@@ -2510,46 +2963,11 @@
 
   /* ══ Step-4 activate ══ */
   function activateProgram(){
-    // Si el paso 4 (Códigos) está visible (hay incentivo Bono), validar
-    // que se hayan ingresado/cargado códigos antes de activar.
-    if(hasBonoIncentive()){
-      const mode = (document.querySelector('[data-wz-name="codes-mode"]')?.dataset?.wzValue) || 'upload';
-      if(mode === 'upload'){
-        // Debe haber un archivo cargado: el chip post-upload está visible.
-        const chip = document.getElementById('wzFileChip');
-        const hasFile = chip && !chip.hidden && chip.innerHTML.trim().length > 0;
-        if(!hasFile){
-          showCodesError('Debes cargar el archivo de códigos antes de activar el programa.');
-          shakeDropzone();
-          scrollToCodesError();
-          return;
-        }
-      } else { // manual
-        const rows = [...document.querySelectorAll('#wzManualRows .manual-row')];
-        const filled = rows.filter(r => {
-          const codeInput = r.querySelector('.manual-row__code input');
-          return codeInput && (codeInput.value || '').trim().length > 0;
-        });
-        if(filled.length === 0){
-          showCodesError('Debes ingresar al menos un código antes de activar el programa.');
-          // Resaltar las filas vacías
-          rows.forEach(r => {
-            const codeInput = r.querySelector('.manual-row__code input');
-            const tf = r.querySelector('.manual-row__code');
-            if(tf && codeInput && !(codeInput.value || '').trim()){
-              tf.classList.add('naowee-textfield--error');
-              tf.classList.remove('wz-shake'); void tf.offsetWidth; tf.classList.add('wz-shake');
-              setTimeout(() => tf.classList.remove('wz-shake'), 500);
-              codeInput.addEventListener('input', () => {
-                if((codeInput.value || '').trim()) tf.classList.remove('naowee-textfield--error');
-              }, { once: true });
-            }
-          });
-          scrollToCodesError();
-          return;
-        }
-      }
-    }
+    // Si hay incentivos Bono, se exigen códigos. Al editar un programa que ya
+    // tiene códigos, cargar más es opcional.
+    const origCodes = editingProgram()?.codes?.total || 0;
+    const hasNewCodes = codesModeHasData(currentCodesMode());
+    if(!checkCodesBeforeSave({ requireNew: hasBonoIncentive() && !(origCodes && !hasNewCodes) })) return;
     // Construir el programa con todo lo parametrizado en el wizard, persistirlo
     // (memoria + sessionStorage para que el detalle lo lea al navegar) y notificar.
     const prog = buildProgramFromForm('active');
@@ -2561,6 +2979,52 @@
     isDirty = false;
     showSuccessModal();
     if(typeof window.onProgramCreated === 'function') window.onProgramCreated(prog);
+  }
+  function currentCodesMode(){
+    return (document.querySelector('[data-wz-name="codes-mode"]')?.dataset?.wzValue) || 'upload';
+  }
+  /* Códigos antes de guardar: que haya (si se exigen), caracteres válidos,
+     únicos (también frente a los que el programa ya tenía) y sin pasarse de
+     lo que alcanza el rubro de cada incentivo. Muestra el error y devuelve false. */
+  function checkCodesBeforeSave({ requireNew }){
+    if(!hasBonoIncentive()) return true;
+    const mode = currentCodesMode();
+    if(requireNew){
+      if(mode === 'upload'){
+        const chip = document.getElementById('wzFileChip');
+        if(!(chip && !chip.hidden && chip.innerHTML.trim().length)){
+          showCodesError('Carga el archivo de códigos para continuar.');
+          shakeDropzone(); scrollToCodesError(); return false;
+        }
+      } else if(!allManualCodes().length){
+        showCodesError('Agrega al menos un código para continuar.');
+        document.querySelector('#wzManualCodes .wz-mc__input')?.focus();
+        scrollToCodesError(); return false;
+      }
+    }
+    const list = mode === 'manual' ? allManualCodes().map(x => x.code) : (uploadedCodes || []).map(c => c.code);
+    const bad = list.filter(c => c.replace(CODE_BAD, '') !== c);
+    if(bad.length){
+      showCodesError(`Hay ${bad.length} códigos con caracteres no permitidos: <strong>${bad.slice(0, 5).map(escapeHtml).join(', ')}</strong>${bad.length > 5 ? '…' : ''}. Solo letras sin tilde, números, - y _. Corrige el archivo y vuelve a subirlo.`);
+      scrollToCodesError(); return false;
+    }
+    const seen = new Set((editingProgram()?.manualCodes || []).map(c => c.toUpperCase()));
+    const dup = new Set();
+    list.forEach(c => { const k = c.toUpperCase(); if(seen.has(k)) dup.add(c); seen.add(k); });
+    if(dup.size){
+      showCodesError(`Hay códigos repetidos o que el programa ya tenía: <strong>${[...dup].slice(0, 5).map(escapeHtml).join(', ')}</strong>${dup.size > 5 ? '…' : ''}. Cada código es único.`);
+      scrollToCodesError(); return false;
+    }
+    const { bonos, counts } = codeCountsByIncentive();
+    const over = bonos.map(m => {
+      const expected = expectedFor(m.card);
+      return { m, expected, n: (counts[m.idx] || 0) + (m.card._existingCodes || 0) };
+    }).filter(x => x.expected && x.n > x.expected);
+    if(over.length){
+      showCodesError(over.map(x => `<strong>${escapeHtml(x.m.name)}</strong>: ${x.n} códigos en total y su rubro alcanza para ${x.expected}.`).join('<br/>') + ' Quita códigos o amplía el rubro del incentivo.');
+      scrollToCodesError(); return false;
+    }
+    return true;
   }
   function showCodesError(text){
     const bx = document.getElementById('wzBudget');
@@ -2603,6 +3067,91 @@
   /* Programa recién creado/guardado por activateProgram, para que goToProgramDetail
      pueda navegar al ID correcto. */
   let lastCreatedProgramId = null;
+  /* Programa que se está editando (null = creando uno nuevo). */
+  let editingProgramId = null;
+  function editingProgram(){ return editingProgramId ? (window.PROGRAMS_DATA || []).find(p => p.id === editingProgramId) : null; }
+  /* ══ Editar por sección (desde el detalle del programa) ══
+     Abre el mismo wizard mostrando solo una sección, con Cancelar / Guardar
+     cambios. "incentivos" sigue a las condiciones de los incentivos nuevos. */
+  let sectionMode = null;
+  let condOnlyNew = null; // tarjetas nuevas cuyas condiciones se piden tras editar incentivos
+  const SECTIONS = {
+    datos:       { pane: 1, title: 'Editar información general', hist: 'Información general editada' },
+    equipo:      { pane: 1, title: 'Equipo del programa',        hist: 'Equipo del programa actualizado' },
+    incentivos:  { pane: 2, title: 'Editar incentivos',          hist: 'Incentivos editados' },
+    condiciones: { pane: 3, title: 'Editar condiciones',         hist: 'Condiciones de elegibilidad editadas' },
+    codigos:     { pane: 4, title: 'Cargar códigos',             hist: 'Códigos cargados' }
+  };
+  function openWizardSection(programId, section){
+    if(!SECTIONS[section]) return openWizardForEdit(programId);
+    if(!isMounted){
+      mount().then(() => openWizardSection(programId, section));
+      return;
+    }
+    const prog = (window.PROGRAMS_DATA || []).find(p => p.id === programId);
+    if(!prog) return;
+    editingProgramId = prog.id;
+    sectionMode = section;
+    condOnlyNew = null;
+    resetWizardForm();
+    populateWizardFromProgram(prog);
+    setWizardTexts();
+    document.querySelector('#wzOverlay .wz-modal')?.setAttribute('data-section', section);
+    document.getElementById('wzOverlay').classList.add('open');
+    currentStep = SECTIONS[section].pane;
+    isDirty = false;
+    renderStep();
+    requestAnimationFrame(() => setTimeout(refreshSegmentPills, 50));
+  }
+  function leaveSectionMode(){
+    sectionMode = null;
+    condOnlyNew = null;
+    document.querySelector('#wzOverlay .wz-modal')?.removeAttribute('data-section');
+  }
+  function sectionNext(){
+    if(!validateStep(currentStep)) return;
+    if(sectionMode === 'incentivos' && currentStep === 2){
+      const fresh = [...document.querySelectorAll('.wz-pane[data-pane="2"] .wz-inc-card')].filter(c => !c._orig);
+      if(fresh.length){ condOnlyNew = new Set(fresh); currentStep = 3; renderStep(); return; }
+    }
+    if(sectionMode === 'codigos' && !checkCodesBeforeSave({ requireNew: true })) return;
+    saveSection();
+  }
+  function saveSection(){
+    const orig = editingProgram();
+    const prog = buildProgramFromForm(orig?.status || 'active');
+    const cfg = SECTIONS[sectionMode];
+    let desc = '';
+    if(sectionMode === 'codigos'){
+      const added = (prog.codes?.total || 0) - (orig?.codes?.total || 0);
+      desc = `${added} códigos nuevos agregados al inventario.`;
+    } else if(sectionMode === 'incentivos'){
+      const before = (orig?.incentives || []).map(i => i.name);
+      const after = prog.incentives.map(i => i.name);
+      const nuevos = after.filter(n => !before.includes(n));
+      const quitados = before.filter(n => !after.includes(n));
+      const desact = prog.incentives.filter(i => i.active === false && (orig?.incentives || []).find(o => o.name === i.name)?.active !== false).map(i => i.name);
+      desc = [nuevos.length && `Nuevos: ${nuevos.join(', ')}.`, quitados.length && `Eliminados: ${quitados.join(', ')}.`, desact.length && `Desactivados: ${desact.join(', ')}.`].filter(Boolean).join(' ') || 'Datos de los incentivos actualizados.';
+    } else if(sectionMode === 'equipo'){
+      desc = `Gestor: ${prog.team?.gestor || 'sin asignar'}. Operadores: ${prog.team?.operators?.length || 0}.`;
+    } else desc = 'Cambios guardados desde el detalle del programa.';
+    prog.history = [...(orig?.history || []), { at: new Date().toISOString(), who: 'Doug Vargas', title: cfg.hist, desc }];
+    persistProgram(prog);
+    const section = sectionMode;
+    document.getElementById('wzOverlay').classList.remove('open');
+    isDirty = false;
+    leaveSectionMode();
+    if(typeof window.onSectionSaved === 'function') window.onSectionSaved(prog, section);
+    else showToast('Cambios guardados.', 'positive');
+  }
+
+  function setWizardTexts(){
+    const t = document.getElementById('wzTitle');
+    const sub = document.querySelector('#wzOverlay .naowee-modal__subtitle');
+    if(t) t.textContent = sectionMode ? SECTIONS[sectionMode].title : editingProgramId ? 'Editar programa de incentivos' : 'Crear programa de incentivos';
+    const pname = editingProgram()?.name || '';
+    if(sub) sub.textContent = sectionMode ? `${pname} · ${editingProgramId}` : editingProgramId ? `${editingProgramId} · los cambios reemplazan la versión actual.` : 'Completa los datos del programa. Puedes guardar como borrador y retomar después.';
+  }
 
   /* Construye un program completo desde el formulario del wizard (todos los pasos)
      y lo persiste en window.PROGRAMS_DATA + sessionStorage queue (cross-page). */
@@ -2637,21 +3186,30 @@
     const cards = [...document.querySelectorAll('.wz-pane[data-pane="2"] .wz-inc-card')];
     const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
     const fmtMoney = v => '$' + Number(v||0).toLocaleString('es-CO');
-    const VARIANT_BY_CAT = { bono:'positive', beca:'informative', kit:'caution', transporte:'neutral', inscripcion:'informative', descuento:'caution', pase:'neutral', dinero:'positive' };
-    const incentives = cards.map(c => {
-      const incName = (c.querySelector('.naowee-textfield input[type="text"]')?.value || '').trim() || 'Incentivo sin nombre';
-      const catKey = (c.querySelector('[data-wz-name="categoria"]')?.dataset?.wzValue || '').toLowerCase();
-      const catLabel = c.querySelector('[data-wz-name="categoria"] .naowee-dropdown__value')?.textContent?.trim() || cap(catKey);
+    const VARIANT_BY_CAT = { bono:'positive', credito:'informative', beca:'informative', kit:'caution', transporte:'neutral', inscripcion:'informative', descuento:'caution', pase:'neutral', dinero:'positive' };
+    const incentives = cards.map((c, i) => {
+      const m = readIncCard(c, i);
+      const catLabel = m.catLbl !== '—' ? m.catLbl : cap(m.catKey);
       const incRubro = parseMoney(c.querySelector('.wz-inc-card__rubro input'));
       const unit = parseMoney(c.querySelector('.wz-inc-card__unit input'));
+      const badges = [{ text: catLabel, variant: VARIANT_BY_CAT[m.catKey] || 'neutral' }];
+      if(m.benefLbl) badges.unshift({ text: m.benefLbl, variant: 'neutral' });
       return {
-        name: incName,
+        name: m.name,
         category: catLabel,
-        detail: incRubro ? `Rubro asignado: ${fmtMoney(incRubro)}` : 'Rubro pendiente',
+        categoryKey: m.catKey,
+        beneficiary: m.benef,
+        beneficiaryLabel: m.benefLbl,
+        active: !c.dataset.inactive,
+        delivered: c._orig?.delivered || 0,
+        detail: incRubro ? `Rubro asignado: ${fmtMoney(incRubro)}` : 'Sin rubro definido',
+        rubro: incRubro,
         value: unit,
         valueLabel: unit ? fmtMoney(unit) : '—',
         valueFoot: unit ? 'por beneficiario' : '',
-        badges: [{ text: catLabel, variant: VARIANT_BY_CAT[catKey] || 'neutral' }]
+        badges,
+        /* Condiciones: del reglamento o personalizadas (armador simple, todas Y) */
+        conditions: conditionsForCard(c, m)
       };
     });
     const firstCat = (cards[0]?.querySelector('[data-wz-name="categoria"]')?.dataset?.wzValue || '').toLowerCase();
@@ -2667,99 +3225,64 @@
     };
     const iconStyle = ICON_BY_CAT[firstCat] || { bg: '#f5f6fa', color: '#646587' };
 
-    /* === Step 3 — Condiciones (por panel — un panel por incentivo en multi) === */
-    function extractGroupsFromBuilder(builder){
-      if(!builder) return [];
-      return [...builder.querySelectorAll('.cond-group')].map(g => {
-        const rules = [...g.querySelectorAll('.cond-row')].map(r => {
-          const fieldKey = r.querySelector('[data-cond-field]')?.dataset?.val || 'edad';
-          const def = COND_FIELDS[fieldKey];
-          const opVal = r.querySelector('[data-cond-op]')?.dataset?.val || (def?.operators?.[0]?.[0] || 'eq');
-          const opNat = (OP_NATURAL && OP_NATURAL[opVal]) || (def?.operators?.find(o => o[0] === opVal) || ['','?'])[1];
-          const valEl = r.querySelector('[data-cond-val]');
-          let value = '';
-          if(valEl){
-            if(valEl.classList.contains('naowee-input-stepper')){
-              value = valEl.querySelector('input')?.value || '';
-            } else if(valEl.classList.contains('naowee-dropdown')){
-              const isMulti = valEl.hasAttribute('data-wz-multi');
-              if(isMulti){
-                const csv = (valEl.dataset.wzValue || '').split(',').filter(Boolean);
-                const labels = csv.map(k => (def?.options?.find(o => o[0] === k) || [k,k])[1]);
-                value = labels.length === 0 ? '' : labels.length === 1 ? labels[0] : `{${labels.join(', ')}}`;
-              } else {
-                value = valEl.querySelector('.naowee-dropdown__value')?.textContent || '';
-              }
-            }
-          }
-          return { field: def?.label || fieldKey, op: opNat, value };
-        }).filter(r => r.value !== '' && r.value !== undefined);
-        return { logic: 'AND', rules };
-      }).filter(g => g.rules.length > 0);
-    }
-    // En multi: cada panel pertenece a un incentivo (data-inc-idx).
-    // Adjuntar las condiciones al incentivo correspondiente. Las condiciones
-    // a nivel de programa se mantienen vacías (porque viven dentro de cada incentivo).
-    const panels = [...document.querySelectorAll('.wz-cond-panel')];
-    let groups = [];
-    let summary = '';
-    if(incTypesMode === 'multi' && cards.length > 1){
-      panels.forEach(panel => {
-        const idx = parseInt(panel.dataset.incIdx || '0', 10);
-        const builder = panel.querySelector('.cond-builder');
-        const incGroups = extractGroupsFromBuilder(builder);
-        const previewBody = panel.querySelector('.wz-cond-preview__body')?.innerHTML || '';
-        const incSummary = previewBody && !previewBody.includes('Agrega al menos') ? previewBody : '';
-        if(incentives[idx]){
-          incentives[idx].conditions = { groups: incGroups, summary: incSummary };
-        }
-      });
-    } else {
-      // Single mode: un solo panel para todo el programa.
-      const builder = panels[0]?.querySelector('.cond-builder');
-      groups = extractGroupsFromBuilder(builder);
-      const previewBody = panels[0]?.querySelector('.wz-cond-preview__body')?.innerHTML || '';
-      summary = previewBody && !previewBody.includes('Agrega al menos') ? previewBody : '';
-    }
+    /* === Step 3 — Condiciones: predefinidas por incentivo (ver arriba) === */
+    const groups = [];
+    const summary = '';
 
-    /* Institución + varios tipos: puesto del ranking por incentivo
-       (permite premiar 1º, 2º y 3º con montos diferentes). */
-    if(benefTypeMode === 'institucion'){
-      document.querySelectorAll('.wz-cond-panel[data-benef="institucion"]').forEach(panel => {
-        const idx = parseInt(panel.dataset.incIdx || '0', 10);
-        const place = panel.querySelector('[data-wz-name="benef-puesto"]')?.dataset?.wzValue;
-        if(place && incentives[idx]) incentives[idx].rankPlace = place;
-      });
-    }
-
-    /* === Step 4 — Códigos === */
+    /* === Step 4 — Códigos (por incentivo Bono) === */
     let codeCount = 0;
     let manualCodes = [];
     let codesMode = 'none';
     let codesFile = '';
+    let codesByIncentive = [];
+    let manualCodesByIncentive = [];
     if(hasBonoIncentive()){
-      codesMode = document.querySelector('[data-wz-name="codes-mode"]')?.dataset?.wzValue || 'upload';
+      const cc = codeCountsByIncentive();
+      codesMode = cc.mode;
+      codesByIncentive = cc.bonos.map(m => ({ name: m.name, count: cc.counts[m.idx] || 0 }));
       if(codesMode === 'manual'){
-        manualCodes = [...document.querySelectorAll('#wzManualRows .manual-row')]
-          .map(r => (r.querySelector('.manual-row__code input')?.value || '').trim())
-          .filter(Boolean);
+        manualCodes = allManualCodes().map(x => x.code);
+        manualCodesByIncentive = cc.bonos.map(m => ({ name: m.name, codes: [...manualCodesOf(m.card)] }));
         codeCount = manualCodes.length;
       } else {
-        // Modo upload — derivar conteo desde rubro/unit del primer bono
-        const unit = parseMoney(getBonoUnitInput());
-        codeCount = (rubro && unit) ? Math.floor(rubro / unit) : 0;
         const chip = document.getElementById('wzFileChip');
         codesFile = chip?.querySelector('.wz-file-chip__name')?.textContent?.trim() || '';
+        codeCount = uploadedCodes ? uploadedCodes.length
+          : cards.reduce((acc, c) => {
+              const r = parseMoney(c.querySelector('.wz-inc-card__rubro input'));
+              const u = parseMoney(c.querySelector('.wz-inc-card__unit input'));
+              return acc + (r && u ? Math.floor(r / u) : 0);
+            }, 0);
       }
     }
 
-    /* === Generar id único === */
-    const taken = new Set(data.map(p => p.id));
-    let n = data.length + 1;
-    let id = 'PRG-2026-' + String(n).padStart(3, '0');
-    while(taken.has(id)){ n++; id = 'PRG-2026-' + String(n).padStart(3, '0'); }
+    /* === Equipo del programa === */
+    const ddVals = n => (document.querySelector(`.wz-pane[data-pane="1"] [data-wz-name="${n}"]`)?.dataset?.wzValue || '').split(',').filter(Boolean);
+    const ddLabel = (n, v) => document.querySelector(`.wz-pane[data-pane="1"] [data-wz-name="${n}"] .naowee-dropdown__option[data-val="${v}"]`)?.textContent?.trim() || v;
+    const gestorKey = ddVals('gestor-programa')[0] || '';
+    const operatorKeys = ddVals('operadores');
+    const team = {
+      gestorKey,
+      gestor: gestorKey ? ddLabel('gestor-programa', gestorKey) : '',
+      operatorKeys,
+      operators: operatorKeys.map(k => ddLabel('operadores', k))
+    };
 
-    return {
+    /* === Código del programa: PRG-AAAA-NNN ===
+       Año actual + consecutivo dentro de ese año (el siguiente al mayor que
+       exista). En el producto lo asigna el backend (evita choques si dos
+       gestores crean a la vez) y no cambia al editar. */
+    const year = new Date().getFullYear();
+    const yearPrefix = `PRG-${year}-`;
+    const lastN = data.map(p => String(p.id || ''))
+      .filter(x => x.startsWith(yearPrefix))
+      .map(x => parseInt(x.slice(yearPrefix.length), 10) || 0)
+      .reduce((a, b) => Math.max(a, b), 0);
+    let id = yearPrefix + String(lastN + 1).padStart(3, '0');
+    const orig = editingProgram();
+    if(orig) id = orig.id;
+
+    const built = {
       id,
       name,
       shortDesc: desc.slice(0, 80) || (coverage !== '—' ? coverage : 'Sin descripción'),
@@ -2768,39 +3291,61 @@
       iconColor: iconStyle.color,
       status,
       event: eventoLbl,
+      eventKey: eventoVal,
       coverage,
+      coverageKeys: cobCsv ? cobCsv.split(',') : [],
       responsible: 'Doug Vargas',
       rubro,
       exec: 0,
       unit: parseMoney(getBonoUnitInput()) || (cards[0] ? parseMoney(cards[0].querySelector('.wz-inc-card__unit input')) : 0),
+      team,
+      codesByIncentive,
       codes: { total: codeCount, avail: codeCount, asig: 0, rev: 0 },
       from, to,
       actoAdmin: '',
       fuente: 'Ministerio del Deporte · 2026',
       incentives,
       conditions: { groups, summary },
-      /* Tipo de beneficiario del programa (feedback Danna/Elkin). Para institución,
-         la regla de ranking parametrizada reemplaza las condiciones individuales. */
-      benefType: benefTypeMode,
-      institutionRule: benefTypeMode === 'institucion' ? (() => {
-        const cont = document.getElementById('wzCondPanels');
-        const grupo = cont?.querySelector('[data-wz-name="benef-grupo"]')?.dataset?.wzValue || 'convencionales';
-        const singleDd = cont?.querySelector('[data-wz-name="benef-puestos"]');
-        return {
-          grupo,
-          /* single: p1/p2/p3 · multi: 'por-incentivo' (cada incentivo lleva rankPlace) */
-          puestos: singleDd ? (singleDd.dataset?.wzValue || 'p1') : 'por-incentivo',
-          criterio: 'cantidad_total_medallas_final_nacional',
-          desempate: 'mas_deportistas_llevados_a_la_final'
-        };
-      })() : null,
       // Marcar como creado por el usuario para que el detalle no use el seed
       // de demo (200 códigos fake, 182 asignaciones fake, etc).
       _userCreated: true,
       manualCodes,
+      manualCodesByIncentive,
       codesMode,
       codesFile,
       createdAt: new Date().toISOString()
+    };
+    if(!orig) return built;
+    /* Códigos de incentivos eliminados: se descartan del inventario. */
+    const keptNames = new Set(built.incentives.map(i => i.name));
+    const removedCodes = (orig.codesByIncentive || []).filter(c => !keptNames.has(c.name)).reduce((a, c) => a + c.count, 0);
+    const baseCodes = orig.codes
+      ? { ...orig.codes, total: Math.max(0, (orig.codes.total || 0) - removedCodes), avail: Math.max(0, (orig.codes.avail || 0) - removedCodes) }
+      : built.codes;
+    /* Edición: se conserva lo que el formulario no maneja (ejecución,
+       identidad visual, códigos ya cargados si no se cargaron nuevos) y un
+       programa activo no vuelve a borrador por "Guardar borrador". */
+    return {
+      ...orig, ...built,
+      id: orig.id,
+      iconBg: orig.iconBg, iconColor: orig.iconColor,
+      exec: orig.exec,
+      status: status === 'draft' && orig.status && orig.status !== 'draft' ? orig.status : status,
+      /* Los códigos nuevos se SUMAN al inventario que ya tenía el programa. */
+      codes: codeCount
+        ? { total: (baseCodes.total || 0) + codeCount, avail: (baseCodes.avail || 0) + codeCount, asig: baseCodes.asig || 0, rev: baseCodes.rev || 0 }
+        : baseCodes,
+      codesByIncentive: (() => {
+        const acc = {};
+        (orig.codesByIncentive || []).filter(c => keptNames.has(c.name)).forEach(c => { acc[c.name] = (acc[c.name] || 0) + c.count; });
+        if(codeCount) (built.codesByIncentive || []).forEach(c => { acc[c.name] = (acc[c.name] || 0) + c.count; });
+        return Object.entries(acc).map(([name, count]) => ({ name, count }));
+      })(),
+      manualCodes: [...(orig.manualCodes || []), ...(built.manualCodes || [])],
+      history: orig.history || [],
+      _userCreated: orig._userCreated,
+      createdAt: orig.createdAt || built.createdAt,
+      updatedAt: new Date().toISOString()
     };
   }
 
@@ -2808,14 +3353,16 @@
      sessionStorage para que otras páginas (detalle, lista) lo absorban. */
   function persistProgram(prog){
     if(!prog) return;
-    const data = window.PROGRAMS_DATA;
-    if(Array.isArray(data)) data.unshift(prog);
-    try {
-      const KEY = 'naowee:program-draft-queue';
-      const queue = JSON.parse(sessionStorage.getItem(KEY) || '[]');
-      queue.push(prog);
-      sessionStorage.setItem(KEY, JSON.stringify(queue));
-    } catch(e){ /* sessionStorage podría estar bloqueado */ }
+    /* SOLO DEMO: se guarda en localStorage (shared/programs-data.js) para
+       que sobreviva recargas; si no está disponible, queda solo en memoria. */
+    if(typeof window.saveDemoProgram === 'function') window.saveDemoProgram(prog);
+    else {
+      const data = window.PROGRAMS_DATA;
+      if(Array.isArray(data)){
+        const i = data.findIndex(x => x.id === prog.id);
+        if(i >= 0) data[i] = prog; else data.unshift(prog);
+      }
+    }
     lastCreatedProgramId = prog.id;
   }
 
@@ -2824,6 +3371,50 @@
     const prog = buildProgramFromForm('draft');
     persistProgram(prog);
     if(typeof window.onDraftSaved === 'function') window.onDraftSaved(prog);
+  }
+
+  /* ══ SOLO DEMO · Llenado rápido con Juegos Intercolegiados 2026 ══
+     Atajo para presentar la demo sin digitar en vivo. NO es funcionalidad del
+     producto. Los datos salen del xlsx de parámetros 2026. */
+  const INTERCOLEGIADOS_2026 = {
+    name: 'Juegos Intercolegiados 2026',
+    desc: 'Incentivos a deportistas, docentes y establecimientos educativos ganadores de la fase final nacional de los Juegos Intercolegiados 2026.',
+    evento: 'intercolegiados2026',
+    incentives: [
+      { name: 'Bono deportivo · Deportistas',                 benef: 'deportista',   cat: 'bono' },
+      { name: 'Crédito condonable ICETEX · Deportistas',      benef: 'deportista',   cat: 'credito' },
+      { name: 'Bono deportivo · Docente entrenador',          benef: 'entrenador',   cat: 'bono' },
+      { name: 'Crédito condonable ICETEX · Docente entrenador', benef: 'entrenador', cat: 'credito' },
+      { name: 'Bono deportivo · Docente asistente',           benef: 'asistente',    cat: 'bono' },
+      { name: 'Kit de implementación · Establecimiento educativo', benef: 'institucion', cat: 'kit' },
+      { name: 'Kit de implementación · Organización para deportes', benef: 'organizacion', cat: 'kit' }
+    ]
+  };
+  function applyIntercolegiadosTemplate(){
+    const t = INTERCOLEGIADOS_2026;
+    const fName = document.getElementById('fName');
+    if(fName){ fName.value = t.name; clearError(fName.closest('.naowee-textfield')); }
+    const desc = document.querySelector('.wz-pane[data-pane="1"] .naowee-textfield--textarea textarea');
+    if(desc) desc.value = t.desc;
+    setDropdownValue(document.querySelector('[data-wz-name="evento"]'), [t.evento]);
+    // Cobertura nacional: el tag-multi guarda su estado en un closure, así que
+    // se reproduce la interacción (abrir → Nacional → Agregar).
+    document.querySelector('[data-wz-name="cobertura"]')?._setValues?.(['nacional']);
+    const list = document.getElementById('wzIncList');
+    if(list) list.innerHTML = '';
+    incCounter = 0;
+    t.incentives.forEach(inc => {
+      const card = addIncentive({ focus: false });
+      if(!card) return;
+      card.querySelector('input[type="text"]').value = inc.name;
+      setDropdownValue(card.querySelector('[data-wz-name="beneficiario"]'), [inc.benef]);
+      setDropdownValue(card.querySelector('[data-wz-name="categoria"]'), [inc.cat]);
+    });
+    refreshIncCardHints();
+    updateRubroAllocation();
+    isDirty = true;
+    renderStep();
+    showToast('Formulario llenado con los 7 incentivos de Intercolegiados 2026 (atajo de la demo).', 'positive');
   }
 
   /* ══ Expose to window ══ */
@@ -2836,16 +3427,20 @@
   window.prevStep = prevStep;
   window.saveDraft = saveDraft;
   window.activateProgram = activateProgram;
-  window.setIncTypesMode = setIncTypesMode;
-  window.addIncentive = addIncentive;
+  window.addIncentive = () => addIncentive();
+  window.applyIntercolegiadosTemplate = applyIntercolegiadosTemplate;
+  window.downloadCodesTemplate = downloadCodesTemplate;
+  window.confirmCodesSwitch = confirmCodesSwitch;
+  window.openWizardSection = openWizardSection;
+  window.confirmIncDelete = confirmIncDelete;
+  window.cancelIncDelete = cancelIncDelete;
+  window.reactivateIncentive = reactivateIncentive;
+  window.cancelCodesSwitch = cancelCodesSwitch;
   window.removeIncentive = removeIncentive;
-  window.setBenefType = setBenefType;
   window.addConditionGroup = addConditionGroup;
   window.removeConditionGroup = removeConditionGroup;
   window.addConditionRow = addConditionRow;
   window.removeConditionRow = removeConditionRow;
-  window.addManualRow = addManualRow;
-  window.removeManualRow = removeManualRow;
   window.resetWzFile = resetWzFile;
   window.closeSuccessAndNew = closeSuccessAndNew;
   window.goToProgramDetail = goToProgramDetail;

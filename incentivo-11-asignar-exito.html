@@ -149,6 +149,8 @@
     text-align:center;font-size:12px;color:var(--text-secondary);line-height:1.5;
   }
   .help a{color:var(--accent);font-weight:600}
+  .success-check--pending{background:#fff3e6 !important;color:#d97706 !important;box-shadow:0 10px 28px rgba(217,119,6,.22) !important}
+  [hidden]{display:none !important}
 </style>
 </head>
 <body>
@@ -173,7 +175,7 @@
       </div>
       <div class="nav-row" onclick="fadeAndGo('incentivo-14-mis-asignaciones.html')">
         <div class="icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7h13M8 12h13M8 17h13"/><circle cx="4" cy="7" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="17" r="1"/></svg></div>
-        <span class="lbl">Asignaciones</span>
+        <span class="lbl">Mis asignaciones</span>
       </div>
     </nav>
     <div class="sidebar-bottom">
@@ -201,11 +203,11 @@
 
         <div class="success-hero">
           <div class="confetti" id="confetti"></div>
-          <div class="success-check">
+          <div class="success-check" id="heroCheck">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           </div>
-          <h1>¡Incentivo entregado con éxito!</h1>
-          <p>El incentivo fue registrado y asociado al perfil del beneficiario en la plataforma. Quedó marcado como <strong>Asignado</strong> y se descontó del rubro del programa.</p>
+          <h1 id="heroTitle">¡Incentivo entregado con éxito!</h1>
+          <p id="heroText">El incentivo quedó registrado en el perfil del beneficiario, con su evidencia de entrega. Estado: <strong>Entregado</strong>.</p>
           <div class="success-stamp" id="stamp">ID · #—</div>
         </div>
 
@@ -216,14 +218,14 @@
           </div>
           <div class="status-banner__body">
             <div class="status-banner__title">Estado del incentivo actualizado</div>
-            <div class="status-banner__sub">El cambio quedó registrado en el historial con timestamp y datos del gestor.</div>
+            <div class="status-banner__sub">El cambio quedó registrado en el historial con fecha, hora y datos del operador.</div>
           </div>
           <div class="status-transition">
             <span class="naowee-badge naowee-badge--caution naowee-badge--quiet naowee-badge--small is-prev">Disponible</span>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-            <span class="naowee-badge naowee-badge--positive naowee-badge--quiet naowee-badge--small">
+            <span class="naowee-badge naowee-badge--positive naowee-badge--quiet naowee-badge--small" id="stateNow">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              Asignado
+              Entregado
             </span>
           </div>
         </div>
@@ -238,7 +240,7 @@
             <div class="receipt__ava" id="receiptAva">MC</div>
             <div class="receipt__person">
               <div class="receipt__person-name" id="receiptName">María Camila Herrera Rojas</div>
-              <div class="receipt__person-meta"><span id="receiptDoc">CC 1.001.234.567</span><span id="receiptMetaExtra"> · 19 años · Atletismo</span></div>
+              <div class="receipt__person-meta"><span id="receiptDoc">CC 1.001.234.567</span><span id="receiptMetaExtra"></span></div>
             </div>
           </div>
           <div class="receipt__details">
@@ -256,13 +258,13 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
               </span>
               <span class="kv-row__lbl">Programa</span>
-              <span class="kv-row__val" id="receiptProgram">Becas deportivas 2026</span>
+              <span class="kv-row__val" id="receiptProgram">Juegos Intercolegiados 2026</span>
             </div>
             <div class="kv-row">
               <span class="kv-row__ico">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
               </span>
-              <span class="kv-row__lbl">Gestor en campo</span>
+              <span class="kv-row__lbl">Operador</span>
               <span class="kv-row__val">Doug Vargas</span>
             </div>
             <div class="kv-row">
@@ -272,15 +274,26 @@
               <span class="kv-row__lbl">Fecha y hora</span>
               <span class="kv-row__val" id="receiptDate">—</span>
             </div>
+            <div class="kv-row">
+              <span class="kv-row__ico">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              </span>
+              <span class="kv-row__lbl">Evidencia</span>
+              <span class="kv-row__val" id="receiptEvidence">Registrada</span>
+            </div>
           </div>
           <div class="receipt__footer">
-            <span id="receiptZoneLbl">Zona: <strong id="receiptZone">Atlántico · Barranquilla</strong></span>
+            <span id="receiptZoneLbl">Departamento: <strong id="receiptZone">Atlántico · Barranquilla</strong></span>
           </div>
         </div>
 
         <!-- Actions -->
         <div class="actions">
-          <button id="btnNewAssignment" class="naowee-btn naowee-btn--loud naowee-btn--large" onclick="fadeAndGo('incentivo-08-asignar-buscar.html')">
+          <button id="btnUploadNow" class="naowee-btn naowee-btn--loud naowee-btn--large" hidden onclick="uploadNow()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+            Subir evidencia ahora
+          </button>
+          <button id="btnNewAssignment" class="naowee-btn naowee-btn--loud naowee-btn--large" onclick="newAssignment()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Nueva asignación
           </button>
@@ -290,13 +303,13 @@
           </button>
           <button class="naowee-btn naowee-btn--mute naowee-btn--large" onclick="fadeAndGo('incentivo-14-mis-asignaciones.html')">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7h13M8 12h13M8 17h13"/><circle cx="4" cy="7" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="17" r="1"/></svg>
-            Ver historial
+            Mis asignaciones
           </button>
         </div>
 
         <div class="help">
-          ¿Necesitas revertir esta asignación? Solicita al gestor de incentivos desde
-          <a href="incentivo-14-mis-asignaciones.html">el historial de asignaciones</a>.
+          ¿Necesitas revertir esta asignación? Hazlo desde
+          <a href="incentivo-14-mis-asignaciones.html">Mis asignaciones</a> (acción <strong>Revertir</strong>, con motivo obligatorio).
         </div>
 
       </div>
@@ -340,15 +353,37 @@ try{
   if(s.doc) document.getElementById('receiptDoc').textContent = `${s.docType || 'CC'} ${s.doc}`;
   const metaExtra = document.getElementById('receiptMetaExtra');
   if(metaExtra && s.name){
-    metaExtra.textContent = s.role==='institution' ? ` · ${s.zone||''} · ${s.deportistas||0} deportistas`
-      : s.role==='coach' ? ` · ${s.coachRole||''} · ${s.disc||''}`
-      : ` · ${s.age||''} años · ${(s.disc||'').split(' · ')[0]}`;
+    metaExtra.textContent = s.role==='institution' ? ` · ${s.zone||''}${s.oros ? ' · ' + s.oros + ' oros 2026' : ''}`
+      : s.role==='coach' ? ` · ${s.coachRole||'Docente'}${s.deporte ? ' · ' + s.deporte : ''}`
+      : `${s.grado ? ' · Grado ' + s.grado : ''}${s.deporte ? ' · ' + s.deporte : ''}`;
   }
   if(s.incentive) document.getElementById('receiptInc').textContent = s.incentive;
   /* Código retirado del comprobante por seguridad (feedback Danna): el código redimible no se muestra en resúmenes. */
   /* receiptValue retirado (feedback Danna): valor oculto en la vista del operador. */
-  /* Programa: por ahora se usa el nombre del incentivo como programa (en producción se persistiría el programa real desde la pantalla 10). */
-  if(s.incentive) document.getElementById('receiptProgram').textContent = s.incentive;
+  /* Evidencia pendiente (validar → entregar → evidencia después, reunión 22-09 00:27:10). */
+  if(s.evidencePending){
+    document.getElementById('confetti').innerHTML = '';
+    const chk = document.getElementById('heroCheck');
+    chk.classList.add('success-check--pending');
+    chk.innerHTML = '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
+    document.getElementById('heroTitle').textContent = 'Incentivo asignado · evidencia pendiente';
+    document.getElementById('heroText').innerHTML = 'La entrega quedó registrada y el código reservado. Falta subir la <strong>foto de evidencia</strong>: puedes hacerlo ahora o después desde <strong>Mis asignaciones</strong>.';
+    const now = document.getElementById('stateNow');
+    now.className = 'naowee-badge naowee-badge--caution naowee-badge--quiet naowee-badge--small';
+    now.textContent = 'Asignado · evidencia pendiente';
+    const ev = document.getElementById('receiptEvidence');
+    ev.innerHTML = '<span class="naowee-badge naowee-badge--caution naowee-badge--quiet naowee-badge--small">Pendiente</span>';
+    document.getElementById('btnUploadNow').hidden = false;
+    const na = document.getElementById('btnNewAssignment');
+    na.className = 'naowee-btn naowee-btn--mute naowee-btn--large';
+  } else if(s.evidence){
+    document.getElementById('receiptEvidence').textContent = s.evidence.replace('Archivo subido · ','');
+    if(s.evidenceOnly){
+      document.getElementById('heroTitle').textContent = 'Evidencia registrada';
+      document.getElementById('heroText').innerHTML = 'La evidencia quedó asociada a la entrega. Estado: <strong>Entregado</strong>.';
+      const prev = document.querySelector('.status-transition .is-prev'); if(prev) prev.textContent = 'Evidencia pendiente';
+    }
+  }
   /* Zona: para institución usar "Sede", para persona usar "Zona". */
   if(s.zone){
     document.getElementById('receiptZone').textContent = s.zone;
@@ -359,7 +394,22 @@ try{
   }
 }catch(e){}
 
+/* El flujo terminó: al volver a "Asignar incentivo" se arranca con la búsqueda limpia (uploadNow solo usa inc-assignment). */
+try{ sessionStorage.removeItem('inc-profile'); }catch(e){}
+
 /* Helpers */
+function uploadNow(){
+  try{
+    const s = JSON.parse(sessionStorage.getItem('inc-assignment-complete') || '{}');
+    const a = JSON.parse(sessionStorage.getItem('inc-assignment') || '{}');
+    sessionStorage.setItem('inc-assignment', JSON.stringify(Object.assign({}, a, { evidenceOnly:true, from:'exito', assignedAt: a.assignedAt || s.assignedAt })));
+  }catch(e){}
+  fadeAndGo('incentivo-09-validar-foto.html?evidencia=1');
+}
+function newAssignment(){
+  try{ sessionStorage.removeItem('inc-profile'); sessionStorage.removeItem('inc-assignment'); }catch(e){}
+  fadeAndGo('incentivo-08-asignar-buscar.html');
+}
 function fadeAndGo(url){
   if('startViewTransition' in document || CSS.supports('view-transition-name: x')){
     window.location.href = url;
@@ -374,7 +424,7 @@ document.addEventListener('click', (e) => { const sw = document.getElementById('
 
 </script>
 
-<script src="shared/profile-switcher.js?v=role-6" defer></script>
+<script src="shared/profile-switcher.js?v=role-7" defer></script>
 
 <script src="shared/footer-scroll.js" defer></script>
 <script src="shared/tour.js" defer></script>

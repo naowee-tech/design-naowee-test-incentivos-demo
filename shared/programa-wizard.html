@@ -22,7 +22,7 @@
         </li>
         <li class="naowee-stepper__step" data-step="2" onclick="tryGoStep(2)">
           <span class="naowee-stepper__number">2</span>
-          <span class="naowee-stepper__label">Tipos &amp; rubro</span>
+          <span class="naowee-stepper__label">Incentivos</span>
           <span class="naowee-stepper__connector"></span>
         </li>
         <li class="naowee-stepper__step" data-step="3" onclick="tryGoStep(3)">
@@ -41,8 +41,30 @@
 
       <!-- ═════ STEP 1 · Datos ═════ -->
       <div class="wz-pane" data-pane="1">
-        <h2 class="wz-pane__title">Datos del programa</h2>
+        <div class="wz-devnote-row">
+          <h2 class="wz-pane__title">Datos del programa</h2>
+          <!-- SOLO DEMO: validaciones de este paso para devs -->
+          <span class="wz-devnote" tabindex="0" role="button" data-dev-validations="1"></span>
+        </div>
         <p class="wz-pane__sub">Define los datos básicos del programa. Lo lanza el ministerio y sirve como contenedor de todo: rubro, tipos, condiciones y códigos.</p>
+
+        <!-- SOLO DEMO: atajo para presentar. No es una funcionalidad del producto;
+             no la implementen los devs. Llena el formulario con los datos del
+             reglamento de Juegos Intercolegiados 2026 (xlsx de parámetros). -->
+        <div class="naowee-message naowee-message--caution wz-template-msg" id="wzTemplateMsg">
+          <div class="naowee-message__header">
+            <div class="naowee-message__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <div class="naowee-message__text">
+              <span class="naowee-badge naowee-badge--caution naowee-badge--small wz-demo-badge">Solo demo</span>
+              <strong>Atajo para presentar</strong>, no hace parte del producto. Llena el formulario con los incentivos y condiciones de Juegos Intercolegiados 2026 para no digitarlos en vivo.
+            </div>
+          </div>
+          <div class="wz-template-msg__actions">
+            <button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--small" onclick="applyIntercolegiadosTemplate()">Llenar con datos de Intercolegiados 2026</button>
+          </div>
+        </div>
 
         <div class="wz-field-group">
           <div class="naowee-textfield" data-wz-required>
@@ -60,7 +82,7 @@
             </div>
           </div>
 
-          <div class="wz-grid">
+          <div>
             <div class="naowee-dropdown" data-wz-dropdown data-wz-name="evento">
               <label class="naowee-dropdown__label">Evento asociado</label>
               <div class="naowee-dropdown__trigger" tabindex="0">
@@ -72,6 +94,7 @@
                 </div>
               </div>
               <div class="naowee-dropdown__menu" role="listbox">
+                <div class="naowee-dropdown__option" data-val="intercolegiados2026">Juegos Intercolegiados 2026</div>
                 <div class="naowee-dropdown__option" data-val="jn2025">Juegos Nacionales 2025</div>
                 <div class="naowee-dropdown__option" data-val="paranacionales2025">Para-Nacionales 2025</div>
                 <div class="naowee-dropdown__option" data-val="panam2026">Panamericanos 2026</div>
@@ -80,21 +103,12 @@
               </div>
             </div>
 
-            <div class="naowee-textfield naowee-textfield--readonly">
-              <label class="naowee-textfield__label">Responsable</label>
-              <div class="naowee-textfield__input-wrap">
-                <span class="naowee-textfield__prefix" style="padding:0 2px 0 12px;color:var(--naowee-color-text-secondary)">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                </span>
-                <input class="naowee-textfield__input" type="text" value="Doug Vargas · Ministerio del Deporte" readonly/>
-              </div>
-            </div>
           </div>
 
           <div class="wz-subtitle">Vigencia y cobertura territorial</div>
           <div class="wz-grid">
-            <div class="naowee-textfield has-datepicker" data-wz-required data-wz-datepicker data-wz-range="from" data-wz-range-name="vigencia">
-              <label class="naowee-textfield__label naowee-textfield__label--required">Vigencia desde</label>
+            <div class="naowee-textfield has-datepicker" data-wz-datepicker data-wz-range="from" data-wz-range-name="vigencia">
+              <label class="naowee-textfield__label">Vigencia desde <span class="wz-inc-card__optional">(opcional)</span></label>
               <div class="naowee-textfield__input-wrap">
                 <input class="naowee-textfield__input" type="text" placeholder="dd mmm aaaa" readonly/>
                 <span class="naowee-textfield__suffix">
@@ -102,8 +116,8 @@
                 </span>
               </div>
             </div>
-            <div class="naowee-textfield has-datepicker" data-wz-required data-wz-datepicker data-wz-range="to" data-wz-range-name="vigencia">
-              <label class="naowee-textfield__label naowee-textfield__label--required">Vigencia hasta</label>
+            <div class="naowee-textfield has-datepicker" data-wz-datepicker data-wz-range="to" data-wz-range-name="vigencia">
+              <label class="naowee-textfield__label">Vigencia hasta <span class="wz-inc-card__optional">(opcional)</span></label>
               <div class="naowee-textfield__input-wrap">
                 <input class="naowee-textfield__input" type="text" placeholder="dd mmm aaaa" readonly/>
                 <span class="naowee-textfield__suffix">
@@ -113,6 +127,7 @@
               <div class="naowee-textfield__helper wz-range-helper">Debe ser posterior a la vigencia desde.</div>
             </div>
           </div>
+          <div class="naowee-helper wz-vigencia-helper"><div class="naowee-helper__text">Sin fechas, el programa queda activo hasta que lo cierres. Con fecha de cierre, las asignaciones se bloquean al vencer.</div></div>
 
           <div class="wz-tag-multi" data-wz-tag-multi data-wz-name="cobertura" data-wz-required>
             <label class="wz-tag-multi__label">Cobertura territorial <span class="req">*</span></label>
@@ -146,6 +161,44 @@
             </div>
           </div>
 
+          <div data-wz-block="equipo">
+          <div class="wz-subtitle">Equipo del programa</div>
+          <div class="wz-grid">
+            <div class="naowee-dropdown" data-wz-dropdown data-wz-name="gestor-programa">
+              <label class="naowee-dropdown__label">Gestor de programa</label>
+              <div class="naowee-dropdown__trigger" tabindex="0">
+                <span class="naowee-dropdown__placeholder">Selecciona el gestor</span>
+                <div class="naowee-dropdown__controls">
+                  <span class="naowee-dropdown__chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+                </div>
+              </div>
+              <div class="naowee-dropdown__menu" role="listbox">
+                <div class="naowee-dropdown__option" data-val="elkin.avila">Elkin Ávila · Ministerio del Deporte</div>
+                <div class="naowee-dropdown__option" data-val="danna.arrieta">Danna Arrieta · Naowee</div>
+                <div class="naowee-dropdown__option" data-val="laura.mejia">Laura Mejía · Coordinación Intercolegiados</div>
+              </div>
+              <div class="naowee-helper"><div class="naowee-helper__text">Ve y administra solo este programa: dashboard, códigos e historial.</div></div>
+            </div>
+            <div class="naowee-dropdown" data-wz-dropdown data-wz-multi data-wz-name="operadores">
+              <label class="naowee-dropdown__label">Operadores en campo</label>
+              <div class="naowee-dropdown__trigger" tabindex="0">
+                <span class="naowee-dropdown__placeholder">Selecciona operadores</span>
+                <div class="naowee-dropdown__controls">
+                  <span class="naowee-dropdown__chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+                </div>
+              </div>
+              <div class="naowee-dropdown__menu" role="listbox">
+                <div class="naowee-dropdown__option" data-val="juan.rodriguez">Juan Rodríguez · Operador</div>
+                <div class="naowee-dropdown__option" data-val="maria.perez">María Pérez · Operadora</div>
+                <div class="naowee-dropdown__option" data-val="carlos.gomez">Carlos Gómez · Operador</div>
+                <div class="naowee-dropdown__option" data-val="andrea.lopez">Andrea López · Operadora</div>
+              </div>
+              <div class="naowee-helper"><div class="naowee-helper__text">Solo asignan incentivos de este programa.</div></div>
+            </div>
+          </div>
+
+          </div>
+
           <div class="naowee-textfield naowee-textfield--textarea">
             <label class="naowee-textfield__label">Justificación / acto administrativo</label>
             <div class="naowee-textfield__input-wrap">
@@ -172,111 +225,59 @@
         </div>
       </div>
 
-      <!-- ═════ STEP 2 · Tipos & rubro ═════ -->
+      <!-- ═════ STEP 2 · Incentivos & rubro ═════ -->
       <div class="wz-pane" data-pane="2" hidden>
-        <h2 class="wz-pane__title">Tipos de incentivo y rubro</h2>
-        <p class="wz-pane__sub">Define el rubro total del programa y los tipos de incentivo que lo conforman. Cada tipo tiene su propio valor unitario.</p>
+        <div class="wz-devnote-row">
+          <h2 class="wz-pane__title">Incentivos del programa</h2>
+          <!-- SOLO DEMO: validaciones de este paso para devs -->
+          <span class="wz-devnote" tabindex="0" role="button" data-dev-validations="2"></span>
+        </div>
+        <p class="wz-pane__sub">Agrega cada incentivo que entrega el programa y <strong>a quién va dirigido</strong>. Las condiciones de cada uno se muestran en el siguiente paso según ese tipo de beneficiario.</p>
 
+        <div class="wz-subtitle">Rubro <span class="wz-inc-card__optional">(opcional)</span></div>
+        <div class="naowee-message naowee-message--informative wz-types-hint" id="wzTypesHint">
+          <div class="naowee-message__header">
+            <div class="naowee-message__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+            </div>
+            <div class="naowee-message__text" id="wzTypesHintText">En esta primera fase el rubro es <strong>opcional</strong>. Si lo defines, el sistema lleva el control de lo ejecutado; si no, se cargan los códigos que entregue el ministerio.</div>
+          </div>
+        </div>
         <div class="wz-field-group">
           <div class="wz-rubro-row">
-            <div class="naowee-textfield" data-wz-required>
-              <label class="naowee-textfield__label naowee-textfield__label--required">Rubro total del programa (COP)</label>
+            <div class="naowee-textfield">
+              <label class="naowee-textfield__label">Rubro total del programa (COP) <span class="naowee-tooltip naowee-tooltip--bottom wz-tip" tabindex="0" role="button" aria-label="Ayuda"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 015.8 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span class="naowee-tooltip__content" role="tooltip">Monto que el ministerio asigna al programa para <strong>todos</strong> sus incentivos. Si lo defines, el sistema descuenta cada asignación y muestra lo ejecutado y lo disponible.</span></span></label>
               <div class="naowee-textfield__input-wrap">
                 <span class="naowee-textfield__prefix" style="padding:0 10px;color:var(--naowee-color-text-secondary)">$</span>
                 <input class="naowee-textfield__input" type="text" inputmode="numeric" placeholder="0" data-wz-input="money" id="wzRubroTotal"/>
               </div>
-              <div class="naowee-helper"><div class="naowee-helper__text">Monto asignado por el ministerio. Se descuenta por cada asignación.</div></div>
+              <div class="naowee-helper"><div class="naowee-helper__text">Monto asignado por el ministerio. La suma de los rubros por incentivo no puede superarlo.</div></div>
             </div>
           </div>
         </div>
 
-        <div class="wz-types-group">
-          <div class="toggle-cards" data-wz-types-toggle>
-            <div class="toggle-card active" data-val="single" onclick="setIncTypesMode(this, 'single')">
-              <div class="naowee-radio naowee-radio--selected"><div class="naowee-radio__circle"></div></div>
-              <div class="toggle-card__body"><div class="toggle-card__title">Un solo tipo de incentivo</div><div class="toggle-card__desc">Todo el rubro va a la misma categoría (ej: sólo becas educativas).</div></div>
-            </div>
-            <div class="toggle-card" data-val="multi" onclick="setIncTypesMode(this, 'multi')">
-              <div class="naowee-radio"><div class="naowee-radio__circle"></div></div>
-              <div class="toggle-card__body"><div class="toggle-card__title">Varios tipos</div><div class="toggle-card__desc">Divide el rubro entre varias categorías (becas + kits + bonos).</div></div>
-            </div>
-          </div>
-
-          <!-- Hint contextual — naowee-message del DS, variante cambia según modo -->
-          <div class="naowee-message naowee-message--informative wz-types-hint" id="wzTypesHint">
-            <div class="naowee-message__header">
-              <div class="naowee-message__icon" id="wzTypesHintIcon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-              </div>
-              <div class="naowee-message__text" id="wzTypesHintText">Todo el rubro se destinará a este único tipo de incentivo. Si necesitas más de uno, cambia a <strong>Varios tipos</strong>.</div>
-            </div>
-          </div>
-
-          <div id="wzIncList" class="wz-inc-list wz-inc-list--single">
-            <!-- Primera tarjeta — siempre visible -->
-            <div class="wz-inc-card" data-idx="1">
-              <div class="wz-inc-card__head">
-                <span class="wz-inc-card__badge naowee-badge naowee-badge--neutral naowee-badge--quiet naowee-badge--small">Incentivo #1</span>
-              </div>
-              <div class="wz-grid wz-inc-card__grid">
-                <div class="naowee-textfield" data-wz-required>
-                  <label class="naowee-textfield__label naowee-textfield__label--required">Nombre del incentivo</label>
-                  <div class="naowee-textfield__input-wrap">
-                    <input class="naowee-textfield__input" type="text" placeholder="Ej. Beca educativa medallistas oro" data-wz-input="text" maxlength="100"/>
-                  </div>
-                </div>
-                <div class="naowee-dropdown" data-wz-dropdown data-wz-name="categoria" data-wz-required>
-                  <label class="naowee-dropdown__label naowee-dropdown__label--required">Categoría</label>
-                  <div class="naowee-dropdown__trigger" tabindex="0">
-                    <span class="naowee-dropdown__placeholder">Selecciona categoría</span>
-                    <div class="naowee-dropdown__controls">
-                      <span class="naowee-dropdown__chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></span>
-                    </div>
-                  </div>
-                  <div class="naowee-dropdown__menu" role="listbox">
-                    <div class="naowee-dropdown__option" data-val="bono">Bono</div>
-                    <div class="naowee-dropdown__option" data-val="beca">Beca</div>
-                    <div class="naowee-dropdown__option" data-val="kit">Kit</div>
-                    <div class="naowee-dropdown__option" data-val="transporte">Transporte</div>
-                    <div class="naowee-dropdown__option" data-val="inscripcion">Inscripción</div>
-                    <div class="naowee-dropdown__option" data-val="descuento">Descuento</div>
-                    <div class="naowee-dropdown__option" data-val="pase">Pase / acceso</div>
-                    <div class="naowee-dropdown__option" data-val="dinero">Dinero</div>
-                  </div>
-                </div>
-                <div class="naowee-textfield wz-inc-card__rubro" data-wz-required-multi data-wz-name="rubro">
-                  <label class="naowee-textfield__label naowee-textfield__label--required">Rubro del incentivo (COP)</label>
-                  <div class="naowee-textfield__input-wrap">
-                    <span class="naowee-textfield__prefix" style="padding:0 10px;color:var(--naowee-color-text-secondary)">$</span>
-                    <input class="naowee-textfield__input" type="text" inputmode="numeric" placeholder="0" data-wz-input="money"/>
-                  </div>
-                </div>
-                <div class="naowee-textfield wz-inc-card__unit" data-wz-name="unitario">
-                  <label class="naowee-textfield__label">Valor unitario <span class="wz-inc-card__optional">(opcional)</span></label>
-                  <div class="naowee-textfield__input-wrap">
-                    <span class="naowee-textfield__prefix" style="padding:0 10px;color:var(--naowee-color-text-secondary)">$</span>
-                    <input class="naowee-textfield__input" type="text" inputmode="numeric" placeholder="0" data-wz-input="money"/>
-                  </div>
-                  <div class="naowee-helper"><div class="naowee-helper__text wz-inc-card__unit-hint">Monto por beneficiario.</div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Resumen de asignación de rubro (sólo en modo "Varios tipos") -->
-          <div class="wz-multi-budget" id="wzMultiBudget" hidden></div>
-
-          <button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small wz-add-inc" id="wzAddInc" onclick="addIncentive()" hidden>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Agregar otro tipo de incentivo
-          </button>
+        <div class="wz-subtitle">Incentivos</div>
+        <div id="wzIncList" class="wz-inc-list wz-inc-list--multi">
+          <!-- Tarjetas generadas vía JS (addIncentive) -->
         </div>
+
+        <button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small wz-add-inc" id="wzAddInc" onclick="addIncentive()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Agregar otro incentivo
+        </button>
+
+        <!-- Resumen de asignación de rubro -->
+        <div class="wz-multi-budget" id="wzMultiBudget" hidden></div>
       </div>
 
       <!-- ═════ STEP 3 · Condiciones (un panel por incentivo en modo multi) ═════ -->
       <div class="wz-pane" data-pane="3" hidden>
-        <h2 class="wz-pane__title">Condiciones de elegibilidad</h2>
-        <p class="wz-pane__sub" id="wzCondSub">Dentro de un grupo todas las condiciones se cumplen simultáneamente (<strong>Y</strong>). Agrega otro grupo si aceptas reglas alternativas (<strong>O</strong> entre grupos).</p>
+        <div class="wz-devnote-row">
+          <h2 class="wz-pane__title">Condiciones de elegibilidad</h2>
+          <!-- SOLO DEMO: validaciones de este paso para devs -->
+          <span class="wz-devnote" tabindex="0" role="button" data-dev-validations="3"></span>
+        </div>
+        <p class="wz-pane__sub" id="wzCondSub">Define quién recibe cada incentivo. Todas las condiciones de un incentivo deben cumplirse; el operador solo verá a quienes las cumplan.</p>
 
         <!-- Contenedor de paneles. JS genera 1 panel en single, N paneles en multi. -->
         <div class="wz-cond-panels" id="wzCondPanels"></div>
@@ -284,53 +285,75 @@
 
       <!-- ═════ STEP 4 · Códigos (sólo si hay incentivo "Bono") ═════ -->
       <div class="wz-pane" data-pane="4" hidden>
-        <h2 class="wz-pane__title">Códigos y activación</h2>
-        <p class="wz-pane__sub">Carga los códigos del programa para los incentivos tipo <strong>Bono</strong>. Puedes subir un archivo o agregarlos manualmente.</p>
-
-        <div class="naowee-segment wz-codes-seg" data-wz-segment data-wz-name="codes-mode">
-          <div class="naowee-segment__pill"></div>
-          <button type="button" class="naowee-segment__item naowee-segment__item--active" data-val="upload">Cargar archivo</button>
-          <button type="button" class="naowee-segment__item" data-val="manual">Manual</button>
+        <div class="wz-devnote-row">
+          <h2 class="wz-pane__title">Códigos y activación</h2>
+          <!-- SOLO DEMO: validaciones de este paso para devs -->
+          <span class="wz-devnote" tabindex="0" role="button" data-dev-validations="4"></span>
         </div>
+        <p class="wz-pane__sub">Cada código es único y representa un incentivo entregado.</p>
+
+        <!-- Qué incentivos llevan códigos (hoy solo los Bono) -->
+        <div class="naowee-message naowee-message--informative wz-codes-scope" id="wzCodesScope"></div>
+
+        <div class="wz-subtitle">¿Cómo vas a cargar los códigos?</div>
+        <div class="toggle-cards wz-codes-choice" data-wz-name="codes-mode" data-wz-value="upload" role="radiogroup" aria-label="Forma de carga de códigos">
+          <div class="toggle-card active" data-val="upload" role="radio" aria-checked="true" tabindex="0">
+            <div class="naowee-radio naowee-radio--selected"><div class="naowee-radio__circle"></div></div>
+            <div class="toggle-card__body"><div class="toggle-card__title">Subir plantilla Excel</div><div class="toggle-card__desc">Para muchos códigos. Descargas la plantilla, la llenas y la subes.</div></div>
+          </div>
+          <div class="toggle-card" data-val="manual" role="radio" aria-checked="false" tabindex="-1">
+            <div class="naowee-radio"><div class="naowee-radio__circle"></div></div>
+            <div class="toggle-card__body"><div class="toggle-card__title">Agregar uno por uno</div><div class="toggle-card__desc">Para pocos códigos. Los escribes aquí mismo.</div></div>
+          </div>
+        </div>
+        <p class="wz-codes-choice__note">Es una u otra: si cambias de opción, se descartan los códigos que ya cargaste en la otra.</p>
 
         <!-- Budget status — se actualiza via JS según rubro y códigos -->
         <div class="wz-budget" id="wzBudget" hidden></div>
 
         <div class="wz-codes-mode" data-mode="upload">
-          <input type="file" id="wzFileInput" accept=".csv,.xlsx,.xls" hidden/>
+          <ol class="wz-codes-steps">
+            <li>
+              <span class="wz-codes-steps__num">1</span>
+              <div class="wz-codes-steps__body">
+                <strong>Descarga la plantilla</strong>
+                <span>Excel con el tipo de incentivo como lista desplegable.</span>
+              </div>
+              <button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--small" id="wzTemplateBtn" onclick="downloadCodesTemplate()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                Descargar plantilla
+              </button>
+            </li>
+            <li>
+              <span class="wz-codes-steps__num">2</span>
+              <div class="wz-codes-steps__body"><strong>Llénala</strong><span>Un código por fila y su tipo de incentivo.</span></div>
+            </li>
+            <li>
+              <span class="wz-codes-steps__num">3</span>
+              <div class="wz-codes-steps__body"><strong>Súbela aquí</strong></div>
+            </li>
+          </ol>
+          <input type="file" id="wzFileInput" accept=".xlsx,.csv" hidden/>
           <div class="wz-dropzone" id="wzDrop" tabindex="0" role="button" aria-label="Cargar archivo de códigos">
             <div class="wz-dropzone__ico">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
             </div>
             <div class="wz-dropzone__title">Arrastra tu archivo aquí o haz clic para seleccionarlo</div>
             <div class="wz-dropzone__sub">
-              Sube la plantilla de códigos generada por el ministerio. Columnas esperadas:
-              <code>codigo</code>, <code>valor</code>, <code>vencimiento</code>.
+              La plantilla llena, con las columnas <code>tipo_incentivo</code> y <code>codigo</code>.
             </div>
             <div class="wz-dropzone__fmts">
-              <span class="fmt">CSV</span><span class="fmt">XLSX</span>
+              <span class="fmt">XLSX</span><span class="fmt">CSV</span>
             </div>
           </div>
           <div class="wz-file-chip" id="wzFileChip" hidden></div>
         </div>
 
         <div class="wz-codes-mode" data-mode="manual" hidden>
-          <div class="wz-manual wz-manual--code-only">
-            <div class="wz-manual__head">
-              <div class="wz-manual__cols">
-                <span>Código</span>
-                <span></span>
-              </div>
-            </div>
-            <div class="wz-manual__rows" id="wzManualRows">
-              <!-- Filas generadas vía JS -->
-            </div>
-            <button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small wz-add-manual" onclick="addManualRow()">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              Agregar código
-            </button>
-            <div class="wz-manual__hint">Puedes agregar uno por uno o volver al modo <strong>Cargar archivo</strong> para subir la plantilla completa.</div>
+          <div class="wz-manual-codes" id="wzManualCodes">
+            <!-- Un bloque por incentivo Bono (JS: renderManualCodes) -->
           </div>
+          <p class="wz-codes-choice__note">Si son muchos códigos, usa <strong>Subir plantilla Excel</strong> (se descartan los que agregues aquí).</p>
         </div>
       </div>
 
@@ -343,7 +366,7 @@
       </button>
       <span id="wzPrevSpacer"></span>
       <div style="display:flex;gap:10px;align-items:center">
-        <button class="naowee-btn naowee-btn--mute naowee-btn--large" onclick="saveDraft()">
+        <button class="naowee-btn naowee-btn--mute naowee-btn--large" id="wzBtnDraft" onclick="saveDraft()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
             <polyline points="17 21 17 13 7 13 7 21"/>
@@ -407,6 +430,40 @@
         Ver programa
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ DIALOG: Cambiar forma de carga de códigos (se descartan los cargados) ═══ -->
+<div class="wz-warn-overlay wz-warn-overlay--top" id="wzCodesSwitchOverlay" role="dialog" aria-modal="true" aria-labelledby="wzCodesSwitchTitle">
+  <div class="wz-warn-card">
+    <div class="wz-warn-card__body">
+      <div class="wz-warn-card__icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="17" x2="12" y2="17.01"/></svg>
+      </div>
+      <h2 class="wz-warn-card__title" id="wzCodesSwitchTitle">¿Cambiar la forma de carga?</h2>
+      <p class="wz-warn-card__sub" id="wzCodesSwitchSub">Se descartarán los códigos que ya cargaste.</p>
+    </div>
+    <div class="wz-warn-card__footer">
+      <button type="button" class="naowee-btn naowee-btn--mute naowee-btn--large" onclick="cancelCodesSwitch()">Cancelar</button>
+      <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--large" onclick="confirmCodesSwitch()">Sí, cambiar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ DIALOG: Eliminar un incentivo que ya tiene códigos ═══ -->
+<div class="wz-warn-overlay wz-warn-overlay--top" id="wzIncDeleteOverlay" role="dialog" aria-modal="true" aria-labelledby="wzIncDeleteTitle">
+  <div class="wz-warn-card">
+    <div class="wz-warn-card__body">
+      <div class="wz-warn-card__icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="17" x2="12" y2="17.01"/></svg>
+      </div>
+      <h2 class="wz-warn-card__title" id="wzIncDeleteTitle">¿Eliminar este incentivo?</h2>
+      <p class="wz-warn-card__sub" id="wzIncDeleteSub">Se descartarán sus códigos disponibles.</p>
+    </div>
+    <div class="wz-warn-card__footer">
+      <button type="button" class="naowee-btn naowee-btn--mute naowee-btn--large" onclick="cancelIncDelete()">Cancelar</button>
+      <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--large" onclick="confirmIncDelete()">Sí, eliminar</button>
     </div>
   </div>
 </div>
