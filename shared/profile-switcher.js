@@ -21,7 +21,9 @@
      - operador   → Operador (ministerio · sólo asigna).
      - gestor     → legacy, se conserva por compatibilidad. */
   const ROLES = {
-    superadmin: { name:'Doug Vargas',   label:'Superadmin',           initials:'DV', bg:'#fecaca', fg:'#7f1d1d', meta:'Módulo global · acceso total' },
+    superadmin: { name:'Andrés Mora',   label:'Superadmin',           initials:'AM', bg:'#fecaca', fg:'#7f1d1d', meta:'Módulo global · acceso total' },
+    // Administrador: ve todo el módulo y administra a los usuarios de abajo.
+    administrador: { name:'Claudia Ospina', label:'Administrador',   initials:'CO', bg:'#fbcfe8', fg:'#9d174d', meta:'Ve todo y administra usuarios' },
     admin:    { name:'Doug Vargas',     label:'Gestor de incentivos', initials:'DV', bg:'#c4b5fd', fg:'#4c1d95', meta:'Parametriza y audita' },
     operador: { name:'Juan Rodríguez',  label:'Operador',             initials:'JR', bg:'#ffdfb5', fg:'#92400e', meta:'Entrega en campo en sus programas', operatorKey:'juan.rodriguez' },
     gestor:   { name:'Doug Vargas',     label:'Gestor',               initials:'DV', bg:'#ffdfb5', fg:'#92400e', meta:'Asigna y revierte incentivos' },
@@ -34,11 +36,11 @@
 
   // Qué roles muestra el dropdown por default cuando se auto-inyecta.
   // Incluye programa para que el switcher permita probar la vista filtrada.
-  const DEFAULT_ROLES_IN_DD = ['superadmin', 'admin', 'programa', 'operador'];
+  const DEFAULT_ROLES_IN_DD = ['superadmin', 'administrador', 'admin', 'programa', 'operador'];
 
   // Qué valores de data-role "ve" cada rol además del propio. Superadmin
   // hereda todo lo marcado como admin (páginas que sólo conocen 'admin').
-  const ROLE_SEES = { superadmin: ['superadmin', 'admin'] };
+  const ROLE_SEES = { superadmin: ['superadmin', 'admin'], administrador: ['administrador', 'superadmin', 'admin'] };
   function roleSees(role){ return ROLE_SEES[role] || [role]; }
 
   function currentRole(){
@@ -96,10 +98,10 @@
   // Si el rol seleccionado no corresponde al tipo de página actual,
   // se redirige al "home" del perfil para que la UX refleje el cambio.
   const OPERATOR_PAGES = /incentivo-(08|09|10|11|14)/;
-  const ADMIN_PAGES    = /incentivo-(02|03|04|05|06|07|12|13)/;
+  const ADMIN_PAGES    = /incentivo-(02|03|04|05|06|07|12|13|16)/;
   // Gestor de programa vive en el dashboard (filtrado a su programa), la
   // lista (filtrada) y el detalle.
-  const PROGRAMA_PAGES = /incentivo-(02|03|05)/;
+  const PROGRAMA_PAGES = /incentivo-(02|03|05|16)/;
   const OPERATOR_HOME  = 'incentivo-08-asignar-buscar.html';
   const ADMIN_HOME     = 'incentivo-02-dashboard.html';
   const PROGRAMA_HOME  = 'incentivo-02-dashboard.html';
@@ -119,7 +121,7 @@
     let target = null;
     if(role === 'operador' && !onOperadorPage) target = OPERATOR_HOME;
     else if(role === 'programa' && !onProgramaPage) target = PROGRAMA_HOME;
-    else if((role === 'superadmin' || role === 'admin' || role === 'gestor') && !onAdminPage) target = ADMIN_HOME;
+    else if((role === 'superadmin' || role === 'administrador' || role === 'admin' || role === 'gestor') && !onAdminPage) target = ADMIN_HOME;
     setTimeout(() => { if(target) window.location.href = target; else window.location.reload(); }, 180);
   }
 

@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.4.0/dist/design-system.css"/>
 <link rel="stylesheet" href="shared/shell.css?v=20260922200101"/>
-<link rel="stylesheet" href="shared/programa-wizard.css?v=20260922194132"/>
+<link rel="stylesheet" href="shared/programa-wizard.css?v=20260923080917"/>
 
 <style>
   .page-header{
@@ -186,6 +186,10 @@
       <div class="nav-row" data-role="admin" onclick="fadeAndGo('incentivo-15-reporteria.html')">
         <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-5"/><circle cx="18" cy="9" r="1.5"/></svg></div>
         <span class="lbl">Reportería</span>
+      </div>
+      <div class="nav-row" data-role="admin programa" onclick="fadeAndGo('incentivo-16-usuarios.html')">
+        <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#646587" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
+        <span class="lbl">Usuarios</span>
       </div>
     </nav>
 
@@ -594,10 +598,11 @@ function positionSegmentPill(seg, animate = true){
 function fadeAndGo(url){window.location.href=url}
 </script>
 
-<script src="shared/programs-data.js?v=20260922203322"></script>
-<script src="shared/programa-wizard.js?v=20260922194132" defer></script>
+<script src="shared/programs-data.js?v=20260923080917"></script>
+<script src="shared/usuarios.js?v=20260923080917"></script>
+<script src="shared/programa-wizard.js?v=20260923080917" defer></script>
 
-<script src="shared/profile-switcher.js?v=20260922203322" defer></script>
+<script src="shared/profile-switcher.js?v=20260923080917" defer></script>
 <script>
 /* ═══ Dashboard según rol ═══
    - superadmin / admin: agregados sobre todos los programas.
@@ -658,7 +663,7 @@ window.onRoleApplied = function(role){
     if(prgTitle) prgTitle.textContent = names.length === 1 ? 'Mi programa' : 'Mis programas';
     if(prgSub) prgSub.textContent = `${names.length} programa${names.length === 1 ? '' : 's'} a cargo`;
   } else {
-    if(sub) sub.textContent = role === 'superadmin'
+    if(sub) sub.textContent = (role === 'superadmin' || role === 'administrador')
       ? 'Acceso global al módulo: inventario, ejecución y asignaciones de todos los programas.'
       : 'Inventario, ejecución y asignaciones de los programas a nivel nacional.';
     if(prgTitle) prgTitle.textContent = 'Programas activos';
@@ -747,7 +752,7 @@ function renderTopInst(which){
 </script>
 
 <script src="shared/footer-scroll.js" defer></script>
-<script src="shared/tour.js?v=20260922203322" defer></script>
+<script src="shared/tour.js?v=20260923080917" defer></script>
 
 <!-- Footer flotante Naowee -->
 <div class="naowee-floating-footer" role="contentinfo" aria-label="Pie de página Naowee">

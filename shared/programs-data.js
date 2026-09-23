@@ -22,7 +22,7 @@ window.PROGRAMS_DATA = [
     responsible: 'Elkin Ávila',
     team: {
       gestorKey: 'elkin.avila', gestor: 'Elkin Ávila · Ministerio del Deporte',
-      operatorKeys: ['juan.rodriguez', 'maria.perez'], operators: ['Juan Rodríguez · Operador', 'María Pérez · Operadora']
+      operatorKeys: ['juan.rodriguez', 'maria.perez'], operators: ['Juan Rodríguez · Ministerio del Deporte', 'María Pérez · Coordinación Intercolegiados']
     },
     rubro: 0,
     exec: 0,
@@ -102,7 +102,7 @@ window.PROGRAMS_DATA = [
   },
   {
     id: 'PRG-2026-001',
-    team: { gestorKey: 'danna.arrieta', gestor: 'Danna Arrieta · Naowee', operatorKeys: ['carlos.gomez', 'andrea.lopez'], operators: ['Carlos Gómez · Operador', 'Andrea López · Operadora'] },
+    team: { gestorKey: 'danna.arrieta', gestor: 'Danna Arrieta · Naowee', operatorKeys: ['carlos.gomez', 'andrea.lopez'], operators: ['Carlos Gómez · Ministerio del Deporte', 'Andrea López · Naowee'] },
     name: 'Becas deportivas 2026',
     shortDesc: 'Medallistas de oro · Nacional',
     longDesc: 'Beca educativa dirigida a deportistas medallistas de oro y plata de los Juegos Nacionales 2025, para apoyar su formación profesional universitaria.',
@@ -141,7 +141,7 @@ window.PROGRAMS_DATA = [
   },
   {
     id: 'PRG-2026-002',
-    team: { gestorKey: 'laura.mejia', gestor: 'Laura Mejía · Coordinación Intercolegiados', operatorKeys: ['maria.perez'], operators: ['María Pérez · Operadora'] },
+    team: { gestorKey: 'laura.mejia', gestor: 'Laura Mejía · Coordinación Intercolegiados', operatorKeys: ['maria.perez'], operators: ['María Pérez · Coordinación Intercolegiados'] },
     name: 'Kit deportivo Atlántico',
     shortDesc: 'Disciplinas de pista · Atlántico',
     longDesc: 'Entrega de kits deportivos (uniforme, calzado y accesorios de entrenamiento) a atletas de disciplinas de pista del departamento del Atlántico.',
@@ -177,7 +177,7 @@ window.PROGRAMS_DATA = [
   },
   {
     id: 'PRG-2026-003',
-    team: { gestorKey: 'elkin.avila', gestor: 'Elkin Ávila · Ministerio del Deporte', operatorKeys: ['juan.rodriguez', 'carlos.gomez'], operators: ['Juan Rodríguez · Operador', 'Carlos Gómez · Operador'] },
+    team: { gestorKey: 'elkin.avila', gestor: 'Elkin Ávila · Ministerio del Deporte', operatorKeys: ['juan.rodriguez', 'carlos.gomez'], operators: ['Juan Rodríguez · Ministerio del Deporte', 'Carlos Gómez · Ministerio del Deporte'] },
     name: 'Bono transporte intercolegiados',
     shortDesc: 'Prejuveniles · Cundinamarca',
     longDesc: 'Bono mensual de transporte para deportistas prejuveniles de Cundinamarca que participan en los juegos intercolegiados.',
@@ -225,7 +225,7 @@ window.PROGRAMS_DATA = [
   },
   {
     id: 'PRG-2026-004',
-    team: { gestorKey: 'danna.arrieta', gestor: 'Danna Arrieta · Naowee', operatorKeys: ['andrea.lopez'], operators: ['Andrea López · Operadora'] },
+    team: { gestorKey: 'danna.arrieta', gestor: 'Danna Arrieta · Naowee', operatorKeys: ['andrea.lopez'], operators: ['Andrea López · Naowee'] },
     name: 'Inscripción juegos universitarios',
     shortDesc: 'Mayores de 18 · Nacional',
     longDesc: 'Cobertura del costo de inscripción a los juegos universitarios 2026 para estudiantes-atletas activos en universidades públicas.',
@@ -296,7 +296,7 @@ window.PROGRAMS_DATA = [
   },
   {
     id: 'PRG-2025-019',
-    team: { gestorKey: 'laura.mejia', gestor: 'Laura Mejía · Coordinación Intercolegiados', operatorKeys: ['juan.rodriguez'], operators: ['Juan Rodríguez · Operador'] },
+    team: { gestorKey: 'laura.mejia', gestor: 'Laura Mejía · Coordinación Intercolegiados', operatorKeys: ['juan.rodriguez'], operators: ['Juan Rodríguez · Ministerio del Deporte'] },
     name: 'Bonos olimpiadas indígenas',
     shortDesc: 'Comunidades · Cauca',
     longDesc: 'Bono único de participación para comunidades indígenas del Cauca inscritas en las primeras Olimpiadas Indígenas Nacionales.',
@@ -331,7 +331,7 @@ window.PROGRAMS_DATA = [
   },
   {
     id: 'PRG-2025-017',
-    team: { gestorKey: 'elkin.avila', gestor: 'Elkin Ávila · Ministerio del Deporte', operatorKeys: ['maria.perez', 'andrea.lopez'], operators: ['María Pérez · Operadora', 'Andrea López · Operadora'] },
+    team: { gestorKey: 'elkin.avila', gestor: 'Elkin Ávila · Ministerio del Deporte', operatorKeys: ['maria.perez', 'andrea.lopez'], operators: ['María Pérez · Coordinación Intercolegiados', 'Andrea López · Naowee'] },
     name: 'Kit fútbol juveniles Valle',
     shortDesc: 'Juveniles · Valle',
     longDesc: 'Entrega de kits de fútbol (uniforme, guayos y balones) para categorías juveniles de clubes del Valle del Cauca.',
@@ -366,7 +366,7 @@ window.PROGRAMS_DATA = [
   },
   {
     id: 'PRG-2025-012',
-    team: { gestorKey: 'danna.arrieta', gestor: 'Danna Arrieta · Naowee', operatorKeys: ['carlos.gomez'], operators: ['Carlos Gómez · Operador'] },
+    team: { gestorKey: 'danna.arrieta', gestor: 'Danna Arrieta · Naowee', operatorKeys: ['carlos.gomez'], operators: ['Carlos Gómez · Ministerio del Deporte'] },
     name: 'Becas juegos nacionales 2025',
     shortDesc: 'Oro/plata · Nacional',
     longDesc: 'Beca educativa para medallistas de oro y plata de los Juegos Nacionales 2025. Cubre matrícula universitaria del semestre 2026-I.',
@@ -479,6 +479,6 @@ window.PROGRAMS_DATA.forEach(p => {
   window.demoProgramsCount = () => read().length;
   /* Borra lo creado en la demo: programas y entregas del operador. */
   window.resetDemoData = function(){
-    try { localStorage.removeItem(KEY); localStorage.removeItem('inc-op-ledger'); } catch(e){}
+    try { localStorage.removeItem(KEY); localStorage.removeItem('inc-op-ledger'); localStorage.removeItem('naowee:incentivos:usuarios'); } catch(e){}
   };
 })();

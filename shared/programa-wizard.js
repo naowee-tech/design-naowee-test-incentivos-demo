@@ -52,7 +52,58 @@
       .catch(err => { console.error('[wizard] mount failed', err); });
   }
 
+  /* ══ Equipo del programa desde Usuarios (shared/usuarios.js) ══
+     Las opciones de gestor y operadores son los usuarios activos o invitados
+     con ese rol. Si quien edita puede crear ese rol, puede crearlo aquí mismo. */
+  const TEAM_DD = [['gestor-programa', 'gestor_programa', 'gestor de programa'], ['operadores', 'operador', 'operador']];
+  function fillTeamMenu(dd, role){
+    const U = window.IncUsers;
+    const menu = dd.querySelector('.naowee-dropdown__menu');
+    const users = U.all().filter(u => u.role === role && u.status !== 'inactive');
+    menu.innerHTML = users.map(u => `<div class="naowee-dropdown__option" data-val="${u.key}">${U.teamLabel(u)}</div>`).join('')
+      || '<div class="naowee-dropdown__option" data-val="" aria-disabled="true">No hay usuarios con este rol</div>';
+  }
+  function fillTeamOptions(){
+    const U = window.IncUsers;
+    if(!U) return;
+    const canCreate = U.rolesBelow(U.viewer().role);
+    TEAM_DD.forEach(([name, role, lbl]) => {
+      const dd = document.querySelector(`[data-wz-name="${name}"]`);
+      if(!dd || dd.dataset.wzTeamFilled) return;
+      dd.dataset.wzTeamFilled = '1';
+      fillTeamMenu(dd, role);
+      const helper = dd.querySelector('.naowee-helper__text');
+      if(helper && canCreate.includes(role) && !helper.querySelector('.wz-team-new'))
+        helper.insertAdjacentHTML('beforeend', ` <button type="button" class="wz-team-new" data-name="${name}" data-role="${role}">+ Crear ${lbl}</button>`);
+    });
+  }
+  /* Recrea el dropdown con la lista actualizada y deja seleccionado al usuario nuevo. */
+  function rebuildTeamDropdown(name, role, addKey){
+    const old = document.querySelector(`[data-wz-name="${name}"]`);
+    if(!old) return;
+    const cur = (old.dataset.wzValue || '').split(',').filter(Boolean);
+    const fresh = old.cloneNode(true);
+    delete fresh.dataset.wzWired;
+    fresh.dataset.wzValue = '';
+    fresh.classList.remove('naowee-dropdown--open');
+    const v = fresh.querySelector('.naowee-dropdown__value'); if(v) v.remove();
+    old.replaceWith(fresh);
+    fillTeamMenu(fresh, role);
+    upgradeDropdowns();
+    setDropdownValue(fresh, fresh.hasAttribute('data-wz-multi') ? cur.concat(addKey) : [addKey]);
+    isDirty = true;
+  }
+  document.addEventListener('click', e => {
+    const b = e.target.closest('.wz-team-new');
+    if(!b || !window.IncUsers) return;
+    e.preventDefault(); e.stopPropagation();
+    const name = b.dataset.name, role = b.dataset.role;
+    window.IncUsers.openForm({ roles: [role], hidePrograms: true,
+      onSaved: u => { if(u) rebuildTeamDropdown(name, role, u.key); } });
+  }, true);
+
   function wireAll(){
+    fillTeamOptions();
     upgradeDropdowns();
     upgradeTagMultis();
     upgradeDatepickers();

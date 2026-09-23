@@ -1722,3 +1722,7 @@
 /* Gestor de programa: en "equipo" solo asigna operadores (el gestor lo define el gestor de incentivos) */
 .wz-modal[data-actor="programa"][data-section="equipo"] [data-wz-name="gestor-programa"]{ display: none; }
 .wz-modal[data-actor="programa"][data-section="equipo"] [data-wz-block="equipo"] .wz-grid{ grid-template-columns: 1fr; }
+
+/* Crear gestor u operador desde el equipo del programa */
+.wz-team-new{border:none;background:none;padding:0;margin-left:4px;font:inherit;font-size:inherit;font-weight:700;color:var(--naowee-color-text-accent,#d74009);cursor:pointer}
+.wz-team-new:hover{text-decoration:underline}
